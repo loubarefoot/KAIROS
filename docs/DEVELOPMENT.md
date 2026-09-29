@@ -230,3 +230,147 @@ Erst verstehen, dann planen, dann umsetzen, dann testen.
 Neue Funktionen und Änderungen werden bewusst entschieden und nicht ungefragt hinzugefügt.
 
 Stabilität, Verständlichkeit und kontrollierte Weiterentwicklung haben Vorrang vor unnötiger Komplexität.
+
+
+18. KI-Arbeitsworkflow
+
+Die Entwicklung von KAIROS folgt grundsätzlich einem abgestimmten Workflow.
+
+Der Standardablauf ist:
+
+Idee / Problem → Abstimmung zwischen Lou und ChatGPT → konkrete Anforderung → Auftrag an die zuständige KI → Umsetzung → Test → Rückmeldung → Prüfung → Commit / Merge → gegebenenfalls Dokumentationsaktualisierung
+
+Die einzelnen Schritte sollen nachvollziehbar bleiben und nicht ohne Grund übersprungen werden.
+
+⸻
+
+19. Erteilung von Entwicklungsaufträgen
+
+Ein verbindlicher Entwicklungsauftrag an Claude, DeepSeek oder eine andere Entwicklungs-KI entsteht grundsätzlich erst nach Abstimmung zwischen Lou und ChatGPT.
+
+Eine beiläufige Idee, ein Vorschlag oder eine Diskussion stellt noch keinen Entwicklungsauftrag dar.
+
+Der Auftrag soll möglichst eindeutig beschreiben:
+
+* was geändert werden soll,
+* welche Dateien oder Bereiche betroffen sind,
+* welches gewünschte Ergebnis erreicht werden soll,
+* welche bestehenden Funktionen erhalten bleiben müssen,
+* und gegebenenfalls welche Einschränkungen gelten.
+
+⸻
+
+20. Unklare Anforderungen
+
+Wenn eine Anforderung unklar, widersprüchlich oder für die Umsetzung nicht ausreichend definiert ist, soll die zuständige KI nicht eigenständig eine wesentliche Produktentscheidung treffen.
+
+Stattdessen soll sie:
+
+* auf die Unklarheit hinweisen,
+* eine Rückfrage stellen,
+* oder mögliche Lösungswege zur Entscheidung vorlegen.
+
+Bei rein technischen Details innerhalb des bereits eindeutig definierten Auftrags darf die KI selbstständig eine sinnvolle Lösung wählen.
+
+⸻
+
+21. Probleme außerhalb des Auftrags
+
+Wenn eine KI während der Umsetzung ein Problem entdeckt, das nicht Teil des aktuellen Auftrags ist, soll sie dieses melden.
+
+Sie darf:
+
+* das Problem beschreiben,
+* die möglichen Auswirkungen erklären,
+* einen Lösungsvorschlag machen.
+
+Sie darf das Problem jedoch nicht eigenständig außerhalb des Auftrags beheben.
+
+Für die zusätzliche Änderung wird bei Bedarf ein separater Auftrag erteilt.
+
+⸻
+
+22. Auftragsumfang
+
+Die KI arbeitet innerhalb des vereinbarten Scopes.
+
+Der Auftrag darf nicht eigenständig erweitert werden, nur weil während der Entwicklung weitere Verbesserungsmöglichkeiten auffallen.
+
+Wenn für die korrekte Umsetzung zusätzliche Änderungen notwendig erscheinen, muss die KI darauf hinweisen.
+
+Eine Erweiterung des Auftrags erfolgt erst nach entsprechender Abstimmung.
+
+⸻
+
+23. Größere Entwicklungsaufgaben
+
+Bei größeren oder komplexen Aufgaben soll die KI zunächst die geplante Vorgehensweise nachvollziehbar darstellen.
+
+Wenn während der Umsetzung eine relevante technische oder konzeptionelle Entscheidung erforderlich wird, soll die KI nicht eigenständig eine wesentliche Produktentscheidung treffen.
+
+Stattdessen soll sie die Situation erklären und gegebenenfalls mehrere mögliche Lösungswege zur Entscheidung vorlegen.
+
+⸻
+
+24. Umsetzung und Test
+
+Nach Erteilung des Auftrags führt die zuständige KI die vereinbarte Umsetzung durch.
+
+Nach der Umsetzung müssen die betroffenen Funktionen getestet werden.
+
+Bei größeren Änderungen sind zusätzlich relevante bestehende Funktionen auf mögliche Regressionen zu prüfen.
+
+Die KI soll nicht allein anhand des Codes davon ausgehen, dass eine Änderung erfolgreich ist.
+
+⸻
+
+25. Rückmeldung nach der Umsetzung
+
+Nach Abschluss der Implementierung soll die KI eine strukturierte Rückmeldung geben.
+
+Diese soll nach Möglichkeit enthalten:
+
+* Was wurde geändert?
+* Welche Dateien wurden geändert?
+* Welche Funktionen wurden hinzugefügt oder angepasst?
+* Was wurde getestet?
+* Was war das Ergebnis der Tests?
+* Gibt es bekannte Probleme oder offene Punkte?
+* Gibt es zusätzliche Verbesserungsvorschläge?
+
+Verbesserungsvorschläge müssen klar von tatsächlich umgesetzten Änderungen getrennt werden.
+
+⸻
+
+26. Commits und Merge
+
+Eine KI darf bei einem ausdrücklich beauftragten Entwicklungsauftrag selbstständig einen Commit erstellen.
+
+Ein Commit bedeutet jedoch nicht automatisch, dass die Änderung als fertig oder für main freigegeben gilt.
+
+Änderungen sollen nach Möglichkeit zunächst in einem Entwicklungs-Branch erfolgen.
+
+Ein Merge nach main erfolgt erst nach Prüfung und Freigabe.
+
+main soll dadurch grundsätzlich den geprüften und stabilen Hauptstand des Projekts darstellen.
+
+⸻
+
+27. Fehler, Rollback und Abschluss
+
+Wenn eine Änderung unerwartete Probleme verursacht, soll die Ursache zunächst nachvollzogen werden.
+
+Es sollen nicht ungeplant weitere Änderungen auf eine fehlerhafte Änderung aufgestapelt werden.
+
+Falls erforderlich, soll der vorherige funktionierende Zustand wiederhergestellt oder die Änderung sauber korrigiert werden.
+
+Eine Entwicklungsaufgabe gilt erst als abgeschlossen, wenn:
+
+1. der vereinbarte Auftrag umgesetzt wurde,
+2. die relevanten Funktionen getestet wurden,
+3. keine unbeabsichtigten Änderungen enthalten sind,
+4. bekannte Probleme dokumentiert oder kommuniziert wurden,
+5. die Änderung geprüft wurde,
+6. und der vereinbarte Git-Workflow abgeschlossen wurde.
+
+Erst danach wird die Aufgabe als erledigt betrachtet.
