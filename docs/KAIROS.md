@@ -46,23 +46,54 @@ Das Ziel einer V1 ist eine funktionierende, verständliche und stabile Grundlage
 
 ⸻
 
-4. Dokumentation als Source of Truth
+4. Source of Truth
 
-Die Projektdokumentation ist die fachliche Source of Truth für KAIROS.
+Die Dokumentation ist die maßgebliche Quelle für den gewünschten Soll-Zustand von KAIROS.
 
-Die Markdown-Dateien im Verzeichnis docs/ beschreiben die Anforderungen, Regeln und Konzepte des Projekts.
+Maßgebliche Quellen
 
-Dabei gilt:
+* docs/Kairos.md
+    → übergeordnete Projektregeln, Prinzipien und Entscheidungen
+* docs/Development.md
+    → Entwicklungs-, Git-, KI- und Workflow-Regeln
+* jeweilige Modul-Dokumentation
+    → Anforderungen, Funktionen, Verhalten und UI/UX des jeweiligen Moduls
+* Modul-Code
+    → technische Umsetzung des dokumentierten Soll-Zustands
 
-* docs/Kairos.md enthält die übergeordneten Projektgrundsätze und Regeln.
-* docs/Development.md enthält die Entwicklungs- und technischen Regeln.
-* Die jeweilige Modul-Dokumentation beschreibt die Anforderungen und das Konzept des jeweiligen Moduls.
+Grundprinzip
 
-Der Code ist die technische Umsetzung dieser Dokumentation und nicht deren Ersatz.
+Dokumentation beschreibt, was KAIROS tun und wie es sich verhalten soll. Der Code beschreibt, wie dieser Soll-Zustand technisch umgesetzt ist.
 
-Wenn Dokumentation und bestehender Code voneinander abweichen, darf die Abweichung nicht eigenständig interpretiert oder einfach überschrieben werden. Zunächst muss geklärt werden, welche Version tatsächlich gewollt ist. Anschließend wird die Entscheidung entsprechend dokumentiert und umgesetzt.
+Der Code ist daher nicht die maßgebliche Quelle für Anforderungen.
 
-⸻
+Wenn beispielsweise in der Modul-Dokumentation festgelegt ist, dass ein Button unten rechts positioniert sein soll, der implementierte Code den Button aber oben links darstellt, liegt eine Abweichung in der Umsetzung vor. Die Dokumentation wird dadurch nicht automatisch geändert.
+
+Änderungen an Anforderungen
+
+Wenn sich eine Anforderung ändert, wird zunächst die entsprechende Dokumentation angepasst. Erst anschließend wird der Code entsprechend geändert und getestet.
+
+Der reguläre Ablauf lautet:
+
+Anforderung ändern → Dokumentation aktualisieren → Umsetzung anpassen → testen
+
+Abweichungen zwischen Dokumentation und Code
+
+Wenn Dokumentation und Code voneinander abweichen, darf die zuständige KI nicht eigenmächtig entscheiden, welche Variante künftig gelten soll.
+
+* Entspricht der Code nicht der Dokumentation → Code muss im Rahmen eines entsprechenden Auftrags angepasst werden.
+* Ist die Anforderung selbst nicht mehr aktuell → Dokumentation muss nach gemeinsamer Entscheidung geändert werden.
+* Bei unklaren oder widersprüchlichen Anforderungen → Rückfrage statt eigenmächtiger Entscheidung.
+
+Widersprüche zwischen Dokumentationsdateien
+
+Wenn zwei Dokumentationsdateien widersprüchliche Anforderungen enthalten, darf nicht einfach anhand von Dateiname, Änderungsdatum oder persönlicher Einschätzung entschieden werden.
+
+Der Widerspruch wird gemeldet und gemeinsam geklärt. Anschließend wird die maßgebliche Dokumentation entsprechend aktualisiert.
+
+Grundsatz:
+
+Die Dokumentation definiert den Soll-Zustand. Der Code setzt diesen Soll-Zustand um. Keine KI darf bei einem Widerspruch eigenmächtig eine neue Anforderung daraus ableiten.
 
 5. Rollen der beteiligten KIs
 
