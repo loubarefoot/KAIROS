@@ -374,3 +374,106 @@ Eine Entwicklungsaufgabe gilt erst als abgeschlossen, wenn:
 6. und der vereinbarte Git-Workflow abgeschlossen wurde.
 
 Erst danach wird die Aufgabe als erledigt betrachtet.
+
+
+Development Workflow
+
+KAIROS-Entwicklungsaufgaben folgen grundsätzlich einem klaren, nachvollziehbaren Ablauf. Der Workflow soll die Zusammenarbeit zwischen Produkt-/Planungsebene und Development-Agent strukturieren, ohne unnötige Bürokratie oder Kommunikationsaufwand zu erzeugen.
+
+1. Idee oder Problem
+
+Eine neue Funktion, Änderung oder ein Problem wird zunächst auf Produkt-/Planungsebene besprochen und eingeordnet.
+
+Nicht jede Idee wird automatisch zu einer Entwicklungsaufgabe. Zuerst wird geklärt, ob sie für die aktuelle Version relevant ist.
+
+2. Abstimmung und konkreter Auftrag
+
+Vor der Umsetzung werden Ziel, Umfang und gewünschtes Ergebnis gemeinsam festgelegt.
+
+Aus der Abstimmung entsteht ein klar abgegrenzter Development-Auftrag. Dieser sollte – soweit relevant – enthalten:
+
+* Ziel der Aufgabe
+* gewünschte Änderungen
+* betroffene Dateien oder Bereiche
+* Funktionen oder bestehendes Verhalten, die erhalten bleiben müssen
+* relevante Einschränkungen
+* überprüfbare Erfolgskriterien
+
+Der Auftrag muss nicht unnötig formalisiert werden. Entscheidend ist, dass der Development-Agent eindeutig versteht, was erreicht werden soll und was nicht Teil der Aufgabe ist.
+
+3. Analyse und Planung
+
+Der Development-Agent prüft den relevanten Projektkontext, die bestehenden Dokumentationen und den betroffenen Code.
+
+Bei kleinen, klar abgegrenzten Aufgaben kann die Umsetzung direkt beginnen.
+
+Bei größeren oder komplexeren Aufgaben wird zunächst der geplante Lösungsweg kurz dargestellt. Relevante Auswirkungen, Unsicherheiten oder notwendige Entscheidungen werden vor der Umsetzung transparent gemacht.
+
+4. Umsetzung
+
+Die Aufgabe wird innerhalb des vereinbarten Umfangs umgesetzt.
+
+Dabei gelten insbesondere die Regeln aus Development-Skill.md:
+
+* kleinste sinnvolle Änderung
+* bestehendes funktionierendes Verhalten erhalten
+* keine eigenständige Erweiterung des Scopes
+* technische Entscheidungen innerhalb des vereinbarten Rahmens eigenständig treffen
+* größere Produkt-, UI/UX-, Architektur- oder Scope-Entscheidungen nicht eigenständig treffen
+
+5. Schrittweises Testen
+
+Relevante Änderungen werden bereits während der Umsetzung getestet, bevor darauf aufbauend weitere Änderungen vorgenommen werden.
+
+Dadurch sollen Fehler möglichst früh erkannt und nicht über mehrere weitere Änderungen hinweg verschleppt werden.
+
+6. Abschlusstest
+
+Nach Abschluss der Implementierung erfolgt ein abschließender Test der Aufgabe.
+
+Je nach Umfang werden dabei sowohl die neu implementierte Funktion als auch relevante bestehende Funktionen bzw. betroffene Bereiche auf Regressionen geprüft.
+
+Eine Aufgabe gilt nicht allein deshalb als abgeschlossen, weil der Code geschrieben oder gespeichert wurde.
+
+7. Abschlussbericht
+
+Nach erfolgreicher Umsetzung und Prüfung erstellt der Development-Agent einen kurzen strukturierten Abschlussbericht.
+
+Dieser enthält mindestens:
+
+* Was wurde geändert?
+* Welche Dateien/Bereiche wurden geändert?
+* Welche Tests wurden durchgeführt?
+* Was war das Ergebnis?
+* Welche Probleme oder offenen Punkte gibt es?
+* Welche zusätzlichen Verbesserungen werden lediglich vorgeschlagen?
+
+Vorgeschlagene Verbesserungen müssen klar von tatsächlich umgesetzten Änderungen getrennt werden.
+
+8. Review
+
+Der Abschlussbericht und das Ergebnis werden anschließend auf Produkt-/Planungsebene geprüft.
+
+Das Review dient insbesondere dazu festzustellen, ob:
+
+* die ursprüngliche Aufgabe erfüllt wurde,
+* die Erfolgskriterien erreicht wurden,
+* keine unerwünschten Änderungen vorgenommen wurden,
+* relevante bestehende Funktionen weiterhin funktionieren,
+* offene Punkte oder Probleme korrekt erkannt und kommuniziert wurden.
+
+Die technische Fertigstellung durch den Agenten ist nicht automatisch eine Produktfreigabe.
+
+9. Git und Übernahme
+
+Erst nach erfolgreicher Umsetzung, Tests und Review erfolgt – sofern vorgesehen und autorisiert – der entsprechende Commit bzw. Merge nach den Git-Regeln aus Development.md.
+
+Ein Commit stellt keine automatische Produktfreigabe dar.
+
+10. Agent-Wechsel
+
+Wenn eine Aufgabe von einem anderen Development-Agent übernommen wird, erhält der neue Agent den aktuellen Repository-Stand sowie den für die Aufgabe relevanten Dokumentations- und Arbeitskontext.
+
+Sofern vorhanden, soll insbesondere der Abschlussbericht bzw. der aktuelle Arbeitsstand des vorherigen Agents berücksichtigt werden.
+
+Der Workflow ist unabhängig davon, welcher Development-Agent verwendet wird.
