@@ -477,3 +477,69 @@ Wenn eine Aufgabe von einem anderen Development-Agent übernommen wird, erhält 
 Sofern vorhanden, soll insbesondere der Abschlussbericht bzw. der aktuelle Arbeitsstand des vorherigen Agents berücksichtigt werden.
 
 Der Workflow ist unabhängig davon, welcher Development-Agent verwendet wird.
+
+
+Decision Log und Changelog
+
+KAIROS führt zwei zentrale Dokumentationen für relevante Projektentscheidungen und Änderungen:
+
+* docs/Decision-Log.md dokumentiert relevante Entscheidungen und insbesondere deren Begründung.
+* docs/Changelog.md dokumentiert relevante Änderungen am Projekt und dessen Funktionen.
+
+Beide Dokumente dienen der langfristigen Nachvollziehbarkeit und wachsen mit dem Projekt. Sie sollen jedoch nicht jede kleine technische Änderung oder jedes Detail protokollieren.
+
+Decision Log
+
+Ein Eintrag ist sinnvoll bei relevanten Entscheidungen, insbesondere:
+
+* Architektur- oder Strukturentscheidungen
+* wichtigen UI-/UX-Entscheidungen
+* Änderungen an grundlegenden Projektregeln
+* bewussten Entscheidungen zwischen mehreren relevanten Alternativen
+* Entscheidungen, die für zukünftige Entwicklung oder andere Module relevant sein können
+
+Einträge sollten kurz festhalten:
+
+* Datum
+* Entscheidung
+* relevante Begründung bzw. Hintergrund
+* gegebenenfalls verworfene Alternativen
+
+Technische Detailentscheidungen müssen nicht automatisch dokumentiert werden. Wenn eine technische Entscheidung jedoch langfristige Auswirkungen hat oder für zukünftige Entwicklung relevant ist, sollte sie aufgenommen werden.
+
+Changelog
+
+Ein Eintrag ist sinnvoll bei relevanten Änderungen, insbesondere:
+
+* neuen Funktionen
+* wesentlichen Änderungen bestehender Funktionen
+* relevanten UI-/UX-Änderungen
+* wichtigen Bugfixes
+* Änderungen, die den Zustand oder die Nutzung eines Moduls wesentlich verändern
+
+Einträge sollten kurz festhalten:
+
+* Datum
+* betroffener Bereich bzw. Modul
+* wesentliche Änderungen
+* gegebenenfalls wichtige Hinweise
+
+Kleine interne Codeänderungen, reine Refactorings ohne relevante Auswirkungen und sonstige nicht relevante Details müssen nicht einzeln im Changelog erscheinen.
+
+Verantwortlichkeit
+
+Relevante Produkt- und Projektentscheidungen werden gemeinsam auf Produkt-/Planungsebene getroffen und anschließend im Decision Log dokumentiert.
+
+Der Development-Agent kann relevante technische Entscheidungen erkennen und für die Dokumentation hervorheben. Die Dokumentation darf jedoch keine eigenständige Produktentscheidung darstellen.
+
+Relevante abgeschlossene Änderungen werden im Changelog festgehalten.
+
+Bei größeren Aufgaben können Decision Log und Changelog Bestandteil des Development-Auftrags bzw. der Abschlussaufgabe sein.
+
+Grundprinzip
+
+Decision Log = Warum wurde etwas entschieden?
+
+Changelog = Was wurde geändert?
+
+Beide Dokumente sollen die Entwicklung von KAIROS nachvollziehbar machen, ohne unnötige Dokumentationsarbeit zu erzeugen.
