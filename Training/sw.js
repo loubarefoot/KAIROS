@@ -1,20 +1,21 @@
 'use strict';
 // Bump VERSION whenever any shell file changes. Keep the previous worker until
 // the new complete shell is installed and all old controlled pages are closed.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const PREFIX = 'kairos-training-shell:' + self.registration.scope + ':';
-const CACHE = PREFIX + VERSION;
 const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js'];
 const HASHES = {
-  "index.html": "d97b39a2e42c7727e20e4c223e254c47364de0d48e7e04b2b3f9ce490566e59b",
+  "index.html": "0bcedfd37412b58e922ea8c0cb437cb548c89c8cd8a534d120d1149d75e46cda",
   "styles.css": "7b93637ae9de8b7d31b645bc65b04169ead1bdb400cb7cccf50edd909cec53c0",
-  "data.js": "aa685260a76757deedd7323abd90daad037498f0d6913921483c08422711775b",
+  "data.js": "8a76786514d6428921650ab976e6845d7b49615f5e265c2510c6e29cbef0416c",
   "library.js": "f27ed498f9c4a22bc1e6e2ea223aa8806441acf62776f0a583a45a48fd5dfbc8",
   "management.js": "9f7bb93151aa2330df0a4c87ea6c9186091ed10abf36917e45aab50f2ce2f9b3",
-  "session.js": "d94d1f3aa71bdb6f99d21fb132a15ed5c27ee70ee93e6d5180fc954cc71792bd",
+  "session.js": "beda560abb6ec0b112433cf3d8c564055099a6fcf7cc37437f9a0f635639bf75",
   "navigation.js": "33219a21f3155bba44028fbdf3628486f35f68b5223b84c3497592b49358b883",
-  "app.js": "f441bb1bbd509d6cee793cd1c071aaef6033674d057901f0bedbad13ce25c6b6"
+  "app.js": "0d190cfc48fa781c61c97a4d7d99ebed02c13bf116f1276d11ef003b325c9c77"
 };
+// Deterministic across worker restarts, distinct for every shell content set.
+const cacheName = crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(HASHES))).then(buffer => PREFIX + VERSION + ':' + Array.from(new Uint8Array(buffer), byte => byte.toString(16).padStart(2, '0')).join(''));
 const urls = FILES.map(file => new URL(file, self.registration.scope).href);
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -31,17 +32,31 @@ self.addEventListener('install', event => {
       const headers = new Headers(response.headers); headers.delete('content-encoding'); headers.delete('content-length');
       return new Response(body, {status: response.status, statusText: response.statusText, headers});
     }));
-    const cache = await caches.open(CACHE);
+    const name = await cacheName;
+    if ((await caches.keys()).includes(name)) {
+      // A code-only worker update may reuse an already complete identical shell.
+      const existing = await caches.open(name);
+      const valid = await Promise.all(urls.map(async (url, i) => {
+        const response = await existing.match(url);
+        if (!response) return false;
+        const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await response.arrayBuffer())), byte => byte.toString(16).padStart(2, '0')).join('');
+        return digest === HASHES[FILES[i]];
+      }));
+      if (!valid.every(Boolean)) throw new Error('Existing Training cache is incomplete; it remains untouched');
+      return;
+    }
+    const cache = await caches.open(name);
     try { await Promise.all(urls.map((url, i) => cache.put(url, responses[i]))); }
-    catch (error) { await caches.delete(CACHE); throw error; }
+    catch (error) { await caches.delete(name); throw error; }
   })());
 });
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
+    const name = await cacheName;
+    const cache = await caches.open(name);
     const complete = await Promise.all(urls.map(url => cache.match(url)));
     if (complete.some(response => !response)) throw new Error('Incomplete Training cache');
-    await Promise.all((await caches.keys()).filter(key => key.startsWith(PREFIX) && key !== CACHE).map(key => caches.delete(key)));
+    await Promise.all((await caches.keys()).filter(key => key.startsWith(PREFIX) && key !== name).map(key => caches.delete(key)));
     await self.clients.claim();
   })());
 });
@@ -52,7 +67,8 @@ self.addEventListener('fetch', event => {
   const navigation = request.mode === 'navigate' && [scope.pathname, scope.pathname + 'index.html'].includes(url.pathname);
   if (!navigation && !urls.includes(shellURL)) return;
   event.respondWith((async () => {
-    const cache = await caches.open(CACHE);
+    const name = await cacheName;
+    const cache = await caches.open(name);
     const response = await cache.match(navigation ? urls[0] : shellURL);
     return response || fetch(request);
   })());

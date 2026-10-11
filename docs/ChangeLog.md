@@ -111,3 +111,15 @@ Kein Offline-Caching, keine automatische Tages-/Inaktivitätsnavigation, keine C
 - Tests für Navigationsregeln, Cache-Installation/Fehler/Scope, Offline-Training und vollständigen Browser-Neustart ergänzt. Hosting-Voraussetzungen sowie iOS- und Speichergrenzen in `TrainingData.md` dokumentiert.
 
 Keine Hosting-Änderungen, Cloud-Synchronisierung, zusätzlichen Produktfunktionen oder Änderungen am Weight Tracker. Keine neuen Abhängigkeiten.
+
+
+### Training – Freigegebene Audit-Fehlerkorrekturen
+
+- Gewichtsformulare an Einheiten-/Übungs-ID und ursprüngliche Werte gebunden; veraltete Eingaben werden vor Änderungen abgewiesen. Reguläre globale Gewichtsspeicherung bleibt erhalten.
+- Tatsächliche Kalenderdaten und darstellbare Zeitstempel validiert; ungültige Backup-Zeitwerte werden nicht übernommen. Schema 1 bleibt erhalten.
+- Tastaturfokus nach Plan-/Übungssortierung auf der verschobenen Zeile wiederhergestellt; Drag-and-Drop unverändert erhalten.
+- Statischen falschen Leerzustand in der Trainingsübersicht durch den tatsächlichen aktiven Zustand ersetzt.
+- Inhaltsfingerabdruck für Cache-Namen und geprüfte schreibfreie Wiederverwendung identischer Shells ergänzt. Fehlgeschlagene Updates mit gleicher Versionsnummer löschen keine bisher funktionierende Offline-Shell. Version und Dateiprüfsummen aktualisiert.
+- Gezielte Daten-/Cache- und Browser-Regressionsprüfungen für alle fünf freigegebenen Befunde ergänzt.
+
+Keine weiteren Audit-Themen, Produktfunktionen, Hosting-Einstellungen oder Weight-Dateien geändert.

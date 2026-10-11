@@ -12,6 +12,10 @@
   }
   function create(store, data, now = () => Date.now()) {
     function active(state) { if (!state.activeSession) throw new Error('Es gibt kein laufendes Training.'); return state.activeSession; }
+    function weightContext() {
+      const state = store.getState(), session = active(state), exercise = session.exercises[session.currentIndex];
+      return {sessionId: session.id, exerciseId: exercise.id, snapshot: exercise, global: state.exercises.find(item => item.id === exercise.id) || null};
+    }
     function mark(status) {
       return store.update(state => {
         const session = active(state), index = session.currentIndex;
@@ -59,8 +63,11 @@
           session.currentIndex = index;
         });
       },
-      changeWeight(fields) {
+      weightContext,
+      changeWeight(fields, expected) {
+        if (expected !== undefined) store.refresh();
         return store.update(state => {
+          if (expected !== undefined && JSON.stringify(expected) !== JSON.stringify(weightContext())) throw new Error('Diese Gewichtseingabe ist veraltet. Bitte das Gewicht der aktuellen Übung erneut öffnen. Es wurde kein Gewicht geändert.');
           const session = active(state), snapshot = session.exercises[session.currentIndex];
           const exercise = state.exercises.find(item => item.id === snapshot.id);
           if (!exercise) throw new Error('Diese Übung wurde aus der Bibliothek gelöscht. Ihr Trainingszustand bleibt erhalten; eine globale Gewichtsänderung ist nicht mehr möglich.');

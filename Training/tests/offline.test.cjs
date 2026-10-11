@@ -1,20 +1,22 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const source=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-function worker({missing=false,corrupt=false,putFail=false}={}){
- const handlers={}, stores=new Map([['kairos-training-shell:https://example.test/Training/:old',new Map()],['weight-cache',new Map()]]);
- const caches={keys:async()=>[...stores.keys()],delete:async name=>stores.delete(name),open:async name=>{if(!stores.has(name))stores.set(name,new Map());const map=stores.get(name);return{put:async(key,response)=>{if(putFail&&key.endsWith('app.js'))throw Error('quota');map.set(key,response);},match:async key=>map.get(key)};}};
+function worker({missing=false,corrupt=false,putFail=false,stores:existingStores,version,hashes}={}){
+ const handlers={}, stores=existingStores || new Map([['kairos-training-shell:https://example.test/Training/:old',new Map()],['weight-cache',new Map()]]);
+ const caches={keys:async()=>[...stores.keys()],delete:async name=>stores.delete(name),open:async name=>{if(!stores.has(name))stores.set(name,new Map());const map=stores.get(name);return{put:async(key,response)=>{if(putFail&&key.endsWith('app.js'))throw Error('quota');map.set(key,response.clone());},match:async key=>map.get(key)?.clone()};}};
  let claims=0;
  const fetch=async request=>{const name=new URL(typeof request==='string'?request:request.url).pathname.split('/').pop();if(missing&&name==='navigation.js')return new Response('missing',{status:404});const body=fs.readFileSync(path.join(__dirname,'../'+name));return new Response(corrupt&&name==='navigation.js'?Buffer.concat([body,Buffer.from('broken')]):body,{headers:{'content-type':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':'application/javascript'}});};
- vm.runInNewContext(source,{self:{registration:{scope:'https://example.test/Training/'},clients:{claim:async()=>{claims++;}},addEventListener:(type,fn)=>{handlers[type]=fn;}},fetch,caches,Request,Response,Headers,URL,crypto:crypto.webcrypto});
+ let script=version ? source.replace(/const VERSION = '[^']+';/, "const VERSION = '"+version+"';") : source;
+ if(hashes) script=script.replace(/const HASHES = [\s\S]*?;\nconst cacheName/, 'const HASHES = '+JSON.stringify(hashes)+';\nconst cacheName');
+ vm.runInNewContext(script,{self:{registration:{scope:'https://example.test/Training/'},clients:{claim:async()=>{claims++;}},addEventListener:(type,fn)=>{handlers[type]=fn;}},fetch,caches,Request,Response,Headers,URL,TextEncoder,crypto:crypto.webcrypto});
  const dispatch=async(type,extra={})=>{let promise;handlers[type]({...extra,waitUntil:value=>{promise=value;},respondWith:value=>{promise=value;}});return promise?await promise:undefined;};
  return {dispatch,stores,getClaims:()=>claims};
 }
 test('shell hashes match files; full cache activation preserves other module caches',async()=>{
- const w=worker();await w.dispatch('install');const current=[...w.stores.keys()].find(k=>k.endsWith(':v1'));assert.equal(w.stores.get(current).size,8);
+ const w=worker();await w.dispatch('install');const current=[...w.stores.keys()].find(k=>k.includes(':v2:'));assert.equal(w.stores.get(current).size,8);
  await w.dispatch('activate');assert.ok(![...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(w.stores.has('weight-cache'));assert.equal(w.getClaims(),1);
 });
 test('missing or corrupted shell fails install and keeps existing offline version',async()=>{
- for(const options of [{missing:true},{corrupt:true}]){const w=worker(options);await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(![...w.stores.keys()].some(k=>k.endsWith(':v1')));}
+ for(const options of [{missing:true},{corrupt:true}]){const w=worker(options);await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(![...w.stores.keys()].some(k=>k.includes(':v2:')));}
 });
 test('only local Training shell requests and Training entry navigations are cached',async()=>{
  const w=worker();await w.dispatch('install');
@@ -25,5 +27,20 @@ test('only local Training shell requests and Training entry navigations are cach
 });
 
 test('failed cache writes remove only the incomplete new version',async()=>{
- const w=worker({putFail:true});await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(w.stores.has('weight-cache'));assert.ok(![...w.stores.keys()].some(k=>k.endsWith(':v1')));
+ const w=worker({putFail:true});await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(w.stores.has('weight-cache'));assert.ok(![...w.stores.keys()].some(k=>k.includes(':v2:')));
+});
+
+test('reused VERSION with changed content cannot delete the prior working shell on write failure',async()=>{
+ const hashes=JSON.parse(source.match(/const HASHES = ([\s\S]*?);\n/)[1]);
+ const priorHashes={...hashes,'app.js':'previous-build'};
+ const scope='https://example.test/Training/',prefix='kairos-training-shell:'+scope+':v2:';
+ const previous=prefix+crypto.createHash('sha256').update(JSON.stringify(priorHashes)).digest('hex');
+ const stores=new Map([[previous,new Map([['https://example.test/Training/index.html',new Response('old working shell')]])],['weight-cache',new Map()]]);
+ const w=worker({putFail:true,stores});await assert.rejects(w.dispatch('install'));
+ assert.ok(stores.has(previous));assert.equal(await stores.get(previous).get(scope+'index.html').clone().text(),'old working shell');assert.equal(stores.size,2);
+});
+test('identical complete cache survives a code-only reinstall and worker restart without writes',async()=>{
+ const w=worker();await w.dispatch('install');const names=[...w.stores.keys()];
+ const restarted=worker({stores:w.stores,putFail:true});await restarted.dispatch('install');assert.deepEqual([...w.stores.keys()],names);
+ const response=await restarted.dispatch('fetch',{request:{url:'https://example.test/Training/',method:'GET',mode:'navigate'}});assert.match(await response.text(),/KAIROS – Training/);
 });

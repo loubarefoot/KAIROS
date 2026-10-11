@@ -13,7 +13,12 @@
   const id = value => typeof value === 'string' && value.trim() === value && value.length > 0;
   const nameKey = value => value.trim().replace(/\s+/gu, ' ').toLocaleLowerCase('de');
   const weight = value => value === null || (typeof value === 'number' && Number.isFinite(value) && value >= 0 && Number.isSafeInteger(value * 4));
-  const time = value => Number.isSafeInteger(value) && value >= 0;
+  const time = value => Number.isSafeInteger(value) && value >= 0 && Number.isFinite(new Date(value).getTime());
+  function calendarDay(value) {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const date = new Date(value + 'T00:00:00.000Z');
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  }
   function requireRule(condition, message) { if (!condition) throw new Error(message); }
   function unique(values) { return new Set(values).size === values.length; }
   function emptyState() {
@@ -92,7 +97,7 @@
     const ids = [...state.exercises, ...state.plans, ...state.completedSessions, ...(state.activeSession ? [state.activeSession] : [])].map(item => item.id);
     requireRule(unique(ids), 'Doppelte Objekt-IDs.');
     const settings = state.settings;
-    requireRule(object(settings) && VIEWS.includes(settings.lastView) && (settings.lastBackgroundAt === null || time(settings.lastBackgroundAt)) && (settings.lastOpenedDay === null || (typeof settings.lastOpenedDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(settings.lastOpenedDay))), 'Ungültige Training-Einstellungen.');
+    requireRule(object(settings) && VIEWS.includes(settings.lastView) && (settings.lastBackgroundAt === null || time(settings.lastBackgroundAt)) && (settings.lastOpenedDay === null || calendarDay(settings.lastOpenedDay)), 'Ungültige Training-Einstellungen.');
     return true;
   }
   function validateBackup(state) {

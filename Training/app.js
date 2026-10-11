@@ -33,6 +33,7 @@
     document.querySelectorAll('[data-plan-list]').forEach(list => { list.innerHTML = plans.length ? plans.map(plan => `<div class="plan-summary"><strong>${esc(plan.name)}</strong><p class="muted">${esc(plan.description)} · ${plan.exerciseIds.length} Übungen</p><button class="btn-secondary" data-start-plan="${esc(plan.id)}" ${!plan.exerciseIds.length || state.activeSession || store.getStatus().blocked ? 'disabled' : ''}>Training starten${plan.exerciseIds.length ? '' : ' – keine Übungen'}</button></div>`).join('') : '<p class="empty">Noch keine Trainingspläne vorhanden.</p>'; });
     $('plan-list').innerHTML = plans.map((plan,index) => `<div class="card sort-row" data-id="${esc(plan.id)}" data-index="${index}"><strong>${esc(plan.name)}</strong><p class="muted">${esc(plan.description)} · ${plan.exerciseIds.length} Übungen</p><div class="row-actions">${rowControls(index,plans.length)}<button data-edit-plan="${esc(plan.id)}">Bearbeiten</button><button data-delete-plan="${esc(plan.id)}">Löschen</button></div></div>`).join('') || '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
     $('exercise-list').innerHTML = state.exercises.map(exercise => `<div class="card"><strong>${esc(exercise.name)}</strong><p class="muted">${exercise.source==='builtin'?'Grundbibliothek':'Eigene Übung'} · ${esc(weightLabel(exercise))} · ${exercise.repetitions} Wiederholungen</p><button class="btn-secondary" data-edit-exercise="${esc(exercise.id)}">Bearbeiten</button></div>`).join('') || '<p class="empty">Keine Übungen vorhanden.</p>';
+    $('active-overview').textContent = state.activeSession ? 'Training „' + state.activeSession.planName + '“ läuft. Du kannst es in der Trainingsansicht fortsetzen.' : 'Noch kein Training gestartet.';
     if (editingPlan) renderPlanExercises();
     renderActive();
     renderSavedSessions();
@@ -131,7 +132,7 @@
   function trainingWeightEditor() {
     const exercise = store.getState().activeSession.exercises[store.getState().activeSession.currentIndex];
     $('training-weight-editor').hidden = false;
-    $('training-weight-editor').innerHTML = `<form id="training-weight-form" class="card"><h2>Gewicht bearbeiten</h2><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : exercise.weightKg}" ${exercise.isMax ? 'disabled' : ''}></label><label class="check"><input type="checkbox" name="max" ${exercise.isMax ? 'checked' : ''}> MAX-Modus</label><label>Wiederholungen<input type="number" name="repetitions" min="1" step="1" required value="${exercise.repetitions}"></label><button type="submit" class="btn-primary">Gewicht speichern</button><button type="button" class="btn-secondary" id="cancel-training-weight">Abbrechen</button></form>`;
+    $('training-weight-editor').innerHTML = `<form id="training-weight-form" class="card" data-context="${esc(JSON.stringify(sessionFlow.weightContext()))}"><h2>Gewicht bearbeiten</h2><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : exercise.weightKg}" ${exercise.isMax ? 'disabled' : ''}></label><label class="check"><input type="checkbox" name="max" ${exercise.isMax ? 'checked' : ''}> MAX-Modus</label><label>Wiederholungen<input type="number" name="repetitions" min="1" step="1" required value="${exercise.repetitions}"></label><button type="submit" class="btn-primary">Gewicht speichern</button><button type="button" class="btn-secondary" id="cancel-training-weight">Abbrechen</button></form>`;
     const form = $('training-weight-form');
     (form.elements.weight.disabled ? form.elements.max : form.elements.weight).focus();
   }
@@ -170,7 +171,7 @@
     if(!['exercise-form','plan-form','add-exercise-form','training-weight-form'].includes(event.target.id)) return;
     event.preventDefault(); const form=event.target;
     if(form.id==='training-weight-form') {
-      if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:form.elements.max.checked,repetitions:Number(form.elements.repetitions.value)}))) $('training-weight-editor').hidden=true;
+      if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:form.elements.max.checked,repetitions:Number(form.elements.repetitions.value)},JSON.parse(form.dataset.context)))) $('training-weight-editor').hidden=true;
     } else if(form.id==='exercise-form') {
       const success=result(()=>management.saveExercise(form.dataset.id || null,{name:form.elements.name.value.trim(),weightKg:form.elements.weight.value,repetitions:Number(form.elements.repetitions.value),isMax:form.elements.max.checked},addingToPlan));
       if(success) { $('exercise-editor').hidden=true; if(addingToPlan) { showView('plans'); planEditor(addingToPlan); } addingToPlan=null; }
@@ -201,7 +202,16 @@
     else if(button.dataset.removeExercise) result(()=>management.removeExercise(editingPlan,button.dataset.removeExercise));
     else if(button.dataset.deleteExercise && await confirmDelete('Diese eigene Übung dauerhaft löschen und aus allen Trainingsplänen entfernen? Gespeicherte und laufende Einheiten bleiben unverändert.')) { if(result(()=>management.deleteExercise(button.dataset.deleteExercise))) $('exercise-editor').hidden=true; }
     else if(button.dataset.deletePlan && await confirmDelete('Diesen Trainingsplan löschen? Übungen sowie gespeicherte und laufende Einheiten bleiben erhalten.')) { if(result(()=>management.deletePlan(button.dataset.deletePlan))) { editingPlan=null; $('plan-editor').hidden=true; } }
-    else if(button.dataset.move) { const row=button.closest('.sort-row'), list=row.parentElement; result(()=>management.reorder(list.dataset.sort==='plans'?null:editingPlan,Number(row.dataset.index),Number(row.dataset.index)+Number(button.dataset.move))); }
+    else if(button.dataset.move) {
+      const row = button.closest('.sort-row'), list = row.parentElement, from = Number(row.dataset.index), direction = button.dataset.move;
+      const identity = list.dataset.sort === 'plans' ? row.dataset.id : store.getState().plans.find(plan => plan.id === editingPlan).exerciseIds[from];
+      result(() => management.reorder(list.dataset.sort === 'plans' ? null : editingPlan, from, from + Number(direction)));
+      const order = list.dataset.sort === 'plans' ? store.getState().planOrder : store.getState().plans.find(plan => plan.id === editingPlan).exerciseIds;
+      const index = order.indexOf(identity), refreshed = document.querySelector(list.dataset.sort === 'plans' ? '#plan-list' : '#plan-exercises');
+      const nextRow = refreshed?.querySelector(`[data-index="${index}"]`);
+      const preferred = nextRow?.querySelector(`[data-move="${direction}"]`);
+      (preferred && !preferred.disabled ? preferred : nextRow?.querySelector('[data-move]:not(:disabled)') || nextRow?.querySelector('.drag-handle'))?.focus();
+    }
   });
   // Pointer capture supports drag-and-drop on touchscreens and with a mouse.
   let drag=null;
