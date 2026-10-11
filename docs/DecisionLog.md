@@ -52,3 +52,10 @@ Der beauftragte Trainingsabschluss nutzt einen Commit-Pfad im vorhandenen Store.
 Der beauftragte JSON-Import verwendet einen eigenen Ersetzungspfad im bestehenden Store unter `kairos.training.state`, ohne Schema-Wechsel oder zweite Datenhaltung. Die Datei wird vor der KAIROS-Bestätigung vollständig geprüft; der Store prüft beim Übernehmen erneut. Die bewusste Ersetzung unterscheidet sich von normalen Bearbeitungen, die abgeschlossene Einheiten und vorgefertigte Übungsidentitäten weiterhin schützen.
 
 Ein einzelner erfolgreicher localStorage-Schreibvorgang geht der Übernahme in den Arbeitsspeicher voraus. Bei Fehlern bleiben bestehende Daten und ungespeicherte Änderungen erhalten. Änderungen während Bestätigung und externe Speicherkonflikte verhindern das Überschreiben. Export umfasst ausschließlich den aktuellen Training-Store, einschließlich etwaiger ausstehender Änderungen, und bleibt bei laufenden Einheiten verfügbar. Die bestehenden Produktanforderungen bleiben unverändert; technische Einzelheiten stehen in `TrainingData.md`.
+
+
+## 11.10.2026 – Training: vollständige Offline-Version vor Aktivierung
+
+Der beauftragte Offline-Start nutzt einen Service Worker ausschließlich im Training-Verzeichnis. Eine Shell-Version wird vor Installation vollständig geladen und anhand eingebetteter SHA-256-Prüfsummen geprüft. Neue Versionen warten auf das Schließen der bisherigen kontrollierten Seiten; es gibt keinen erzwungenen Wechsel während einer laufenden Anwendung. So bleiben bei teilweise ausgerollten oder beschädigten Dateien die bisherige Version und lokale Trainingsdaten erhalten. Version und Prüfsummen gehören künftig zu jeder Änderung an Shell-Dateien.
+
+Die Startseitenlogik nutzt unverändert die vorhandenen drei Einstellungen und den lokalen Kalendertag. Der Hintergrund-/Verlassenszeitpunkt wird über Lifecycle-Ereignisse gespeichert. Ein sauberer Store kann externe Tab-Daten vor Wiedereintritt neu laden; ungespeicherte Änderungen behalten den bisherigen Konfliktschutz. Hosting- und iOS-Grenzen sind in `TrainingData.md` ausdrücklich dokumentiert, ohne Hosting-Einstellungen oder Produktregeln zu ändern.

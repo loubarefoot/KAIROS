@@ -101,3 +101,13 @@ Keine umfassende Historie/Statistik, JSON-Import/-Export oder Offline-Caching er
 - Backup-Datentests und Browserprüfungen für Downloads, Dateiauswahl, Dialoge, Speicherfehler, Wiederaufnahme, Persistenz und mobile Größen durchgeführt; bestehende Training-Tests geprüft.
 
 Kein Offline-Caching, keine automatische Tages-/Inaktivitätsnavigation, keine Cloud-Synchronisierung und keine Änderungen am Weight Tracker. Keine neuen Abhängigkeiten.
+
+
+### Training – Startseitenlogik und Offline-Start
+
+- Bestehende Ansichtseinstellungen für lokale Kalendertage, Wiederherstellung unter 60 Minuten und Startansicht ab 60 Minuten genutzt; laufende Einheiten haben Vorrang.
+- Beginn der Abwesenheit über Hintergrund-/Seitenlebenszyklus gespeichert, doppelte Ereignisse abgefangen und gespeicherte Ansichten nach Neuladen wiederhergestellt. Externe Tab-Daten werden bei sauberem Store sicher aktualisiert.
+- Training-Service-Worker mit vollständiger versionierter Shell, SHA-256-Prüfung und auf den Training-Pfad begrenztem Cache ergänzt. Fehlgeschlagene Updates erhalten die bisherige Offline-Version; neue Versionen warten bis zum Schließen alter Seiten.
+- Tests für Navigationsregeln, Cache-Installation/Fehler/Scope, Offline-Training und vollständigen Browser-Neustart ergänzt. Hosting-Voraussetzungen sowie iOS- und Speichergrenzen in `TrainingData.md` dokumentiert.
+
+Keine Hosting-Änderungen, Cloud-Synchronisierung, zusätzlichen Produktfunktionen oder Änderungen am Weight Tracker. Keine neuen Abhängigkeiten.

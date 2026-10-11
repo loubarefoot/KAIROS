@@ -11,11 +11,14 @@
   const views = Array.from(document.querySelectorAll('.view'));
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));
   let trainingView = 'start', editingPlan = null, addingToPlan = null;
+  let currentView = 'start', away = false, entered = false;
   let summaryId = null, finishing = false, durationInterval = null, importing = false;
   function showView(name) {
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });
+    currentView = name;
+    if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== name) store.update(state => { state.settings.lastView = name; });
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
     window.scrollTo(0,0); target.querySelector('h1').focus({preventScroll:true});
@@ -216,8 +219,61 @@
   });
   function endDrag(commit) { if(!drag) return; const current=drag; drag=null; current.list.querySelectorAll('.sort-row').forEach(row=>row.classList.remove('dragging','drop-target')); if(commit && current.from!==current.to) result(()=>management.reorder(current.list.dataset.sort==='plans'?null:editingPlan,current.from,current.to)); }
   document.addEventListener('pointerup',()=>endDrag(true)); document.addEventListener('pointercancel',()=>endDrag(false));
+  function leaveApp() {
+    if (away || !entered) return;
+    away = true;
+    store.refresh();
+    if (store.getStatus().loaded && !store.getStatus().blocked) store.update(state => {
+      state.settings.lastView = currentView;
+      state.settings.lastBackgroundAt = Date.now();
+    });
+  }
+  function enterApp() {
+    if (document.visibilityState === 'hidden' || (entered && !away)) return;
+    store.refresh();
+    const state = store.getState(), now = Date.now();
+    const view = KairosTrainingNavigation.entryView(state, now);
+    if (view === 'summary') {
+      const last = state.completedSessions.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
+      summaryId = last?.id || null;
+    }
+    entered = true; away = false;
+    if (store.getStatus().loaded && !store.getStatus().blocked) store.update(candidate => {
+      candidate.settings.lastOpenedDay = KairosTrainingNavigation.day(now);
+      candidate.settings.lastBackgroundAt = null;
+      candidate.settings.lastView = view;
+    });
+    render(); showView(view);
+  }
   render();
-  resumeActive();
-  window.addEventListener('pageshow', resumeActive);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumeActive(); });
+  enterApp();
+  window.addEventListener('pagehide', leaveApp);
+  window.addEventListener('pageshow', enterApp);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') leaveApp(); else enterApp(); });
+  window.addEventListener('storage', event => {
+    if (event.key === D.STORAGE_KEY || event.key === null) {
+      if (store.getStatus().dirty) store.save();
+      else store.refresh();
+      render();
+      if (document.visibilityState === 'visible') resumeActive();
+    }
+  });
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    const offlineFailure = () => {
+      $('offline-status').textContent = 'Offline-Start konnte nicht eingerichtet werden. Bitte die App bei Internetverbindung erneut öffnen. Training-Daten bleiben erhalten.';
+      $('offline-status').hidden = false;
+    };
+    navigator.serviceWorker.register('sw.js', {scope: './', updateViaCache: 'none'}).then(registration => {
+      const monitor = worker => {
+        if (!worker) return;
+        worker.addEventListener('statechange', () => { if (worker.state === 'redundant' && !registration.active) offlineFailure(); });
+        if (worker.state === 'redundant' && !registration.active) offlineFailure();
+      };
+      monitor(registration.installing);
+      registration.addEventListener('updatefound', () => monitor(registration.installing));
+    }).catch(offlineFailure);
+  } else {
+    $('offline-status').textContent = 'Offline-Start benötigt einen unterstützten Browser und eine HTTPS-Verbindung.';
+    $('offline-status').hidden = false;
+  }
 })();

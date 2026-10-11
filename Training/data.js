@@ -159,6 +159,17 @@
         return report('Training-Daten konnten nicht gelesen werden oder sind beschädigt bzw. inkompatibel. Vorhandene Daten bleiben unverändert; Speichern ist gesperrt.');
       }
     }
+    function refresh() {
+      if (!loaded || blocked || dirty) return { ok: false, ...status() };
+      try {
+        const raw = backend().getItem(STORAGE_KEY);
+        if (raw === baseline) return { ok: true, ...status() };
+        requireRule(raw !== null, 'Training-Daten wurden entfernt.');
+        const candidate = JSON.parse(raw); validateState(candidate);
+        state = copy(candidate); baseline = raw; isNew = false;
+        return report('');
+      } catch (error) { blocked = true; return report('Training-Daten wurden außerhalb dieser Ansicht verändert oder beschädigt. Vorhandene Daten bleiben geschützt; bitte die App neu öffnen.'); }
+    }
     function save() {
       if (!loaded || blocked) return report('Speichern ist gesperrt, damit vorhandene Training-Daten nicht überschrieben werden.');
       try {
@@ -238,7 +249,7 @@
       isNew = false;
       return update(candidate => { candidate.exercises = copy(exercises); });
     }
-    return Object.freeze({ load, save, update, commit, initializeLibrary, exportJSON, importJSON, getSavedState: () => baseline === null ? emptyState() : JSON.parse(baseline), getState: () => copy(state), getStatus: status });
+    return Object.freeze({ load, refresh, save, update, commit, initializeLibrary, exportJSON, importJSON, getSavedState: () => baseline === null ? emptyState() : JSON.parse(baseline), getState: () => copy(state), getStatus: status });
   }
   return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, validateBackup, parseBackup, createStore });
 });
