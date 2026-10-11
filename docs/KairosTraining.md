@@ -89,7 +89,7 @@ Wenn die Übung später wieder zu einem Trainingsplan hinzugefügt wird, soll ih
 - Trainingspläne benennen
 - Beschreibung eines Trainingsplans hinterlegen
 - Übungen zu Trainingsplänen hinzufügen
-- eigene Übungen erstellen
+- eigene Übungen erstellen, bearbeiten, umbenennen und dauerhaft löschen
 - Übungen aus Trainingsplänen entfernen
 - Reihenfolge der Übungen verändern
 - aktuelles Gewicht einer Übung speichern
@@ -103,6 +103,11 @@ Wenn die Übung später wieder zu einem Trainingsplan hinzugefügt wird, soll ih
 - Trainingsdauer automatisch messen
 - auch unvollständig beendete Trainings speichern
 - Trainingsdaten lokal auf dem Gerät speichern
+- laufende Trainingseinheiten lokal sichern und automatisch fortsetzen
+- Trainingspläne manuell sortieren
+- nach dem ersten erfolgreichen Laden vollständig offline nutzbar sein, einschließlich App-Start
+- vollständigen JSON-Import und -Export bereitstellen
+- Speicherfehler verständlich anzeigen und ungespeicherte Daten bestmöglich erhalten
 
 ## Nicht Bestandteil von V1
 
@@ -139,9 +144,11 @@ Statistiken und Historie werden in einer späteren Version ergänzt.
 
 # 5. Startseite / Training
 
-Beim Öffnen der App soll zunächst eine kompakte Startansicht erscheinen.
+Die kompakte Startansicht erscheint beim ersten Öffnen des Tages und nach mindestens 60 Minuten Inaktivität.
 
-Sie soll insbesondere beim ersten Öffnen des Tages beziehungsweise nach längerer Inaktivität als Einstieg dienen.
+Die 60 Minuten Inaktivität beginnen, sobald KAIROS in den Hintergrund wechselt oder verlassen wird. Wird KAIROS ohne laufendes Training nach weniger als 60 Minuten Abwesenheit erneut geöffnet, wird die zuletzt verwendete Ansicht wiederhergestellt. Ab 60 Minuten erscheint die Startansicht. Beim ersten Öffnen des Tages erscheint ebenfalls die Startansicht; diese Regel hat Vorrang vor der Wiederherstellung der zuletzt verwendeten Ansicht.
+
+Ein laufendes Training hat immer Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt automatisch fortgesetzt (siehe Abschnitt 12).
 
 Die Startansicht zeigt:
 
@@ -175,13 +182,13 @@ Beispiel:
 
 Die Anzahl der Übungen wird automatisch aus den tatsächlich enthaltenen Übungen berechnet.
 
-Die Trainingspläne werden in ihrer gespeicherten Reihenfolge dargestellt.
+Die Trainingspläne werden in ihrer gespeicherten Reihenfolge dargestellt. Der Nutzer kann diese Reihenfolge manuell per Drag & Drop ändern. Sie wird lokal gespeichert und nicht automatisch durch die letzte Verwendung verändert.
 
 V1 benötigt noch keine Kennzeichnung „Empfohlen“, „Als Nächstes“ o. Ä.
 
 Der Nutzer wählt selbst den gewünschten Trainingsplan.
 
-Nach Auswahl eines Trainingsplans beginnt das aktive Training.
+Nach Auswahl eines nicht leeren Trainingsplans beginnt das aktive Training. Leere Trainingspläne können nicht gestartet werden.
 
 ---
 
@@ -215,6 +222,10 @@ Der Nutzer könnte beispielsweise auch folgende Namen verwenden:
 - Pull
 - Ganzkörper
 
+Leere Trainingspläne dürfen erstellt und gespeichert, aber nicht gestartet werden.
+
+Jede Übung darf innerhalb eines Trainingsplans nur einmal vorkommen. Dieselbe Übung kann weiterhin in mehreren Trainingsplänen verwendet werden.
+
 ---
 
 # 7. Trainingsplan bearbeiten
@@ -243,13 +254,19 @@ Der Nutzer kann die Reihenfolge jederzeit ändern.
 
 Die Änderung betrifft den Trainingsplan und nicht die Übung selbst.
 
+Änderungen an Trainingsplänen während einer laufenden Einheit gelten erst für das nächste Training. Die laufende Einheit behält den beim Start geltenden Plan mit seiner Übungsliste und Reihenfolge. Globale Gewichtsänderungen gemäß Abschnitt 10 bleiben davon unberührt.
+
 ---
 
 # 8. Übungen
 
-Es soll eine grundlegende Liste häufiger Übungen vorhanden sein.
+Training V1 enthält eine verbindlich freigegebene Grundbibliothek mit 52 Fitnessübungen gemäß Abschnitt 8.1. Sie deckt Brust, Rücken, Schultern, Arme, Beine, Bauch und Unterarme ab und berücksichtigt Maschinen, Kabelzüge, Kurz- und Langhanteln sowie Körpergewichtsübungen.
 
-Zusätzlich muss der Nutzer jederzeit eigene Übungen erstellen können.
+Zusätzlich muss der Nutzer jederzeit eigene Übungen erstellen, bearbeiten und umbenennen können. Eigene Übungen können dauerhaft gelöscht werden (siehe Abschnitt 20). Vorgefertigte Übungen bleiben Bestandteil der Grundbibliothek.
+
+Doppelte Übungsnamen sind innerhalb der gesamten Übungsbibliothek nicht erlaubt. Beim Vergleich werden Groß-/Kleinschreibung sowie führende, abschließende und überflüssige Leerzeichen zwischen Wörtern ignoriert. Diese Regel gilt auch beim Umbenennen eigener und vorgefertigter Übungen.
+
+Vorgefertigte Übungen dürfen hinsichtlich Name, Gewicht, Wiederholungen und MAX-Modus vollständig bearbeitet werden. Sie können jedoch nicht dauerhaft aus der Grundbibliothek gelöscht werden.
 
 Eine Übung besitzt mindestens:
 
@@ -266,6 +283,83 @@ Der Standardfall ist:
 > 3 Sätze
 
 Der Nutzer dokumentiert nicht jeden einzelnen Satz.
+
+## 8.1 Verbindliche Grundbibliothek
+
+Die folgende Liste ist freigegeben. Die ursprünglichen 50 Übungsnamen wurden unverändert übernommen und ausschließlich um „Beinbeugen liegend an der Maschine“ und „Wrist Roller am Kabelzug“ ergänzt.
+
+### Brust (7 Übungen)
+
+- Bankdrücken mit Langhantel
+- Bankdrücken mit Kurzhanteln
+- Schrägbankdrücken mit Kurzhanteln
+- Brustpresse an der Maschine
+- Butterfly an der Maschine
+- Brustfliegen am Kabelzug
+- Liegestütze
+
+### Rücken (8 Übungen)
+
+- Latzug zur Brust
+- Klimmzüge
+- Rudern sitzend am Kabelzug
+- Rudern an der Maschine
+- Einarmiges Rudern mit Kurzhantel
+- Vorgebeugtes Rudern mit Langhantel
+- Überzüge am Kabelzug mit gestreckten Armen
+- Rückenstrecken an der Maschine
+
+### Schultern (7 Übungen)
+
+- Schulterdrücken mit Kurzhanteln
+- Schulterpresse an der Maschine
+- Seitheben mit Kurzhanteln
+- Einarmiges Seitheben am Kabelzug
+- Reverse Butterfly an der Maschine
+- Face Pulls am Kabelzug
+- Schulterheben mit Kurzhanteln
+
+### Arme (9 Übungen)
+
+- Bizepscurls mit SZ-Stange
+- Bizepscurls mit Kurzhanteln
+- Hammercurls mit Kurzhanteln
+- Konzentrationscurls mit Kurzhantel
+- Bizepscurls am Kabelzug
+- Trizepsdrücken am Kabelzug mit Seil
+- Trizepsstrecken über Kopf am Kabelzug
+- Trizepsstrecken liegend mit SZ-Stange
+- Dips am Barren
+
+### Beine (12 Übungen)
+
+- Kniebeugen mit Langhantel
+- Beinpresse
+- Hackenschmidt-Kniebeugen an der Maschine
+- Beinstrecken an der Maschine
+- Beinbeugen sitzend an der Maschine
+- Rumänisches Kreuzheben mit Langhantel
+- Ausfallschritte mit Kurzhanteln
+- Hüftheben mit Langhantel
+- Hüftabduktion an der Maschine
+- Hüftadduktion an der Maschine
+- Wadenheben stehend an der Maschine
+- Beinbeugen liegend an der Maschine
+
+### Bauch (5 Übungen)
+
+- Crunches am Boden
+- Bauchpresse an der Maschine
+- Crunches am Kabelzug
+- Knieheben hängend
+- Umgekehrte Crunches am Boden
+
+### Unterarme (4 Übungen)
+
+- Handgelenkcurls mit Kurzhanteln
+- Umgekehrte Handgelenkcurls mit Kurzhanteln
+- Reverse Curls mit SZ-Stange
+- Wrist Roller am Kabelzug
 
 ---
 
@@ -286,7 +380,7 @@ Beispiel:
 > Gewicht: 17,5 kg  
 > Wiederholungen: 10
 
-Anschließend wird die Übung dem Trainingsplan hinzugefügt.
+Anschließend wird die Übung dem Trainingsplan hinzugefügt, sofern sie dort noch nicht enthalten ist. Für neue Übungen gelten die Namensregeln aus Abschnitt 8 und die Gewichtseingaberegeln aus Abschnitt 10.
 
 ---
 
@@ -305,7 +399,15 @@ Eine Änderung des Gewichts in einem Training aktualisiert das aktuelle Gewicht 
 
 ---
 
-## 10.1 Gewicht während des Trainings ändern
+## 10.1 Gewichtseingabe
+
+Numerische Trainingsgewichte werden in 0,25-kg-Schritten eingegeben. 0 kg ist erlaubt. Dezimalkomma und Dezimalpunkt werden akzeptiert, beispielsweise `17,5` und `17.5`.
+
+Ein Gewicht darf leer bleiben. Ein leerer Wert ist von 0 kg und vom MAX-Modus zu unterscheiden. Die Eingaberegeln gelten sowohl beim Erstellen und Bearbeiten einer Übung als auch während des Trainings.
+
+---
+
+## 10.2 Gewicht während des Trainings ändern
 
 Im aktiven Training wird das aktuelle Gewicht groß und prominent dargestellt.
 
@@ -319,7 +421,7 @@ Der Nutzer gibt beispielsweise ein:
 
 und bestätigt.
 
-Danach wird das neue Gewicht gespeichert.
+Danach wird das neue Gewicht unmittelbar in der betroffenen Übung der laufenden Einheit angezeigt und gleichzeitig global gespeichert. Das neue Gewicht gilt auch für alle anderen Trainingspläne. Die beim Trainingsstart festgelegten Übungsnamen und die Übungsliste bleiben unverändert. Bei Speicherfehlern gilt Abschnitt 21.3.
 
 V1 benötigt keine Plus-/Minus-Stepper.
 
@@ -364,13 +466,21 @@ Für die Eingabe von MAX soll eine eigene, klar erkennbare UI-Möglichkeit vorha
 
 Es soll nicht erforderlich sein, über das normale numerische iPhone-Tastenfeld einen Textwert wie „MAX“ einzugeben.
 
+Beim Wechsel in den MAX-Modus bleibt das vorherige Gewicht gespeichert. Beim Zurückwechseln wird ein vorhandenes vorheriges numerisches Gewicht wiederhergestellt. War zuvor kein numerisches Gewicht eingetragen, bleibt das Gewicht nach Verlassen des MAX-Modus leer.
+
 ---
 
 # 12. Aktives Training
 
-Nach Auswahl eines Trainingsplans startet das aktive Training.
+Nach Auswahl eines nicht leeren Trainingsplans startet das aktive Training.
 
 Beim Start wird automatisch ein Timer gestartet.
+
+Laufende Trainingseinheiten werden lokal gesichert und nach erneutem Öffnen automatisch fortgesetzt. Der Fortschritt einschließlich abgeschlossener und übersprungener bzw. offener Übungen sowie die Trainingszeit bleiben erhalten. Die Fortsetzung setzt weder den Fortschritt noch die Zeit zurück.
+
+Für Änderungen am Trainingsplan während einer laufenden Einheit gilt Abschnitt 7.
+
+Änderungen und Löschungen von Übungen außerhalb der laufenden Einheit beeinflussen diese nicht. Die laufende Einheit verwendet weiterhin die beim Trainingsstart festgelegten Übungsdaten. Eine Ausnahme sind Gewichtsänderungen unmittelbar während des laufenden Trainings: Sie werden gemäß Abschnitt 10.2 sofort in der betroffenen Übung angezeigt und gleichzeitig global gespeichert. Die beim Start festgelegten Übungsnamen und die Übungsliste bleiben dabei unverändert. Bereits absolvierte Einheiten bleiben ebenfalls unverändert.
 
 Der Nutzer soll die Übungen grundsätzlich in der gespeicherten Reihenfolge durchgehen.
 
@@ -412,7 +522,7 @@ bzw.
 
 tippen.
 
-Danach wird automatisch die nächste Übung angezeigt.
+Danach wird automatisch die nächste Übung angezeigt, sofern eine nächste Übung vorhanden ist. Auch nach Abschluss aller Übungen bleibt das Training aktiv, bis der Nutzer es ausdrücklich beendet (siehe Abschnitt 17).
 
 Die einzelnen Sätze werden nicht separat dokumentiert.
 
@@ -428,11 +538,11 @@ Während eines aktiven Trainings soll ein einfacher Fortschrittsbalken angezeigt
 
 Beispiel:
 
-> Übung 4 von 8
+> 4 von 8 Übungen abgeschlossen
 >
 > ████████░░░░░░░░
 
-Der Fortschritt orientiert sich zunächst an der Anzahl der Übungen.
+Der Fortschrittsbalken zählt ausschließlich abgeschlossene Übungen im Verhältnis zur Gesamtzahl der Übungen der laufenden Einheit. Übersprungene Übungen bleiben offen und erhöhen den Fortschritt erst, wenn sie nachgeholt und abgeschlossen wurden. Die Position der aktuell angezeigten Übung ist nicht mit der Anzahl abgeschlossener Übungen gleichzusetzen.
 
 ---
 
@@ -489,6 +599,8 @@ Eine optionale Notiz kann später ergänzt werden.
 
 # 17. Trainingsabschluss
 
+Das Training muss ausdrücklich durch den Nutzer beendet werden, auch wenn bereits alle Übungen abgeschlossen sind. Ein vorzeitiges Beenden ist jederzeit möglich.
+
 Wenn das Training beendet wird, soll eine kurze Zusammenfassung angezeigt werden.
 
 Beispielsweise:
@@ -507,7 +619,7 @@ Bei einem unvollständigen Training entsprechend:
 
 Das Training wird anschließend automatisch gespeichert.
 
-Es soll nicht notwendig sein, einen zusätzlichen „Speichern“-Button zu drücken.
+Es soll nicht notwendig sein, einen zusätzlichen „Speichern“-Button zu drücken. Bei einem Speicherfehler gelten die Anforderungen aus Abschnitt 21.3; ein fehlgeschlagener Speichervorgang darf nicht als erfolgreich dargestellt werden.
 
 ---
 
@@ -515,7 +627,7 @@ Es soll nicht notwendig sein, einen zusätzlichen „Speichern“-Button zu drü
 
 Der Timer startet automatisch beim Start des Trainings.
 
-Er läuft während der gesamten Trainingseinheit.
+Er läuft während der gesamten Trainingseinheit. Erneutes Öffnen und automatische Fortsetzung dürfen die bereits erfasste Trainingszeit nicht zurücksetzen.
 
 Beim Beenden des Trainings wird die Dauer automatisch gespeichert.
 
@@ -568,9 +680,11 @@ Das gespeicherte Gewicht bleibt ebenfalls erhalten.
 
 ## Übung löschen
 
-Eine vollständige Löschung der Übung wäre eine separate Aktion und darf nicht versehentlich durch „Aus Trainingsplan entfernen“ ausgelöst werden.
+Eigene Übungen können als separate Aktion dauerhaft gelöscht werden. Diese Aktion darf nicht versehentlich durch „Aus Trainingsplan entfernen“ ausgelöst werden.
 
-Dadurch kann eine Übung später wieder zu einem Trainingsplan hinzugefügt werden und besitzt weiterhin ihr zuletzt gespeichertes Gewicht.
+Eine dauerhaft gelöschte eigene Übung wird aus allen Trainingsplänen entfernt. Laufende Trainingseinheiten verwenden weiterhin die beim Start festgelegten Übungsdaten gemäß Abschnitt 12. Bereits absolvierte Trainingseinheiten bleiben unverändert. Vorgefertigte Übungen können nicht dauerhaft aus der Grundbibliothek gelöscht werden.
+
+Nur beim Entfernen aus einem Trainingsplan bleibt die Übung mit ihrem zuletzt gespeicherten Gewicht zum späteren erneuten Hinzufügen erhalten.
 
 ---
 
@@ -580,11 +694,25 @@ V1 benötigt keine Cloud und kein Benutzerkonto.
 
 Die Daten sollen lokal auf dem Gerät gespeichert werden.
 
-Die App soll daher auch ohne Internetverbindung grundsätzlich nutzbar sein.
+## 21.1 Lokale Speicherung und Offline-Nutzung
+
+Training V1 soll nach dem ersten erfolgreichen Laden vollständig offline nutzbar sein, einschließlich App-Start. Der bestehende Weight Tracker bleibt unverändert.
 
 Die Datenstruktur soll trotzdem so aufgebaut werden, dass spätere Erweiterungen möglich sind.
 
-Insbesondere sollen Trainingspläne, Übungen und absolvierte Trainingseinheiten logisch getrennt gespeichert werden.
+Insbesondere sollen Trainingspläne, Übungen und absolvierte Trainingseinheiten logisch getrennt gespeichert werden. Auch laufende Einheiten müssen für die automatische Fortsetzung gemäß Abschnitt 12 lokal gesichert werden.
+
+## 21.2 JSON-Import und -Export
+
+Training V1 erhält einen vollständigen JSON-Import und -Export seiner lokal gespeicherten Trainingsdaten.
+
+Während einer laufenden Trainingseinheit ist der JSON-Import gesperrt. Der JSON-Export bleibt verfügbar.
+
+Beim Import werden vorhandene Daten erst nach Bestätigung durch den Nutzer überschrieben. Die Bestätigung verwendet einen eigenen KAIROS-Dialog gemäß Abschnitt 22. Ungültige Dateien dürfen bestehende Daten nicht verändern.
+
+## 21.3 Speicherfehler
+
+Bei Speicherfehlern wird eine verständliche Fehlermeldung angezeigt. Ungespeicherte Daten sollen bestmöglich erhalten bleiben. Fehlgeschlagene Speichervorgänge dürfen nicht als erfolgreich dargestellt werden. Diese Anforderungen gelten auch für die Sicherung laufender Einheiten, den Trainingsabschluss und den Import.
 
 ---
 
@@ -616,6 +744,8 @@ Die Akzentfarbe darf insbesondere für:
 verwendet werden.
 
 Der restliche visuelle Aufbau soll sich an Kairos Weight orientieren.
+
+Für Bestätigungen werden eigene KAIROS-Dialoge gemäß `DesignSystem.md` verwendet. Standard-Browserdialoge werden nicht verwendet.
 
 ---
 
@@ -752,3 +882,12 @@ Er soll sie öffnen, seinen Trainingsplan auswählen, Übung für Übung durchge
 > Was kommt danach?
 
 Alles Weitere ist Erweiterung.
+
+
+---
+
+# 29. Stand der Anforderungsdefinition
+
+Die Entscheidungen 23 bis 25 klären die unmittelbare Anzeige und globale Speicherung von Gewichtsänderungen während des Trainings, die Wiederherstellung der zuletzt verwendeten Ansicht bei weniger als 60 Minuten Abwesenheit sowie Umfang und Abdeckung der Grundbibliothek. Die Anforderungen sind in den Abschnitten 5, 8, 10.2 und 12 integriert. Die zuvor hier dokumentierten offenen Verhaltensfragen sind damit geklärt.
+
+Die konkrete Grundbibliothek mit 52 Übungen ist freigegeben und in Abschnitt 8.1 verbindlich dokumentiert. Die zuvor ausstehende Freigabe der Übungsauswahl ist damit abgeschlossen.

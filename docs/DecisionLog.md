@@ -1,1 +1,47 @@
+# KAIROS – Decision Log
 
+## 11.10.2026 – Training V1: Produktentscheidungen präzisiert
+
+Die vom Nutzer verbindlich bestätigten 17 Entscheidungen sind in [KairosTraining.md](KairosTraining.md) in die bestehenden Anforderungen eingearbeitet. Sie konkretisieren Fortsetzung laufender Einheiten, unveränderte laufende Pläne, Abschluss und Fortschritt, Übungsverwaltung und Eingaberegeln, Startansicht und Sortierung sowie Dialoge, Offline-Nutzung, JSON-Backup und Speicherfehler.
+
+Grundlage ist die bestehende V1-Produktdefinition. Ziel der Präzisierung ist ein eindeutig prüfbarer Trainingsworkflow unter Erhalt der bestehenden Kernfunktionen und V1-Abgrenzung. Weight bleibt unverändert. Zum Zeitpunkt dieser Präzisierung ungeklärte Wechselwirkungen und Details wurden in Abschnitt 29 festgehalten; hierzu wurde keine zusätzliche Produktentscheidung getroffen.
+
+Die Dokumentationsänderung stellt keine Implementierung oder Freigabe von Anwendungscode dar.
+
+## 11.10.2026 – Training V1: Entscheidungen 18 bis 22
+
+Die vom Nutzer verbindlich bestätigten Entscheidungen 18 bis 22 sind in [KairosTraining.md](KairosTraining.md) integriert:
+
+- Laufende und bereits absolvierte Einheiten bleiben von Übungsänderungen und Löschungen unberührt; laufende Einheiten verwenden ihre beim Start festgelegten Übungsdaten.
+- JSON-Import ist während einer laufenden Einheit gesperrt; Export bleibt verfügbar.
+- Inaktivität beginnt beim Wechsel in den Hintergrund oder Verlassen von KAIROS. Nach mindestens 60 Minuten erscheint die Startseite; laufende Einheiten haben Vorrang.
+- Vorgefertigte Übungen sind hinsichtlich Name, Gewicht, Wiederholungen und MAX vollständig bearbeitbar, aber nicht dauerhaft aus der Grundbibliothek löschbar.
+- Beim Verlassen von MAX wird das vorherige numerische Gewicht wiederhergestellt; ohne vorheriges numerisches Gewicht bleibt der Wert leer.
+
+Die Entscheidungen schließen die zuvor gemeldeten Fragen gezielt, ohne andere Anforderungen aufzuheben. Abschnitt 29 weist weiterhin die Abgrenzung zur Gewichtseingabe innerhalb einer laufenden Einheit, die Ansicht unterhalb der Inaktivitätsschwelle und die konkrete Auswahl der Grundbibliothek aus. Diese Details wurden nicht eigenständig entschieden. Keine Implementierungsfreigabe oder Änderung am Anwendungscode.
+
+## 11.10.2026 – Training V1: Entscheidungen 23 bis 25
+
+Die verbindlichen Entscheidungen sind in [KairosTraining.md](KairosTraining.md) integriert:
+
+- Gewichtsänderungen unmittelbar während des Trainings werden sofort in der betroffenen Übung angezeigt und global für alle Pläne gespeichert. Übungsnamen und Übungsliste der laufenden Einheit bleiben wie beim Start festgelegt. Dies präzisiert Entscheidung 18 für die Gewichtseingabe innerhalb der Einheit.
+- Ohne laufendes Training wird nach weniger als 60 Minuten Abwesenheit die zuletzt verwendete Ansicht wiederhergestellt. Ab 60 Minuten und beim ersten Öffnen des Tages erscheint die Startseite. Laufende Trainings haben immer Vorrang.
+- Die Grundbibliothek umfasst ungefähr 50 Übungen für Brust, Rücken, Schultern, Arme, Beine, Bauch und Unterarme mit Maschinen, Kabelzügen, Kurz- und Langhanteln sowie Körpergewicht. Eigene Übungen bleiben möglich; vorgefertigte Übungen sind bearbeitbar, aber nicht dauerhaft löschbar.
+
+Damit sind die bisher offenen Verhaltensfragen abgegrenzt. Die konkrete Übungsauswahl wird ausschließlich als Vorschlag zur Freigabe vorgelegt und noch nicht als verbindliche Liste dokumentiert. Es wurden keine zusätzlichen Produktfunktionen beschlossen und kein Anwendungscode implementiert.
+
+## 11.10.2026 – Training V1: Grundbibliothek mit 52 Übungen freigegeben
+
+Der Nutzer hat die vorgeschlagene Liste von 50 Übungen unverändert freigegeben und ausschließlich um „Beinbeugen liegend an der Maschine“ (Beine) sowie „Wrist Roller am Kabelzug“ (Unterarme) ergänzt. Damit ist die konkrete Auswahl der Grundbibliothek verbindlich festgelegt.
+
+Alle 52 Übungen sind nach Muskelgruppen in [KairosTraining.md, Abschnitt 8.1](KairosTraining.md#81-verbindliche-grundbibliothek) dokumentiert. Der bisher ungefähre Umfang ist damit auf 52 Übungen konkretisiert; der ausstehende Freigabepunkt in Abschnitt 29 ist abgeschlossen. Die Bearbeitbarkeit und der Schutz vor dauerhafter Löschung vorgefertigter Übungen bleiben unverändert. Diese Freigabe betrifft die Dokumentation der Grundbibliothek, nicht die Implementierung.
+
+## 11.10.2026 – Training: versionierter lokaler Datenbestand
+
+Der beauftragte Datenmodell-Schritt verwendet logisch getrennte Bereiche innerhalb eines versionierten JSON-Dokuments unter `kairos.training.state`. Ein einzelner localStorage-Schreibvorgang verhindert teilweise gespeicherte Übungs-/Planbeziehungen. Weight-Daten bleiben vollständig getrennt.
+
+Stabile IDs, unabhängige Momentaufnahmen und Schutz abgeschlossener Einheiten erhalten Trainingsdaten trotz späterer Stammdatenänderungen. Beschädigte oder inkompatible Daten sperren das Überschreiben; Schreibfehler erhalten ausstehende Änderungen im Arbeitsspeicher. Das technische Schema und seine Grenzen sind in [TrainingData.md](TrainingData.md) dokumentiert. Keine neue Produktfunktion und kein zusätzlicher Dienst.
+
+## 11.10.2026 – Training: Abschluss erst nach erfolgreicher Speicherung
+
+Der beauftragte Trainingsabschluss nutzt einen Commit-Pfad im vorhandenen Store. Im Gegensatz zu gewöhnlichen Änderungen wird sein Endzustand erst nach erfolgreicher Speicherung im Arbeitsspeicher übernommen. Dadurch bleibt die aktive Einheit bei Fehlern erhalten und wird nicht fälschlich als abgeschlossen dargestellt. Zusammenfassung und letztes Training beziehen sich auf den zuletzt tatsächlich gespeicherten Bestand. Schema und Speicherschlüssel bleiben erhalten; es entsteht keine zweite Datenhaltung.
