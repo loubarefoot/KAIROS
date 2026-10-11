@@ -11,7 +11,7 @@
   const views = Array.from(document.querySelectorAll('.view'));
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));
   let trainingView = 'start', editingPlan = null, addingToPlan = null;
-  let summaryId = null, finishing = false, durationInterval = null;
+  let summaryId = null, finishing = false, durationInterval = null, importing = false;
   function showView(name) {
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
@@ -33,6 +33,9 @@
     if (editingPlan) renderPlanExercises();
     renderActive();
     renderSavedSessions();
+    $('export-training').disabled = !store.getStatus().loaded;
+    $('import-training').disabled = importing || !!state.activeSession || store.getStatus().blocked || !store.getStatus().loaded;
+    $('import-unavailable').hidden = !state.activeSession;
     const blocked = store.getStatus().blocked || !store.getStatus().loaded;
     document.querySelectorAll('#new-plan, #new-exercise, [data-edit-plan], [data-delete-plan], [data-edit-exercise], .drag-handle, [data-move]').forEach(button => { if(blocked) button.disabled = true; });
   }
@@ -79,6 +82,49 @@
       if (outcome.ok) { summaryId = session.id; $('training-weight-editor').hidden = true; renderSavedSessions(); showView('summary'); }
     } finally { finishing = false; renderActive(); }
   }
+  function backupMessage(text, error = false) {
+    const status = $('backup-status');
+    status.textContent = text; status.hidden = false;
+    status.classList.toggle('storage-error', error);
+    status.setAttribute('role', error ? 'alert' : 'status');
+  }
+  function exportTraining() {
+    let url;
+    try {
+      const json = store.exportJSON();
+      url = URL.createObjectURL(new Blob([json], {type: 'application/json'}));
+      const link = document.createElement('a');
+      link.href = url; link.download = 'kairos-training-' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.append(link); link.click(); link.remove();
+      backupMessage('JSON-Datei zum Speichern bereitgestellt. Bitte in Downloads bzw. Dateien sichern.' + (store.getStatus().dirty ? ' Das Backup enthält auch noch nicht lokal gespeicherte Änderungen.' : ''));
+    } catch (error) { backupMessage('Export nicht möglich: ' + error.message, true); }
+    finally { if (url) window.setTimeout(() => URL.revokeObjectURL(url), 60000); }
+  }
+  async function importTraining(file) {
+    if (!file || importing) return;
+    if (store.getState().activeSession || store.getStatus().blocked || !store.getStatus().loaded) {
+      backupMessage(store.getState().activeSession ? 'Während eines laufenden Trainings ist der Import gesperrt. Export bleibt möglich.' : 'Import ist gesperrt, damit geschützte Training-Daten erhalten bleiben.', true); return;
+    }
+    importing = true;
+    const expectedState = JSON.stringify(store.getState());
+    render();
+    try {
+      const text = await file.text();
+      D.parseBackup(text);
+      if (store.getState().activeSession) throw new Error('Während eines laufenden Trainings ist der Import gesperrt.');
+      const confirmed = await confirmAction('Alle vorhandenen Training-Daten einschließlich ungespeicherter Änderungen durch diese Datei ersetzen? Diese Aktion kann nicht rückgängig gemacht werden.', 'Backup importieren', 'Daten ersetzen');
+      if (!confirmed) { backupMessage('Import abgebrochen. Vorhandene Daten bleiben unverändert.'); return; }
+      const outcome = store.importJSON(text, {confirmed: true, expectedState});
+      if (!outcome.ok) { backupMessage(outcome.message, true); return; }
+      editingPlan = null; addingToPlan = null; summaryId = null; trainingView = 'start';
+      ['plan-editor', 'exercise-editor', 'training-weight-editor'].forEach(id => { $(id).hidden = true; });
+      render();
+      backupMessage('Training-Daten erfolgreich importiert und lokal gespeichert.');
+      if (store.getState().activeSession) resumeActive();
+    } catch (error) { backupMessage('Import nicht übernommen: ' + error.message, true); }
+    finally { importing = false; $('import-training').value = ''; render(); }
+  }
+  $('import-training').addEventListener('change', event => importTraining(event.target.files[0]));
   function trainingWeightEditor() {
     const exercise = store.getState().activeSession.exercises[store.getState().activeSession.currentIndex];
     $('training-weight-editor').hidden = false;
@@ -132,7 +178,8 @@
   });
   document.addEventListener('click', async event => {
     const button=event.target.closest('button'); if(!button || button.disabled) return;
-    if(button.id==='finish-training') finishTraining();
+    if(button.id==='export-training') exportTraining();
+    else if(button.id==='finish-training') finishTraining();
     else if(button.dataset.startPlan) { result(()=>sessionFlow.start(button.dataset.startPlan)); if(store.getState().activeSession) showView('active'); }
     else if(button.id==='complete-exercise' || button.id==='skip-exercise') { $('training-weight-editor').hidden=true; result(()=>button.id==='complete-exercise'?sessionFlow.complete():sessionFlow.skip()); }
     else if(button.dataset.selectExercise!==undefined) { $('training-weight-editor').hidden=true; result(()=>sessionFlow.select(Number(button.dataset.selectExercise))); }

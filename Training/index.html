@@ -61,7 +61,8 @@
 
     <section class="view" id="view-backup" data-area="settings" aria-labelledby="title-backup" hidden>
       <h1 id="title-backup" tabindex="-1">Datenimport und -export</h1>
-      <div class="card"><h2>Backup</h2><p class="empty">Import und Export stehen hier später zur Verfügung.</p><button class="btn-secondary" disabled>Daten exportieren</button><button class="btn-secondary" disabled>Backup importieren</button></div>
+      <div class="card"><h2>Backup</h2><p class="muted">Alle Training-Daten als JSON-Datei sichern. Ein Import ersetzt den gesamten Training-Datenbestand nach Bestätigung.</p><button class="btn-secondary" id="export-training">Daten exportieren</button><label>Trainingsdatei auswählen<input type="file" id="import-training" accept=".json,application/json"></label><p class="muted" id="import-unavailable" hidden>Während eines laufenden Trainings ist der Import gesperrt. Export bleibt möglich.</p></div>
+      <p class="card" id="backup-status" role="status" aria-live="polite" hidden></p>
       <button class="btn-secondary" data-view="settings">Zurück zu Einstellungen</button>
     </section>
     <section class="view" id="view-summary" data-area="training" aria-labelledby="title-summary" hidden>

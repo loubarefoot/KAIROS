@@ -1,6 +1,6 @@
 # Training – Datenmodell und lokale Speicherung
 
-Technischer Stand des abgegrenzten Datenmodell-Schritts. Die Produktanforderungen in `KairosTraining.md` bleiben maßgeblich. Übungs- und Trainingsplanverwaltung sowie Bibliotheksinitialisierung sind implementiert. Aktiver Trainingsablauf und automatische Wiederaufnahme sind ebenfalls implementiert. Zeitmessung, endgültiger Trainingsabschluss, Zusammenfassung und Anzeige des letzten gespeicherten Trainings sind implementiert. Import/Export und Offline-Caching sind noch nicht implementiert.
+Technischer Stand des abgegrenzten Datenmodell-Schritts. Die Produktanforderungen in `KairosTraining.md` bleiben maßgeblich. Übungs- und Trainingsplanverwaltung sowie Bibliotheksinitialisierung sind implementiert. Aktiver Trainingsablauf und automatische Wiederaufnahme sind ebenfalls implementiert. Zeitmessung, endgültiger Trainingsabschluss, Zusammenfassung und Anzeige des letzten gespeicherten Trainings sind implementiert. JSON-Import/-Export ist implementiert. Offline-Caching ist noch nicht implementiert.
 
 ## Speicherung
 
@@ -40,7 +40,7 @@ Beschädigte Daten, unbekannte Schema-Versionen oder Lesefehler sperren Schreibz
 
 Vor dem Speichern wird der gelesene Speicherinhalt mit dem zuletzt geladenen bzw. gespeicherten Inhalt verglichen. Eine zwischenzeitliche Änderung durch einen anderen Tab sperrt das Überschreiben und erhält den lokalen Zustand. Dies ist ein Konfliktschutz, keine tabübergreifende Transaktion: absolut gleichzeitige Schreibzugriffe können mit localStorage allein nicht vollständig ausgeschlossen werden.
 
-Bei Seitenneuladen oder Schließen können ausschließlich im Arbeitsspeicher befindliche Änderungen verloren gehen. Es gibt bewusst keine automatische Reparatur, Rücksetzung oder Migration. Der spätere bestätigte JSON-Import benötigt einen gesonderten, expliziten Ersetzungspfad; die derzeitige normale Änderungsfunktion schützt abgeschlossene Einheiten.
+Bei Seitenneuladen oder Schließen können ausschließlich im Arbeitsspeicher befindliche Änderungen verloren gehen. Es gibt bewusst keine automatische Reparatur, Rücksetzung oder Migration. Der bestätigte JSON-Import verwendet einen gesonderten, expliziten Ersetzungspfad; die normale Änderungsfunktion schützt weiterhin abgeschlossene Einheiten.
 
 ## Prüfung
 
@@ -91,3 +91,18 @@ Die Abschlussbestätigung verwendet den bestehenden KAIROS-Dialog. Die Oberfläc
 Die Zeitmessung folgt der Geräteuhr. Bei einem Endzeitpunkt vor dem gespeicherten Start wird der Abschluss mit einer verständlichen Meldung abgewiesen, statt eine negative Dauer zu speichern. Eine verstellte Geräteuhr kann die Dauer beeinflussen; es wird kein externer Zeitdienst eingeführt.
 
 `node Training/tests/finish.test.cjs` prüft Formatierung, Zeitstempel/Wiederaufnahme, vorzeitigen und vollständigen Abschluss, Momentaufnahmen, Doppelabschluss, ausstehende Änderungen, Schreibfehler und Speicherkonflikte. Browserprüfungen mit kontrollierter Testuhr prüfen Zeitmessung nach Neuladen, Dialog/Abbruch, Speicherausfall und erneuten Abschluss, Zusammenfassung, letztes Training sowie mobile Darstellung.
+
+
+## JSON-Backup
+
+Die Backup-Ansicht exportiert den vollständigen aktuellen Training-Store mit Schema-Version 1: Übungen, Pläne, beide Reihenfolgen, abgeschlossene und laufende Einheiten samt Momentaufnahmen und Einstellungen. `exportJSON()` liest ausschließlich diesen Store, keine Weight-Schlüssel. Auch bei laufendem Training ist Export möglich. Noch nicht lokal gespeicherte Änderungen sind enthalten und werden in der Meldung ausdrücklich benannt. Der Download verwendet einen JSON-Blob und einen Dateinamen `kairos-training-YYYY-MM-DD.json`. Die Meldung bestätigt die Bereitstellung zum Speichern, nicht einen vom Browser nicht überprüfbaren Speichervorgang auf dem Gerät. Der Objekt-URL wird nach 60 Sekunden freigegeben, damit die native Dateiverarbeitung Zeit erhält.
+
+Die native Dateiauswahl akzeptiert JSON-Dateien. `parseBackup()` prüft JSON (einschließlich optionaler UTF-8-BOM), Schema-Version, sämtliche bestehenden Struktur-/Werte-/Referenzregeln sowie erlaubte Felder auf jeder Objektebene. Unbekannte Felder werden abgewiesen; ein Weight-Datenbestand oder ein fremdes Dateiformat ist kein Training-Backup. Historische Referenzen dürfen weiterhin auf inzwischen gelöschte Stammdaten verweisen. Die Dateiendung bzw. der MIME-Typ allein gilt nicht als Validierung.
+
+Erst nach erfolgreicher Prüfung öffnet sich der bestehende KAIROS-Bestätigungsdialog. Abbruch verändert keine Daten. `importJSON(text, { confirmed, expectedState })` prüft nochmals, blockiert bei einer aktiven Zieleinheit und schützt gegen Änderungen während Dateilesen/Bestätigung sowie externe Speicheränderungen. Ersetzt wird der gesamte Training-Bestand; dabei dürfen durch den ausdrücklich bestätigten Import auch bisherige abgeschlossene Einheiten ersetzt werden. Normale Bearbeitungen behalten ihre bisherigen Schutzregeln.
+
+Der importierte Zustand wird zuerst in einem einzelnen `setItem()` unter dem bestehenden Schlüssel gespeichert. Erst nach Erfolg werden Arbeitsspeicher und Speicher-Baseline ersetzt. Bei Fehlern bleiben gespeicherter Bestand, ausstehende Änderungen und deren Dirty-Status erhalten. Ein erneuter allgemeiner Speicherversuch importiert die Datei nicht; der Nutzer muss den Import erneut bestätigen. Bereits aufgrund beschädigter/inkompatibler Daten oder Speicherkonflikten gesperrte Stores bleiben auch für Import gesperrt; es gibt keine automatische Reparatur.
+
+Nach Erfolg werden veraltete Verwaltungsformulare geschlossen und alle Listen sowie letztes Training neu angezeigt. Eine importierte aktive Einheit wird direkt fortgesetzt. Ohne aktive Einheit bleibt die Backup-Ansicht mit Erfolgsmeldung sichtbar. Import ist während eines laufenden Trainings sowohl im Dateifeld als auch im Store gesperrt. Die allgemeinen Tages-/Inaktivitätsregeln bleiben unverändert ein späterer Schritt.
+
+`node Training/tests/backup.test.cjs` prüft vollständige Roundtrips, Momentaufnahmen, aktive Einheiten, ungültige Dateien, inkompatible Versionen, Werte/Referenzen/Fremdfelder, fehlende Bestätigung, geänderten Zustand, Speicherfehler mit ausstehenden Änderungen, Speicherkonflikte, Neuladen und Weight-Isolation. Chromium-Browserprüfungen prüfen tatsächliche Downloads/Dateiauswahl, KAIROS-Dialog mit Abbruch, Fehler und Wiederholung, Listen nach Import, importierte Trainingsfortsetzung sowie mobile Breiten. Ein physisches iPhone bzw. eine installierte iOS-PWA wurde nicht geprüft.

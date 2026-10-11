@@ -90,3 +90,14 @@ Kein endgültiger Abschluss, keine Zusammenfassung, keine neuen abgeschlossenen 
 - Abschluss-/Zeitmessungstests und Browserprüfungen für Wiederaufnahme, Dialog/Abbruch, Speicherfehler, Doppelaktionen, Zusammenfassung, letztes Training, Persistenz und mobile Darstellung ergänzt; bestehende Ablauf- und Verwaltungsprüfungen durchgeführt.
 
 Keine umfassende Historie/Statistik, JSON-Import/-Export oder Offline-Caching ergänzt. Weight bleibt unverändert.
+
+
+### Training – JSON-Backup
+
+- Vollständigen JSON-Export des aktuellen Training-Stores mit bestehender Schema-Version, Reihenfolgen, Einstellungen und Einheiten-Momentaufnahmen in die Backup-Ansicht integriert; auch während einer aktiven Einheit verfügbar.
+- JSON-Dateiauswahl, vollständige Validierung vor Bestätigung und eigenen KAIROS-Dialog vor Ersetzung ergänzt. Während aktiver Einheiten bleibt Import gesperrt.
+- Expliziten Importpfad im bestehenden Store ergänzt: erst erfolgreich speichern, dann Zustand übernehmen; ungültige Dateien, Speicherausfälle und Änderungen während Bestätigung erhalten vorhandene Daten.
+- Listen/Formulare nach erfolgreichem Import aktualisiert und gegebenenfalls importierte aktive Einheit direkt fortgesetzt. Verständliche Meldungen für Download-Bereitstellung, Importerfolg, Abbruch und Fehler ergänzt.
+- Backup-Datentests und Browserprüfungen für Downloads, Dateiauswahl, Dialoge, Speicherfehler, Wiederaufnahme, Persistenz und mobile Größen durchgeführt; bestehende Training-Tests geprüft.
+
+Kein Offline-Caching, keine automatische Tages-/Inaktivitätsnavigation, keine Cloud-Synchronisierung und keine Änderungen am Weight Tracker. Keine neuen Abhängigkeiten.

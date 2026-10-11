@@ -45,3 +45,10 @@ Stabile IDs, unabhängige Momentaufnahmen und Schutz abgeschlossener Einheiten e
 ## 11.10.2026 – Training: Abschluss erst nach erfolgreicher Speicherung
 
 Der beauftragte Trainingsabschluss nutzt einen Commit-Pfad im vorhandenen Store. Im Gegensatz zu gewöhnlichen Änderungen wird sein Endzustand erst nach erfolgreicher Speicherung im Arbeitsspeicher übernommen. Dadurch bleibt die aktive Einheit bei Fehlern erhalten und wird nicht fälschlich als abgeschlossen dargestellt. Zusammenfassung und letztes Training beziehen sich auf den zuletzt tatsächlich gespeicherten Bestand. Schema und Speicherschlüssel bleiben erhalten; es entsteht keine zweite Datenhaltung.
+
+
+## 11.10.2026 – Training: bestätigter JSON-Import als vollständige Ersetzung
+
+Der beauftragte JSON-Import verwendet einen eigenen Ersetzungspfad im bestehenden Store unter `kairos.training.state`, ohne Schema-Wechsel oder zweite Datenhaltung. Die Datei wird vor der KAIROS-Bestätigung vollständig geprüft; der Store prüft beim Übernehmen erneut. Die bewusste Ersetzung unterscheidet sich von normalen Bearbeitungen, die abgeschlossene Einheiten und vorgefertigte Übungsidentitäten weiterhin schützen.
+
+Ein einzelner erfolgreicher localStorage-Schreibvorgang geht der Übernahme in den Arbeitsspeicher voraus. Bei Fehlern bleiben bestehende Daten und ungespeicherte Änderungen erhalten. Änderungen während Bestätigung und externe Speicherkonflikte verhindern das Überschreiben. Export umfasst ausschließlich den aktuellen Training-Store, einschließlich etwaiger ausstehender Änderungen, und bleibt bei laufenden Einheiten verfügbar. Die bestehenden Produktanforderungen bleiben unverändert; technische Einzelheiten stehen in `TrainingData.md`.

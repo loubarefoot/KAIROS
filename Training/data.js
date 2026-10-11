@@ -95,6 +95,28 @@
     requireRule(object(settings) && VIEWS.includes(settings.lastView) && (settings.lastBackgroundAt === null || time(settings.lastBackgroundAt)) && (settings.lastOpenedDay === null || (typeof settings.lastOpenedDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(settings.lastOpenedDay))), 'Ungültige Training-Einstellungen.');
     return true;
   }
+  function validateBackup(state) {
+    validateState(state);
+    const keys = (value, allowed) => requireRule(Object.keys(value).every(key => allowed.includes(key)), 'Unbekannte Felder in der Training-Datei.');
+    const exerciseKeys = ['id', 'name', 'source', 'weightKg', 'isMax', 'repetitions'];
+    keys(state, ['schemaVersion', 'exercises', 'plans', 'planOrder', 'completedSessions', 'activeSession', 'settings']);
+    state.exercises.forEach(value => keys(value, exerciseKeys));
+    state.plans.forEach(value => keys(value, ['id', 'name', 'description', 'exerciseIds']));
+    for (const session of [...state.completedSessions, ...(state.activeSession ? [state.activeSession] : [])]) {
+      keys(session, ['id', 'planId', 'planName', 'planDescription', 'startedAt', 'endedAt', 'durationMs', ...(session === state.activeSession ? ['currentIndex'] : []), 'exercises']);
+      session.exercises.forEach(value => keys(value, [...exerciseKeys, 'status']));
+    }
+    keys(state.settings, ['lastView', 'lastOpenedDay', 'lastBackgroundAt']);
+    return true;
+  }
+  function parseBackup(text) {
+    requireRule(typeof text === 'string', 'Bitte eine JSON-Trainingsdatei auswählen.');
+    let candidate;
+    try { candidate = JSON.parse(text.replace(/^\uFEFF/, '')); }
+    catch (error) { throw new Error('Die Datei enthält kein gültiges JSON.'); }
+    validateBackup(candidate);
+    return candidate;
+  }
   function validateChange(previous, next) {
     for (const session of previous.completedSessions) {
       requireRule(JSON.stringify(next.completedSessions.find(item => item.id === session.id)) === JSON.stringify(session), 'Abgeschlossene Einheiten dürfen nicht verändert oder entfernt werden.');
@@ -185,12 +207,38 @@
         return report('Der Trainingsabschluss konnte nicht gespeichert werden. Die Einheit bleibt aktiv. Bitte die App nicht schließen und den Abschluss erneut versuchen.');
       }
     }
+    function exportJSON() {
+      requireRule(loaded, 'Training-Daten konnten nicht geladen werden; Export ist nicht verfügbar.');
+      validateBackup(state);
+      return JSON.stringify(state, null, 2);
+    }
+    // Explicit, confirmed full replacement; ordinary mutation protections remain intact.
+    function importJSON(text, { confirmed = false, expectedState } = {}) {
+      if (!loaded || blocked) return report('Import ist gesperrt, damit geschützte Training-Daten erhalten bleiben.');
+      if (state.activeSession) return report('Während eines laufenden Trainings ist der Import gesperrt. Export bleibt möglich.');
+      if (!confirmed) return report('Import wurde nicht bestätigt. Vorhandene Daten bleiben unverändert.');
+      let candidate;
+      try {
+        candidate = parseBackup(text);
+        requireRule(expectedState === undefined || expectedState === JSON.stringify(state), 'Training-Daten haben sich während der Bestätigung geändert. Bitte die Datei erneut auswählen.');
+      } catch (error) { return report('Import nicht übernommen: ' + error.message); }
+      try {
+        if (backend().getItem(STORAGE_KEY) !== baseline) {
+          blocked = true;
+          return report('Training-Daten wurden außerhalb dieser Ansicht geändert. Import wurde zum Schutz der vorhandenen Daten gesperrt.');
+        }
+        const json = JSON.stringify(candidate);
+        backend().setItem(STORAGE_KEY, json);
+        state = copy(candidate); baseline = json; dirty = false; isNew = false;
+        return report('');
+      } catch (error) { return report('Import konnte nicht gespeichert werden. Vorhandene Daten und ungespeicherte Änderungen bleiben erhalten. Bitte den Import erneut versuchen.'); }
+    }
     function initializeLibrary(exercises) {
       if (!loaded || blocked || !isNew || dirty) return { ok: false, ...status() };
       isNew = false;
       return update(candidate => { candidate.exercises = copy(exercises); });
     }
-    return Object.freeze({ load, save, update, commit, initializeLibrary, getSavedState: () => baseline === null ? emptyState() : JSON.parse(baseline), getState: () => copy(state), getStatus: status });
+    return Object.freeze({ load, save, update, commit, initializeLibrary, exportJSON, importJSON, getSavedState: () => baseline === null ? emptyState() : JSON.parse(baseline), getState: () => copy(state), getStatus: status });
   }
-  return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, createStore });
+  return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, validateBackup, parseBackup, createStore });
 });
