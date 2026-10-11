@@ -52,7 +52,7 @@ Die Dokumentation ist die maßgebliche Quelle für den gewünschten Soll-Zustand
 
 Maßgebliche Quellen
 
-* docs/Kairos.md
+* docs/KAIROS.md
     → übergeordnete Projektregeln, Prinzipien und Entscheidungen
 * docs/Development.md
     → Entwicklungs-, Git-, KI- und Workflow-Regeln
@@ -149,7 +149,9 @@ DeepSeek erhält zunächst keinen direkten Zugriff auf das GitHub-Repository. Ei
 
 Eine KI darf keine wesentlichen Änderungen am Projekt eigenständig vornehmen.
 
-Die KI arbeitet ausschließlich innerhalb der konkret erteilten Aufgabe und setzt nur die vereinbarten Änderungen um.
+Die KI arbeitet ausschließlich innerhalb der konkret erteilten Aufgabe und setzt nur die vereinbarten Änderungen um. Ein ausdrücklich freigegebener Entwicklungsauftrag erlaubt die notwendigen Dateiänderungen innerhalb seines Umfangs.
+
+Analyseaufträge bleiben vollständig lesend, sofern nicht ausdrücklich anders beauftragt.
 
 Wenn während der Arbeit zusätzliche Probleme, Fehler, Verbesserungspotenzial oder sinnvoll erscheinende Änderungen auffallen, darf und soll die KI darauf hinweisen und entsprechende Vorschläge machen.
 

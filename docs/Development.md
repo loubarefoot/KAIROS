@@ -4,7 +4,7 @@ KAIROS – Entwicklungsregeln
 
 Diese Datei definiert die technischen und organisatorischen Regeln für die Entwicklung von KAIROS und seinen Modulen.
 
-Sie ergänzt die übergeordneten Projektgrundsätze aus docs/Kairos.md.
+Sie ergänzt die übergeordneten Projektgrundsätze aus docs/KAIROS.md.
 
 Die Regeln sollen eine nachvollziehbare, stabile und kontrollierte Entwicklung ermöglichen.
 
@@ -32,9 +32,7 @@ Entwicklungs-Branches
 
 Neue Funktionen, größere Änderungen und Experimente werden grundsätzlich zunächst in einem separaten Entwicklungs-Branch umgesetzt.
 
-Nach erfolgreicher Prüfung können die Änderungen in main übernommen werden.
-
-Für kleine, eindeutig abgegrenzte Änderungen kann abhängig vom jeweiligen Workflow auch direkt auf main gearbeitet werden, sofern dies bewusst entschieden wird.
+Änderungen werden auf einem Arbeitsbranch durchgeführt. Ein Merge in main erfolgt ausschließlich nach erfolgreichem Review und ausdrücklicher Freigabe durch den Nutzer.
 
 ⸻
 
@@ -52,7 +50,9 @@ Commits sollen einen nachvollziehbaren Entwicklungsverlauf ermöglichen.
 
 5. Aufgaben für KIs
 
-Eine KI arbeitet ausschließlich innerhalb des Umfangs der konkret erteilten Aufgabe.
+Eine KI arbeitet ausschließlich innerhalb des Umfangs der konkret erteilten Aufgabe. Ein ausdrücklich freigegebener Entwicklungsauftrag erlaubt notwendige Dateiänderungen innerhalb dieses Umfangs.
+
+Analyseaufträge bleiben vollständig lesend, sofern nicht ausdrücklich anders beauftragt.
 
 Sie darf:
 
@@ -83,7 +83,7 @@ Dazu können – sofern im jeweiligen Auftrag vorgesehen – insbesondere gehör
 
 Ein Zugriff auf das Repository bedeutet jedoch nicht automatisch eine Erlaubnis zu eigenständigen Produktentscheidungen.
 
-Auch mit direktem GitHub-Zugriff gelten weiterhin die Regeln aus Kairos.md, insbesondere die Regel gegen eigenmächtige Änderungen.
+Auch mit direktem GitHub-Zugriff gelten weiterhin die Regeln aus docs/KAIROS.md, insbesondere die Regel gegen eigenmächtige Änderungen.
 
 ⸻
 
@@ -147,7 +147,7 @@ Wenn während der Entwicklung ein Fehler entdeckt wird, der unmittelbar mit der 
 
 Probleme, die nicht zur aktuellen Aufgabe gehören, sollen dokumentiert und gemeldet werden.
 
-Eine KI soll solche Probleme nicht eigenständig als Anlass nehmen, weitere Teile des Projekts umzubauen.
+Eine KI darf Probleme außerhalb des vereinbarten Auftrags nicht eigenmächtig beheben, auch wenn die Behebung klein und risikoarm erscheint.
 
 ⸻
 
@@ -238,7 +238,7 @@ Die Entwicklung von KAIROS folgt grundsätzlich einem abgestimmten Workflow.
 
 Der Standardablauf ist:
 
-Idee / Problem → Abstimmung zwischen Lou und ChatGPT → konkrete Anforderung → Auftrag an die zuständige KI → Umsetzung → Test → Rückmeldung → Prüfung → Commit / Merge → gegebenenfalls Dokumentationsaktualisierung
+Idee / Problem → Abstimmung zwischen Lou und ChatGPT → konkrete Anforderung → Auftrag an die zuständige KI → Umsetzung auf einem Arbeitsbranch → Test → Commit, sofern Bestandteil des Auftrags → Rückmeldung → erfolgreiches Review → ausdrückliche Nutzerfreigabe → Merge in main → gegebenenfalls Dokumentationsaktualisierung
 
 Die einzelnen Schritte sollen nachvollziehbar bleiben und nicht ohne Grund übersprungen werden.
 
@@ -344,13 +344,13 @@ Verbesserungsvorschläge müssen klar von tatsächlich umgesetzten Änderungen g
 
 26. Commits und Merge
 
-Eine KI darf bei einem ausdrücklich beauftragten Entwicklungsauftrag selbstständig einen Commit erstellen.
+Für einen ausdrücklich freigegebenen Entwicklungsauftrag darf eine KI auf einem Arbeitsbranch Änderungen durchführen, testen und nach erfolgreicher Umsetzung committen, sofern dies Bestandteil des Auftrags ist.
 
 Ein Commit bedeutet jedoch nicht automatisch, dass die Änderung als fertig oder für main freigegeben gilt.
 
-Änderungen sollen nach Möglichkeit zunächst in einem Entwicklungs-Branch erfolgen.
+Änderungen erfolgen auf einem Arbeitsbranch.
 
-Ein Merge nach main erfolgt erst nach Prüfung und Freigabe.
+Ein Merge in main erfolgt ausschließlich nach erfolgreichem Review und ausdrücklicher Freigabe durch den Nutzer.
 
 main soll dadurch grundsätzlich den geprüften und stabilen Hauptstand des Projekts darstellen.
 
@@ -413,7 +413,7 @@ Bei größeren oder komplexeren Aufgaben wird zunächst der geplante Lösungsweg
 
 Die Aufgabe wird innerhalb des vereinbarten Umfangs umgesetzt.
 
-Dabei gelten insbesondere die Regeln aus Development-Skill.md:
+Dabei gelten insbesondere die Regeln aus docs/DevelopmentSkill.md:
 
 * kleinste sinnvolle Änderung
 * bestehendes funktionierendes Verhalten erhalten
@@ -466,7 +466,9 @@ Die technische Fertigstellung durch den Agenten ist nicht automatisch eine Produ
 
 9. Git und Übernahme
 
-Erst nach erfolgreicher Umsetzung, Tests und Review erfolgt – sofern vorgesehen und autorisiert – der entsprechende Commit bzw. Merge nach den Git-Regeln aus Development.md.
+Nach erfolgreicher Umsetzung und Tests darf auf dem Arbeitsbranch ein Commit erfolgen, sofern dies Bestandteil des Auftrags ist. Ein vorheriges Produktreview ist für diesen Commit nicht erforderlich.
+
+Ein Merge in main erfolgt ausschließlich nach erfolgreichem Review und ausdrücklicher Freigabe durch den Nutzer gemäß docs/Development.md.
 
 Ein Commit stellt keine automatische Produktfreigabe dar.
 
@@ -483,8 +485,8 @@ Decision Log und Changelog
 
 KAIROS führt zwei zentrale Dokumentationen für relevante Projektentscheidungen und Änderungen:
 
-* docs/Decision-Log.md dokumentiert relevante Entscheidungen und insbesondere deren Begründung.
-* docs/Changelog.md dokumentiert relevante Änderungen am Projekt und dessen Funktionen.
+* docs/DecisionLog.md dokumentiert relevante Entscheidungen und insbesondere deren Begründung.
+* docs/ChangeLog.md dokumentiert relevante Änderungen am Projekt und dessen Funktionen.
 
 Beide Dokumente dienen der langfristigen Nachvollziehbarkeit und wachsen mit dem Projekt. Sie sollen jedoch nicht jede kleine technische Änderung oder jedes Detail protokollieren.
 
