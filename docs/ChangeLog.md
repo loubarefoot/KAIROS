@@ -146,3 +146,13 @@ Vorbereitung auf `feat/training-v1`; keine zusätzlichen Training-Funktionen, We
 - Shell auf v4 erhöht und CSS-/JavaScript-Prüfsummen aktualisiert. Mobile Scroll-/Fokusprüfungen ergänzt; echter iPhone-/Safe-Area-Test bleibt notwendig.
 
 Keine Änderungen an Training-Verwaltung, Datenformat, Icons oder Weight. Vorbereitung auf `fix/training-iphone-ui-1`, noch kein Commit, Push oder Merge.
+
+
+### Auftrag 28 – Training-Navigation an Weight-Referenz angeglichen
+
+- Weight-Implementierung untersucht: normale Prozenthöhe, scrollender Seiteninhalt, fixierte 80-Pixel-Navigation ohne zusätzliches unteres Safe-Area-Padding, entsprechender Inhaltsabstand; keine eigene Tastatur-/VisualViewport-Steuerung.
+- Training-App-Hülle mit `100dvh` und Flex-Navigationszeile entfernt. Navigation wie bei Weight wieder unabhängig am Layout-Viewport fixiert; insgesamt 80 Pixel einschließlich Bereich unter den oben ausgerichteten Tabs. Kein additives Bottom-Inset, Hintergrund auf html/body und Navigation durchgehend gesetzt. Obere/seitliche Safe Areas und bestehende Fokusindikatoren erhalten.
+- Inhaltsabstand auf dieselbe Navigationshöhe abgestimmt und Ansichtswechsel auf Dokument-Scroll zurückgestellt; keine Trainingslogik geändert. Zoom bleibt erlaubt.
+- Shell v5 und Prüfsummen aktualisiert; Tests auf Dokument-Scroll, konstante Höhe, Safe-Area-Geometrie und simulierte VisualViewport-Verkleinerung angepasst. Reales iOS-Tastatur-/PWA-Verhalten weiterhin am Gerät prüfen.
+
+Vorbereitung auf `fix/training-weight-navigation`; Weight vollständig unverändert; kein Commit, Push oder Merge.

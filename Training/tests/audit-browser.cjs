@@ -29,16 +29,16 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    await page.locator('[data-tab=settings]').click();
    await page.locator('[data-view=exercises]:visible').click();
    const before=await page.locator('.tabbar').boundingBox();
-   assert.ok(Math.abs(before.y+before.height-height)<1);
+   assert.ok(Math.abs(before.y+before.height-height)<1);assert.equal(before.height,80);
    assert.equal(await page.locator('.tab').last().evaluate(e=>getComputedStyle(e).marginTop),'0px');
-   await page.evaluate(()=>document.getElementById('main').scrollTo(0,100000));
-   await page.waitForFunction(()=>document.getElementById('main').scrollTop>0);
+   await page.evaluate(()=>window.scrollTo(0,100000));
+   await page.waitForFunction(()=>window.scrollY>0);
    const after=await page.locator('.tabbar').boundingBox();assert.deepEqual(after,before);
    const last=await page.locator('#view-exercises > button').last().boundingBox();
    assert.ok(last.y+last.height<=after.y);
-   assert.equal(await page.evaluate(()=>scrollY),0);
+   assert.ok(await page.evaluate(()=>scrollY)>0);
    await page.locator('[data-tab=settings]').click();
-   assert.equal(await page.evaluate(()=>document.getElementById('main').scrollTop),0);
+   assert.equal(await page.evaluate(()=>window.scrollY),0);
    await page.reload();assert.equal(await page.evaluate(()=>document.activeElement.tagName==='H1'),false);
    await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));window.dispatchEvent(new Event('pageshow'));});
    assert.equal(await page.evaluate(()=>document.activeElement.tagName==='H1'),false);
@@ -53,23 +53,39 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const cdp=await context.newCDPSession(page);
   try{
    await cdp.send('Emulation.setSafeAreaInsets',{insets:{top:0,left:0,bottom:34,right:0}});
-   assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).paddingBottom),'34px');
+   assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).paddingBottom),'0px');
    const bar=await page.locator('.tabbar').boundingBox();assert.ok(Math.abs(bar.y+bar.height-844)<1);
    await cdp.send('Emulation.setSafeAreaInsets',{insets:{top:0,left:0,bottom:0,right:0}});
    console.log('PASS: emulated 34px safe area.');
   }catch(error){if(!error.message.includes('wasn’t found')&&!error.message.includes("wasn't found"))throw error;console.log('Safe-area emulation unavailable; physical iPhone check required.');}
   const simulatedSafeArea=await page.addStyleTag({content:fs.readFileSync(path.join(root,'styles.css'),'utf8').replaceAll('env(safe-area-inset-bottom, 0px)','34px')});
-  assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).paddingBottom),'34px');
+  assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).paddingBottom),'0px');
   await page.locator('[data-tab=settings]').click();
   assert.equal(await page.locator('#title-settings').evaluate(e=>getComputedStyle(e).outlineStyle),'none');
   await page.locator('[data-view=exercises]:visible').click();
-  await page.evaluate(()=>document.getElementById('main').scrollTo(0,100000));
+  await page.evaluate(()=>window.scrollTo(0,100000));
   const safeBar=await page.locator('.tabbar').boundingBox(),safeLast=await page.locator('#view-exercises > button').last().boundingBox();
   assert.ok(Math.abs(safeBar.y+safeBar.height-844)<1);assert.ok(safeLast.y+safeLast.height<=safeBar.y);
   await simulatedSafeArea.evaluate(e=>e.remove());
+  await page.locator('[data-tab=settings]').click();await page.locator('[data-view=plans]:visible').click();await page.locator('#new-plan').click();
+  const input=page.locator('#plan-form [name=name]');await input.focus();await input.fill('Keyboard viewport test');
+  const keyboardBefore=await page.locator('.tabbar').boundingBox();
+  await page.evaluate(()=>{
+   Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>300});
+   visualViewport.dispatchEvent(new Event('resize'));visualViewport.dispatchEvent(new Event('scroll'));
+  });
+  assert.deepEqual(await page.locator('.tabbar').boundingBox(),keyboardBefore);
+  assert.equal(await input.evaluate(e=>e===document.activeElement),true);
+  assert.equal(await input.evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
+  await page.evaluate(()=>{delete visualViewport.height;visualViewport.dispatchEvent(new Event('resize'));document.activeElement.blur();});
+  assert.deepEqual(await page.locator('.tabbar').boundingBox(),keyboardBefore);
+  assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(29, 33, 38)');
+  assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).backgroundColor),'rgb(20, 23, 27)');
+  await page.locator('#close-plan').click();
+  console.log('PASS: simulated visual viewport contraction/restoration does not lift the fixed navigation; input focus preserved, bottom background painted.');
   await page.locator('[data-tab=training]').click();
-  console.log('PASS: short/long views, isolated content scrolling, bottom anchoring across five viewports, reopen focus and keyboard indicators.');
-  console.log('PASS: simulated 34px bottom inset, final content reachable, pointer heading has no outline.');
+  console.log('PASS: short/long views, Weight-style document scrolling, bottom anchoring across five viewports, reopen focus and keyboard indicators.');
+  console.log('PASS: simulated 34px safe area does not add navigation height, final content reachable, pointer heading has no outline.');
 
   await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(state=>{state.exercises.slice(0,3).forEach((exercise,i)=>{exercise.weightKg=10+i*10;});state.plans=['One','Two','Three'].map(name=>D.createPlan({name,exerciseIds:state.exercises.slice(0,3).map(e=>e.id)}));state.planOrder=state.plans.map(p=>p.id);});});
   await page.reload();await page.locator('[data-start-plan]:visible').first().click();await page.locator('#edit-training-weight').click();

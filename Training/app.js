@@ -21,7 +21,7 @@
     if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== name) store.update(state => { state.settings.lastView = name; });
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
-    $('main').scrollTo(0,0);
+    window.scrollTo(0,0);
     if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
   }
   const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
