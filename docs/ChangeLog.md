@@ -156,3 +156,13 @@ Keine Änderungen an Training-Verwaltung, Datenformat, Icons oder Weight. Vorber
 - Shell v5 und Prüfsummen aktualisiert; Tests auf Dokument-Scroll, konstante Höhe, Safe-Area-Geometrie und simulierte VisualViewport-Verkleinerung angepasst. Reales iOS-Tastatur-/PWA-Verhalten weiterhin am Gerät prüfen.
 
 Vorbereitung auf `fix/training-weight-navigation`; Weight vollständig unverändert; kein Commit, Push oder Merge.
+
+
+### Auftrag 31 – Vorübergehende iPhone-PWA-Diagnose
+
+- Aufklappbare Diagnose in den Einstellungen mit Aktualisieren, Kopieren und manueller Auswahl als Clipboard-Fallback ergänzt. Tastaturprobe wird nicht gespeichert und nicht exportiert.
+- Geladenen Diagnose-Build, CSS-Kennung und SHA-256-Fingerabdruck tatsächlich geladener CSSOM-Regeln, Viewport-/Navigations-/Scroll-/Fokus-/Standalone-Werte angezeigt. Kein erneutes Laden des Stylesheets zur Versionsbestimmung.
+- Kontrollierenden, registrierten aktiven und wartenden Worker separat per MessageChannel abgefragt; ältere/nicht antwortende Worker bleiben ausdrücklich unbekannt. Erwarteter CSS-Dateihash wird getrennt vom geladenen CSSOM-Hash ausgewiesen.
+- Shell v6 mit dreizehn Ressourcen und aktualisierten Prüfsummen; Browserprüfungen für Versionen, Unbekannt-Fälle, Kopieren/Fallback, Offline und unveränderte Daten ergänzt.
+
+Keine Änderungen an Navigation oder Trainingslogik; Weight unverändert. Vorbereitung auf `feat/training-pwa-diagnostics`, kein Commit/Push/Merge.

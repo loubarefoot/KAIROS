@@ -4,9 +4,9 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
 (async()=>{
  const repo=path.resolve(__dirname,'../..'),profile=fs.mkdtempSync(path.join(os.tmpdir(),'kairos-pwa-'));
  const prefix='/KAIROS/Training/',weightPrefix='/KAIROS/Weight/';
- const files=['index.html','styles.css','data.js','library.js','management.js','session.js','navigation.js','app.js','sw.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
+ const files=['index.html','styles.css','data.js','library.js','management.js','session.js','navigation.js','app.js','sw.js','diagnostics.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
  let phase='old',context;
- const old=new Map(files.filter(f=>!f.includes('manifest')&&!f.startsWith('icons/')).map(f=>[f,execFileSync('git',['show','d05f7541839fda3adc26e87c323c15cbb77f543b:Training/'+f],{cwd:repo})]));
+ const old=new Map(files.filter(f=>!f.includes('manifest')&&!f.startsWith('icons/')&&f!=='diagnostics.js').map(f=>[f,execFileSync('git',['show','d05f7541839fda3adc26e87c323c15cbb77f543b:Training/'+f],{cwd:repo})]));
  const server=http.createServer((req,res)=>{
   const pathname=new URL(req.url,'http://localhost').pathname;
   if(pathname==='/KAIROS/Training'){res.writeHead(301,{Location:prefix});res.end();return;}
@@ -53,11 +53,13 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   assert.deepEqual(await current.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).activeSession.exercises.map(e=>e.status)),state.activeSession.exercises.map(e=>e.status));
   const registration=await current.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();return{scope:r.scope,script:r.active.scriptURL};});
   assert.deepEqual(registration,{scope:url,script:url+'sw.js'});
-  const cdp=await context.newCDPSession(current),manifest=await cdp.send('Page.getAppManifest');
+  const cdp=await context.newCDPSession(current);let manifest;
+  for(let attempt=0;attempt<20;attempt++){manifest=await cdp.send('Page.getAppManifest');if(manifest.data)break;await current.waitForTimeout(100);}
+  assert.ok(manifest.data,'Browser manifest must finish loading');
   assert.deepEqual(manifest.errors,[]);const parsed=JSON.parse(manifest.data);assert.equal(parsed.id,'/KAIROS/Training/');assert.equal(new URL(parsed.start_url,manifest.url).href,url);assert.equal(parsed.display,'standalone');
   assert.equal(await current.locator('meta[name=apple-mobile-web-app-capable]').getAttribute('content'),'yes');
-  const cached=await current.evaluate(async()=>{const names=await caches.keys(),name=names.find(k=>k.includes(':v5:'));const cache=await caches.open(name);return{names,urls:(await cache.keys()).map(r=>r.url)};});
-  assert.equal(cached.urls.length,12);assert.ok(cached.urls.every(u=>u.startsWith(url)));assert.ok(!cached.names.some(k=>k.includes(':v2:')));assert.ok(cached.names.includes('weight-regression-cache'));
+  const cached=await current.evaluate(async()=>{const names=await caches.keys(),name=names.find(k=>k.includes(':v6:'));const cache=await caches.open(name);return{names,urls:(await cache.keys()).map(r=>r.url)};});
+  assert.equal(cached.urls.length,13);assert.ok(cached.urls.every(u=>u.startsWith(url)));assert.ok(!cached.names.some(k=>k.includes(':v2:')));assert.ok(cached.names.includes('weight-regression-cache'));
   for(const width of [320,390,844,1280]){await current.setViewportSize({width,height:844});assert.ok(await current.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   // Network-offline requests must be served by the worker, including new binary resources.
   await context.setOffline(true);await current.reload();assert.ok(await current.locator('#view-active').isVisible());
@@ -73,7 +75,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const saved=await current.evaluate(()=>localStorage.getItem('kairos.training.state'));
   assert.deepEqual(errors,[]);await context.close();context=await launch();await context.setOffline(true);
   const restarted=context.pages()[0]||await context.newPage();await restarted.goto(url);await restarted.locator('#view-backup').waitFor({state:'visible'});assert.equal(await restarted.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).completedSessions.length),1);
-  console.log('PASS: /KAIROS/Training/, v2 -> v5 waiting/activation, incomplete icon update preserved, manifest identity, 12 cached resources, 4 mobile widths, offline finish/export/import, full browser-process offline restart, Weight data/cache preserved.');
+  console.log('PASS: /KAIROS/Training/, v2 -> v6 waiting/activation, incomplete icon update preserved, manifest identity, 13 cached resources, 4 mobile widths, offline finish/export/import, full browser-process offline restart, Weight data/cache preserved.');
   await context.setOffline(false);
   const chartPath=process.env.KAIROS_CHART_PATH;
   if(!chartPath)throw new Error('Set KAIROS_CHART_PATH to the unmodified Chart.js 4.4.1 file for Weight regression.');
@@ -98,8 +100,8 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    assert.equal(await first.locator('#offline-status').isHidden(),true);
    await fresh.setOffline(true);await first.goto(url+'index.html?pwa=1');await first.locator('#view-start').waitFor({state:'visible'});
    assert.equal(await first.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).exercises.length),52);
-   assert.equal(await first.evaluate(async()=>{const name=(await caches.keys())[0];return(await(await caches.open(name)).keys()).length;}),12);
-   console.log('PASS: fresh PWA installation, directory redirect, index.html/query offline entry and full 12-resource cache.');
+   assert.equal(await first.evaluate(async()=>{const name=(await caches.keys())[0];return(await(await caches.open(name)).keys()).length;}),13);
+   console.log('PASS: fresh PWA installation, directory redirect, index.html/query offline entry and full 13-resource cache.');
   }finally{await freshBrowser.close();}
 
  }finally{if(context)await context.close();await new Promise(resolve=>server.close(resolve));fs.rmSync(profile,{recursive:true,force:true});}

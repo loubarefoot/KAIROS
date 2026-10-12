@@ -1,12 +1,12 @@
 'use strict';
 // Bump VERSION whenever any shell file changes. Keep the previous worker until
 // the new complete shell is installed and all old controlled pages are closed.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const PREFIX = 'kairos-training-shell:' + self.registration.scope + ':';
-const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'diagnostics.js'];
 const HASHES = {
-  "index.html": "a1ad72967af3aaf4ed9f552eca58befc67b390d20d20daadde0d135bb68bded2",
-  "styles.css": "367f97630346f8fe6f73145a2edbb31384e38bfe8d80c3b602d5a3fba3babf38",
+  "index.html": "49e9423da739d570a38901620d737c38f2a936c46a67fb6146dcdd24356cd30b",
+  "styles.css": "bd95c80a96030f709678ecc2533a8964a3de4ad9996399cffd9d1942928f12c5",
   "data.js": "8a76786514d6428921650ab976e6845d7b49615f5e265c2510c6e29cbef0416c",
   "library.js": "f27ed498f9c4a22bc1e6e2ea223aa8806441acf62776f0a583a45a48fd5dfbc8",
   "management.js": "9f7bb93151aa2330df0a4c87ea6c9186091ed10abf36917e45aab50f2ce2f9b3",
@@ -16,11 +16,20 @@ const HASHES = {
   "manifest.webmanifest": "2c43aaf1be2d8ad29a7f938f12654d52ed60d72c22aee254b683ab443a9fa7bc",
   "icons/icon-192.png": "7b853e1539b7b5b4741f3d84b363a14f698d8263c4c2fb85de5af31d817c8bf1",
   "icons/icon-512.png": "0fabf101438a17bd21f91ef09f5b6aabfcea15b86f2b350bbfe128f25e5856ac",
-  "icons/apple-touch-icon.png": "d1077412ad73e2af11a0f35693be48f4363d20a7aae8748768515be76506ecd9"
+  "icons/apple-touch-icon.png": "d1077412ad73e2af11a0f35693be48f4363d20a7aae8748768515be76506ecd9",
+  "diagnostics.js": "d1c5bd824c97000409c65b9bdb6df674c86e29b405fdc4b316eb8564caf948c5"
 };
 // Deterministic across worker restarts, distinct for every shell content set.
 const cacheName = crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(HASHES))).then(buffer => PREFIX + VERSION + ':' + Array.from(new Uint8Array(buffer), byte => byte.toString(16).padStart(2, '0')).join(''));
 const urls = FILES.map(file => new URL(file, self.registration.scope).href);
+self.addEventListener('message', event => {
+  if (event.data?.type !== 'KAIROS_TRAINING_DIAGNOSTICS' || !event.ports[0]) return;
+  event.waitUntil(cacheName.then(name => event.ports[0].postMessage({
+    type: 'KAIROS_TRAINING_DIAGNOSTICS', version: VERSION,
+    scriptURL: self.location.href, scope: self.registration.scope,
+    cacheName: name, expectedStylesheetSHA256: HASHES['styles.css']
+  })));
+});
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const responses = await Promise.all(urls.map(async url => {
