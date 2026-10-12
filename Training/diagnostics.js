@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   // Unique identifier for this temporary diagnostic build based on published main.
-  const BUILD = 'training-touch-focus-1 (Basis 98a35f6, Shell v9)';
+  const BUILD = 'training-scroll-reset-1 (Basis 37925a0, Shell v10)';
   const panel = document.getElementById('diagnostics-panel');
   if (!panel) return;
   const report = document.getElementById('diagnostics-report');

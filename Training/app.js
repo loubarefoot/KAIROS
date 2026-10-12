@@ -28,7 +28,6 @@
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
     $('scrollArea').scrollTop = 0;
-    window.scrollTo(0,0);
     if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
     window.dispatchEvent(new CustomEvent('kairos-training-viewchange', {detail: {view: name}}));
   }

@@ -19,15 +19,15 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const navBefore=await page.locator('.tabbar').boundingBox();
   await page.locator('#diagnostics-panel summary').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
   const read=async()=>JSON.parse(await page.locator('#diagnostics-report').inputValue());
-  let data=await read();assert.match(data.diagnosticBuildFromLoadedJS,/training-touch-focus-1/);
+  let data=await read();assert.match(data.diagnosticBuildFromLoadedJS,/training-scroll-reset-1/);
   assert.equal(data.stylesheet.versionFromLoadedRules,'training-scroll-structure-1');assert.match(data.stylesheet.loadedCSSOM_SHA256,/^[a-f0-9]{64}$/);
-  assert.equal(data.serviceWorker.controller.version,'v9');assert.equal(data.serviceWorker.registrationActive.version,'v9');assert.equal(data.serviceWorker.waiting.present,false);
+  assert.equal(data.serviceWorker.controller.version,'v10');assert.equal(data.serviceWorker.registrationActive.version,'v10');assert.equal(data.serviceWorker.waiting.present,false);
   assert.equal(data.serviceWorker.controller.expectedStylesheetFileSHA256,require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,'styles.css'))).digest('hex'));
   assert.equal(data.viewport.innerHeight,844);assert.equal(data.navigation.height,80);assert.equal(data.standalone.media,false);
   workerUpdate=true;
   await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();if(r.installing)await new Promise(resolve=>{const w=r.installing;const check=()=>{if(['installed','redundant'].includes(w.state))resolve();};w.addEventListener('statechange',check);check();});});
   await page.locator('#diagnostics-refresh').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  data=await read();assert.equal(data.serviceWorker.waiting.present,true);assert.equal(data.serviceWorker.waiting.version,'v9');assert.equal(data.serviceWorker.waiting.state,'installed');
+  data=await read();assert.equal(data.serviceWorker.waiting.present,true);assert.equal(data.serviceWorker.waiting.version,'v10');assert.equal(data.serviceWorker.waiting.state,'installed');
 
   await page.locator('#diagnostics-keyboard').fill('not exported');
   await page.evaluate(()=>Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>300}));
@@ -45,13 +45,13 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   // A silent old controller must never be reported as the new worker's version.
   await page.evaluate(()=>Object.defineProperty(navigator.serviceWorker,'controller',{configurable:true,value:{scriptURL:location.href+'sw.js',state:'activated',postMessage(){}}}));
   await page.locator('#diagnostics-refresh').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  data=await read();assert.equal(data.serviceWorker.controller.version,'unbekannt');assert.equal(data.serviceWorker.registrationActive.version,'v9');
+  data=await read();assert.equal(data.serviceWorker.controller.version,'unbekannt');assert.equal(data.serviceWorker.registrationActive.version,'v10');
   assert.equal(await page.evaluate(()=>localStorage.getItem('kairos.training.state')),state);
   assert.deepEqual(await page.locator('.tabbar').boundingBox(),navBefore);assert.equal(externalRequests,0);assert.deepEqual(errors,[]);
   await page.evaluate(()=>delete navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();
   await page.locator('[data-tab=settings]').click();
   await page.locator('#diagnostics-panel summary').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  assert.equal((await read()).serviceWorker.controller.version,'v9');
+  assert.equal((await read()).serviceWorker.controller.version,'v10');
 
   await context.setOffline(false);
   // Direct measurements must identify the visible view, not the settings panel.
@@ -120,6 +120,6 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const blocked=await browser.newContext({serviceWorkers:'block'}),noSW=await blocked.newPage();await noSW.goto(url);await noSW.locator('[data-tab=settings]').click();await noSW.locator('#diagnostics-panel summary').click();
   await noSW.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
   assert.equal(JSON.parse(await noSW.locator('#diagnostics-report').inputValue()).serviceWorker.controller.version,'unbekannt');await blocked.close();
-  console.log('PASS: actual controller and waiting worker v9, silent controller unknown, CSSOM marker/hash, viewport/nav/scroll/focus, copy and fallback, offline diagnosis, unsupported worker, no external requests or data changes.');
+  console.log('PASS: actual controller and waiting worker v10, silent controller unknown, CSSOM marker/hash, viewport/nav/scroll/focus, copy and fallback, offline diagnosis, unsupported worker, no external requests or data changes.');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

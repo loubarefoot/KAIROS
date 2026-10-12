@@ -37,8 +37,11 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    const last=await page.locator('#view-exercises > button').last().boundingBox();
    assert.ok(last.y+last.height<=after.y);
    assert.ok(await page.evaluate(()=>scrollY)>0);
+   await page.evaluate(()=>{window.testScrollTo=window.scrollTo;window.testScrollCalls=0;window.scrollTo=(...args)=>{window.testScrollCalls++;return window.testScrollTo(...args);};});
    await page.locator('[data-tab=settings]').click();
-   assert.equal(await page.evaluate(()=>window.scrollY),0);
+   assert.equal(await page.evaluate(()=>window.testScrollCalls),0);
+   assert.equal(await page.locator('#scrollArea').evaluate(e=>e.scrollTop),0);
+   await page.evaluate(()=>{window.scrollTo=window.testScrollTo;delete window.testScrollTo;delete window.testScrollCalls;});
    await page.reload();assert.equal(await page.evaluate(()=>document.activeElement.tagName==='H1'),false);
    await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));window.dispatchEvent(new Event('pageshow'));});
    assert.equal(await page.evaluate(()=>document.activeElement.tagName==='H1'),false);
