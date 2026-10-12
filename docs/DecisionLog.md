@@ -80,3 +80,10 @@ Die bestehende Pages-Quelle `main`, `/(root)` bleibt erhalten. Eine spätere fre
 Der ausdrückliche Auftrag präzisiert die frühere Wiederherstellung unter 60 Minuten: Sie gilt für die Rückkehr in ein bestehendes Dokument. Ein neu geladenes Dokument startet ohne aktive Einheit auf der Startseite; eine aktive Einheit hat weiterhin Vorrang. Der Dokument-lokale Initialisierungszustand genügt zur Unterscheidung, ohne neue gespeicherte Schemafelder einzuführen. BFCache erhält diesen Zustand und verwendet daher die Rückkehrregeln.
 
 Die Navigationsdiagnose muss vor einem Wechsel zu Einstellungen messen. Ein kleiner Diagnoseknopf öffnet einen Bericht nach Erfassung der vorher sichtbaren Ansicht; automatische Messpunkte dokumentieren Ansicht/Scrollen im begrenzten Arbeitsspeicherprotokoll. Der Bericht selbst darf nicht als Messung der dahinterliegenden unveränderten Darstellung interpretiert werden. Navigation und Layout werden nicht korrigiert; die Daten dienen erst der Ursachenklärung.
+
+
+## Auftrag 37 – Gemeinsame Scrollstruktur nach Weight-Referenz
+
+Training übernimmt die Trennung von äußerem Scroll-/Safe-Area-Container und innerem Inhaltscontainer aus Weight für alle Ansichten. Die bisherige Zusammenlegung koppelte Mindesthöhe, Overflow und Inhaltsabstände in einer Box. Es werden keine numerischen Viewport-Kompensationen oder neuen Navigations-/Bottom-Abstände eingeführt. Die strukturelle Angleichung ist gezielt; die ursächliche Beteiligung am iOS-Viewport-Fehler bleibt bis zum Gerätetest offen.
+
+Der temporäre Diagnoseknopf reserviert Platz im Inhaltsfluss. Das begrenzte Scrollprotokoll erhält Messungen vor dem Zurückscrollen zum Knopf. Der native Dialog hält Schließen und Kopieren außerhalb des scrollenden Berichts, damit kleine Viewports die Bedienelemente nicht abschneiden.

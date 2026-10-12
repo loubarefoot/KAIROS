@@ -21,7 +21,9 @@
   <script src="diagnostics.js" defer></script>
 </head>
 <body>
+  <div id="scrollArea">
   <main class="wrap" id="main">
+    <div class="diagnostics-toolbar"><button type="button" id="diagnostics-live" aria-label="Diagnose der sichtbaren Ansicht öffnen">Diagnose</button></div>
     <p class="card storage-error" id="offline-status" role="alert" hidden></p>
     <p class="card storage-error" id="storage-status" role="alert" hidden></p>
     <button class="btn-secondary" id="retry-save" hidden>Speichern erneut versuchen</button>
@@ -90,15 +92,18 @@
     </section>
     <noscript><p class="card">Bitte aktiviere JavaScript, um die Navigation zu verwenden.</p></noscript>
   </main>
-
-  <button type="button" id="diagnostics-live" aria-label="Diagnose der sichtbaren Ansicht öffnen">Diagnose</button>
+  </div>
   <dialog id="diagnostics-live-dialog" aria-labelledby="diagnostics-live-title">
-    <h2 id="diagnostics-live-title">Diagnose der sichtbaren Ansicht</h2>
+    <header class="diagnostics-dialog-header">
+      <h2 id="diagnostics-live-title">Diagnose der sichtbaren Ansicht</h2>
+      <form method="dialog"><button id="diagnostics-live-close" class="btn-secondary" autofocus>Schließen</button></form>
+    </header>
+    <div class="diagnostics-dialog-body">
     <p class="muted">Messung vor dem Öffnen dieses Fensters. Für eine neue Messung schließen und erneut öffnen. Das Protokoll enthält auch Ansichtswechsel und Scrollen.</p>
     <textarea id="diagnostics-live-report" readonly rows="14" aria-label="Ansichtsdiagnosebericht" spellcheck="false"></textarea>
     <p id="diagnostics-live-status" role="status" aria-live="polite"></p>
+    </div>
     <button type="button" id="diagnostics-live-copy" class="btn-secondary">Diagnose kopieren</button>
-    <button type="button" id="diagnostics-live-close" class="btn-secondary">Schließen</button>
   </dialog>
 
   <dialog id="confirm-dialog" aria-labelledby="confirm-title">

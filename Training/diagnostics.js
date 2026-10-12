@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   // Unique identifier for this temporary diagnostic build based on published main.
-  const BUILD = 'training-diagnostics-2 (Basis 8a01d8d, Diagnose-Shell v7)';
+  const BUILD = 'training-scroll-structure-1 (Basis f45976b, Shell v8)';
   const panel = document.getElementById('diagnostics-panel');
   if (!panel) return;
   const report = document.getElementById('diagnostics-report');
@@ -49,7 +49,7 @@
         position: style.position, bottomCSS: style.bottom, paddingBottom: style.paddingBottom, background: style.backgroundColor,
         heightCSS: style.height, minHeightCSS: style.minHeight, transform: style.transform, boxSizing: style.boxSizing} : 'unbekannt',
       scroll: {windowX: scrollX, windowY: scrollY, documentScroller: describe(document.scrollingElement),
-        containers: [document.scrollingElement, document.body, document.getElementById('main')].filter((e,i,a)=>e && a.indexOf(e)===i).map(dimensions),
+        containers: [document.scrollingElement, document.body, document.getElementById('scrollArea'), document.getElementById('main')].filter((e,i,a)=>e && a.indexOf(e)===i).map(dimensions),
         observedScrollingContainers: lastScroll.size ? Object.fromEntries(lastScroll) : 'unbekannt – noch kein Scroll-Ereignis beobachtet'},
       focus: describe(document.activeElement)
     };
@@ -148,7 +148,6 @@
   }
   document.getElementById('diagnostics-copy').addEventListener('click',()=>copyReport(report,status));
   document.getElementById('diagnostics-live-copy').addEventListener('click',()=>copyReport(liveReport,liveStatus));
-  document.getElementById('diagnostics-live-close').addEventListener('click',()=>liveDialog.close());
   let liveSnapshot;
   liveButton.addEventListener('pointerdown',()=>{liveSnapshot=snapshot('Direktdiagnose vor Fokus-/Fensterwechsel');});
   liveButton.addEventListener('click',()=>{

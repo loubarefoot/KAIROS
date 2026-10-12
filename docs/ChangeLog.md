@@ -176,3 +176,13 @@ Keine Änderungen an Navigation oder Trainingslogik; Weight unverändert. Vorber
 - Shell v7, Diagnosekennung training-diagnostics-2 und Prüfsummen aktualisiert. Gezielte Daten-/Browserregression für Direktmessung, Kopieren, Kaltstart, BFCache, Inaktivität und unveränderte laufende Einheiten ergänzt.
 
 Vorbereitung auf `fix/training-view-diagnostics-start`; keine Verwaltungs-/Trainingslogikänderungen, keine Weight-Änderungen, kein Commit/Push/Merge.
+
+
+### Auftrag 37 – Training-Scrollstruktur und Diagnosebedienung
+
+- Kombinierte `.wrap` getrennt: äußerer `#scrollArea` wie in Weight für Mindesthöhe, Overflow, oberen Safe-Area-Abstand und bestehende 80-Pixel-Inhaltsreserve; innerer Main nur für Inhaltsbreite und Abstände. Navigation, Viewport-/Statusleisten-Metadaten und Gesamtreserve (80 + 24 Pixel) unverändert. Ansichtswechsel setzen zusätzlich den äußeren Scrollcontainer zurück.
+- Diagnoseknopf in einer eigenen Zeile im Inhaltsfluss statt als überlagerndes Fixed-Element. Nach Scrollen sind Messpunkte im bestehenden Protokoll verfügbar; zum Knopf zurückscrollen und Bericht öffnen.
+- Native Schließen-Form und Kopieren außerhalb des scrollenden Dialoginhalts; Schließen erhält initialen Fokus. Diagnose erfasst auch den neuen äußeren Container.
+- Shell v8, Buildkennung `training-scroll-structure-1`, alle 13 Ressourcen-Prüfsummen aktualisiert. Regressionen für kurze/lange Ansichten, kleine/querformatige Dialoge, native Schließen-Bedienung, Fokus, Lifecycle und Offline ergänzt beziehungsweise aktualisiert.
+
+Die Strukturabweichung ist belegt; dass sie den nativen schwarzen Bereich beseitigt, muss am echten iPhone bestätigt werden. Keine Änderungen an Trainingsdaten/-logik, Startregeln oder Weight. Vorbereitung auf `fix/training-scroll-structure`, kein Commit/Push/Merge.
