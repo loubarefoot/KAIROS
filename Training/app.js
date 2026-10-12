@@ -13,7 +13,13 @@
   let trainingView = 'start', editingPlan = null, addingToPlan = null;
   let currentView = 'start', away = false, entered = false;
   let summaryId = null, finishing = false, durationInterval = null, importing = false;
-  function showView(name, { focusHeading = true } = {}) {
+  // Touch navigation must not trigger iOS viewport adjustment through heading focus.
+  // Keyboard and assistive activation keep the existing focus guidance.
+  let focusHeadingForInteraction = true;
+  document.addEventListener('pointerdown', event => { focusHeadingForInteraction = event.pointerType !== 'touch'; }, true);
+  document.addEventListener('keydown', () => { focusHeadingForInteraction = true; }, true);
+  document.addEventListener('click', event => { if (event.detail === 0) focusHeadingForInteraction = true; }, true);
+  function showView(name, { focusHeading = focusHeadingForInteraction } = {}) {
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });

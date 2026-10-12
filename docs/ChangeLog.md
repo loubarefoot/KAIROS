@@ -186,3 +186,10 @@ Vorbereitung auf `fix/training-view-diagnostics-start`; keine Verwaltungs-/Train
 - Shell v8, Buildkennung `training-scroll-structure-1`, alle 13 Ressourcen-Prüfsummen aktualisiert. Regressionen für kurze/lange Ansichten, kleine/querformatige Dialoge, native Schließen-Bedienung, Fokus, Lifecycle und Offline ergänzt beziehungsweise aktualisiert.
 
 Die Strukturabweichung ist belegt; dass sie den nativen schwarzen Bereich beseitigt, muss am echten iPhone bestätigt werden. Keine Änderungen an Trainingsdaten/-logik, Startregeln oder Weight. Vorbereitung auf `fix/training-scroll-structure`, kein Commit/Push/Merge.
+
+
+### Auftrag 40 – Isolierter Touch-Fokus-Test
+
+- Automatischen Überschriftenfokus bei Touch-Ansichtswechseln deaktiviert; Tastatur und Aktivierungen ohne Pointer-Klickdetails behalten Fokusführung. Lifecycle-Startregeln, Eingabefokus, Scroll-Rücksetzung, Viewport, Scrollstruktur und Navigation unverändert.
+- Bestehende Diagnose einschließlich Ansicht-/Viewport-Ereignissen erhalten; JS-Build `training-touch-focus-1`, Shell v9 mit aktualisierten Prüfsummen. CSS bleibt bytegleich zu v8.
+- Echte Browser-Touch-Ereignisse und anschließende Enter-/Space-Fokusführung geprüft. Der 47-Pixel-Sprung muss mit v9 am echten iPhone geprüft werden; keine bestätigte Ursachenbehauptung.

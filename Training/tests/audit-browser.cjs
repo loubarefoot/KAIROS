@@ -20,7 +20,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
  let browser;
  try{
   browser=await chromium.launch({executablePath:process.env.KAIROS_CHROMIUM_PATH || '/usr/bin/chromium',headless:true,args:['--no-sandbox']});
-  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),url='http://127.0.0.1:'+server.address().port+'/KAIROS/Training/';
+  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true}),page=await context.newPage(),url='http://127.0.0.1:'+server.address().port+'/KAIROS/Training/';
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(url);await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
   assert.equal(await page.evaluate(()=>document.activeElement.tagName==='H1'),false);
@@ -50,6 +50,15 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.locator('[data-tab=training]').focus();await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(()=>document.activeElement.tagName),'H1');
   assert.equal(await page.evaluate(()=>getComputedStyle(document.activeElement).outlineStyle),'solid');
+  await page.tap('[data-tab=settings]');
+  assert.notEqual(await page.evaluate(()=>document.activeElement.id),'title-settings');
+  await page.tap('[data-tab=training]');
+  assert.notEqual(await page.evaluate(()=>document.activeElement.tagName),'H1');
+  await page.locator('[data-tab=settings]').focus();await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'title-settings');
+  await page.locator('[data-tab=training]').focus();await page.keyboard.press('Space');
+  assert.equal(await page.evaluate(()=>document.activeElement.tagName),'H1');
+  console.log('PASS: actual touch navigation skips heading focus; Enter/Space restore accessible keyboard heading focus.');
   const cdp=await context.newCDPSession(page);
   try{
    await cdp.send('Emulation.setSafeAreaInsets',{insets:{top:0,left:0,bottom:34,right:0}});
