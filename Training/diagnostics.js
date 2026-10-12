@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   // Unique identifier for this temporary diagnostic build based on published main.
-  const BUILD = 'training-scroll-reset-1 (Basis 37925a0, Shell v10)';
+  const BUILD = 'training-weight-shell-1 (Basis 600c0cc, Shell v11)';
   const panel = document.getElementById('diagnostics-panel');
   if (!panel) return;
   const report = document.getElementById('diagnostics-report');

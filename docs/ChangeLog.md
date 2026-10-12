@@ -193,3 +193,11 @@ Die Strukturabweichung ist belegt; dass sie den nativen schwarzen Bereich beseit
 - Automatischen Überschriftenfokus bei Touch-Ansichtswechseln deaktiviert; Tastatur und Aktivierungen ohne Pointer-Klickdetails behalten Fokusführung. Lifecycle-Startregeln, Eingabefokus, Scroll-Rücksetzung, Viewport, Scrollstruktur und Navigation unverändert.
 - Bestehende Diagnose einschließlich Ansicht-/Viewport-Ereignissen erhalten; JS-Build `training-touch-focus-1`, Shell v9 mit aktualisierten Prüfsummen. CSS bleibt bytegleich zu v8.
 - Echte Browser-Touch-Ereignisse und anschließende Enter-/Space-Fokusführung geprüft. Der 47-Pixel-Sprung muss mit v9 am echten iPhone geprüft werden; keine bestätigte Ursachenbehauptung.
+
+
+### Auftrag 42 – Weight-Seitenhülle wortgetreu übernommen
+
+- Viewport-Meta einschließlich maximum-scale/user-scalable und mobile-web-app-capable wie Weight. HTML/Body-, ScrollArea-, Wrap-, Tabbar- und Scrollbar-Regeln direkt aus der Referenz ersetzt; keine nachträglichen Overrides. Entfernt: globales scroll-padding-bottom, zusätzliche Body-Zeilenhöhe und seitliche Safe-Area-Abstände der Hülle. Globale color-scheme-Regel entfernt; dunkle Eingabedarstellung lokal erhalten.
+- Training-Farben, Inhalte, größere Tab-Icons/-Beschriftung, Touch-/Tastaturfokus, Startlogik, native Dialoge und vorhandene Diagnose bleiben erhalten. Navigation weiterhin außerhalb des Scrollbereichs.
+- JavaScript geprüft: keine globale Viewport-Höhensteuerung; ScrollArea-Rücksetzung, gezielter Eingabefokus, Speicherfehler-scrollIntoView und Drag-Autoscroll bleiben funktionsbezogen unverändert. Shell v11, Kennung training-weight-shell-1 und alle 13 Prüfsummen aktualisiert.
+- Referenzparität und Regressionen geprüft; tatsächliche Wirkung auf den iOS-Streifen bleibt am Gerät zu bestätigen.

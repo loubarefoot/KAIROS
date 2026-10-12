@@ -70,10 +70,10 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    await cdp.send('Emulation.setSafeAreaInsets',{insets:{top:0,left:0,bottom:0,right:0}});
    console.log('PASS: emulated 34px safe area.');
   }catch(error){if(!error.message.includes('wasn’t found')&&!error.message.includes("wasn't found"))throw error;console.log('Safe-area emulation unavailable; physical iPhone check required.');}
-  const simulatedSafeArea=await page.addStyleTag({content:fs.readFileSync(path.join(root,'styles.css'),'utf8').replaceAll('env(safe-area-inset-top, 0px)','44px').replaceAll('env(safe-area-inset-left, 0px)','12px').replaceAll('env(safe-area-inset-right, 0px)','12px')});
+  const simulatedSafeArea=await page.addStyleTag({content:fs.readFileSync(path.join(root,'styles.css'),'utf8').replaceAll('env(safe-area-inset-top,0px)','44px').replaceAll('env(safe-area-inset-left, 0px)','12px').replaceAll('env(safe-area-inset-right, 0px)','12px')});
   assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).paddingBottom),'0px');
   assert.equal(await page.locator('#scrollArea').evaluate(e=>getComputedStyle(e).paddingTop),'44px');
-  assert.equal(await page.locator('#main').evaluate(e=>getComputedStyle(e).paddingLeft),'28px');
+  assert.equal(await page.locator('#main').evaluate(e=>getComputedStyle(e).paddingLeft),'16px');
   await page.locator('[data-tab=settings]').click();
   assert.equal(await page.locator('#title-settings').evaluate(e=>getComputedStyle(e).outlineStyle),'none');
   await page.locator('[data-view=exercises]:visible').click();
@@ -99,7 +99,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   console.log('PASS: simulated visual viewport contraction/restoration does not lift the fixed navigation; input focus preserved, bottom background painted.');
   await page.locator('[data-tab=training]').click();
   console.log('PASS: short/long views, Weight-style document scrolling, bottom anchoring across five viewports, reopen focus and keyboard indicators.');
-  console.log('PASS: synthetic 44px top/12px side insets applied to outer/inner containers, fixed 80px navigation, final content reachable; native iOS safe areas remain unverified.');
+  console.log('PASS: synthetic 44px top inset applied to outer container, exact Weight 16px content sides, fixed 80px navigation, final content reachable; native iOS safe areas remain unverified.');
 
   await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(state=>{state.exercises.slice(0,3).forEach((exercise,i)=>{exercise.weightKg=10+i*10;});state.plans=['One','Two','Three'].map(name=>D.createPlan({name,exerciseIds:state.exercises.slice(0,3).map(e=>e.id)}));state.planOrder=state.plans.map(p=>p.id);});});
   await page.reload();await page.locator('[data-start-plan]:visible').first().click();await page.locator('#edit-training-weight').click();
