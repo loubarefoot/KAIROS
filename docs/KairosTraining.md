@@ -144,9 +144,9 @@ Statistiken und Historie werden in einer späteren Version ergänzt.
 
 # 5. Startseite / Training
 
-Die kompakte Startansicht erscheint beim ersten Öffnen des Tages und nach mindestens 60 Minuten Inaktivität.
+Die kompakte Startansicht erscheint bei jedem neuen App-/Dokumentstart ohne laufende Einheit, beim ersten Öffnen eines neuen Kalendertages und nach mindestens 60 Minuten Inaktivität.
 
-Die 60 Minuten Inaktivität beginnen, sobald KAIROS in den Hintergrund wechselt oder verlassen wird. Wird KAIROS ohne laufendes Training nach weniger als 60 Minuten Abwesenheit erneut geöffnet, wird die zuletzt verwendete Ansicht wiederhergestellt. Ab 60 Minuten erscheint die Startansicht. Beim ersten Öffnen des Tages erscheint ebenfalls die Startansicht; diese Regel hat Vorrang vor der Wiederherstellung der zuletzt verwendeten Ansicht.
+Die 60 Minuten Inaktivität beginnen, sobald KAIROS in den Hintergrund wechselt oder verlassen wird. Kehrt KAIROS ohne laufendes Training nach weniger als 60 Minuten Abwesenheit in ein bereits bestehendes Dokument zurück, wird die zuletzt verwendete Ansicht wiederhergestellt. Ein neu geladenes Dokument startet dagegen auf der Startansicht. Eine BFCache-Wiederherstellung eines bestehenden Dokuments gilt als Rückkehr, nicht als neuer Dokumentstart. Ab 60 Minuten erscheint die Startansicht. Beim ersten Öffnen des Tages erscheint ebenfalls die Startansicht; diese Regel hat Vorrang vor der Wiederherstellung der zuletzt verwendeten Ansicht.
 
 Ein laufendes Training hat immer Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt automatisch fortgesetzt (siehe Abschnitt 12).
 

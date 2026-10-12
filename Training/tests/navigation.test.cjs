@@ -30,3 +30,12 @@ test('clean stores refresh external data without overwriting; dirty and invalid 
  raw=JSON.stringify(D.emptyState());assert.equal(a.refresh().ok,false);assert.equal(a.getState().settings.lastView,'exercises');assert.ok(a.getStatus().dirty);
  storage.setItem=write;raw='broken';assert.equal(b.refresh().ok,false);assert.ok(b.getStatus().blocked);assert.equal(raw,'broken');
 });
+
+test('new document starts at start unless a running session exists; returning documents restore',()=>{
+ const s=state();s.settings.lastBackgroundAt=now-1000;
+ assert.equal(N.entryView(s,now,{newDocument:true}),'start');
+ assert.equal(N.entryView(s,now,{newDocument:false}),'settings');
+ s.activeSession={id:'running',startedAt:1234};
+ assert.equal(N.entryView(s,now,{newDocument:true}),'active');
+ assert.equal(s.activeSession.startedAt,1234);
+});

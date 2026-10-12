@@ -73,3 +73,10 @@ Die weiteren freigegebenen Korrekturen binden Gewichtsformulare an ihren ursprü
 Der freigegebene Vorbereitungsauftrag ergänzt die Home-Screen-App unter `/KAIROS/Training/`. Eine feste Manifest-ID für diesen Pfad trennt die App-Identität von Weight; relative Ressourcen-, Start- und Scope-Pfade erhalten die statische Unterpfad-Auslieferung. Echte undurchsichtige PNGs unterstützen iOS ohne SVG-Daten-URL als Home-Screen-Icon. Manifest und Icons werden Teil der vollständig geprüften Offline-Shell.
 
 Die bestehende Pages-Quelle `main`, `/(root)` bleibt erhalten. Eine spätere freigegebene Übernahme nach `main` löst die Veröffentlichung aus. Weight-Code, Training-Speicherschlüssel, Worker-Scope und wartende Updates bleiben unverändert. Noch kein Commit, Push, Merge oder Deployment; der konkrete Zusammenführungs- und Gerätetestplan steht in `TrainingPWA.md`.
+
+
+## Auftrag 34 – Frischer Dokumentstart und Ansichtsmessung
+
+Der ausdrückliche Auftrag präzisiert die frühere Wiederherstellung unter 60 Minuten: Sie gilt für die Rückkehr in ein bestehendes Dokument. Ein neu geladenes Dokument startet ohne aktive Einheit auf der Startseite; eine aktive Einheit hat weiterhin Vorrang. Der Dokument-lokale Initialisierungszustand genügt zur Unterscheidung, ohne neue gespeicherte Schemafelder einzuführen. BFCache erhält diesen Zustand und verwendet daher die Rückkehrregeln.
+
+Die Navigationsdiagnose muss vor einem Wechsel zu Einstellungen messen. Ein kleiner Diagnoseknopf öffnet einen Bericht nach Erfassung der vorher sichtbaren Ansicht; automatische Messpunkte dokumentieren Ansicht/Scrollen im begrenzten Arbeitsspeicherprotokoll. Der Bericht selbst darf nicht als Messung der dahinterliegenden unveränderten Darstellung interpretiert werden. Navigation und Layout werden nicht korrigiert; die Daten dienen erst der Ursachenklärung.

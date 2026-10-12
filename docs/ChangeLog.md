@@ -166,3 +166,13 @@ Vorbereitung auf `fix/training-weight-navigation`; Weight vollständig unveränd
 - Shell v6 mit dreizehn Ressourcen und aktualisierten Prüfsummen; Browserprüfungen für Versionen, Unbekannt-Fälle, Kopieren/Fallback, Offline und unveränderte Daten ergänzt.
 
 Keine Änderungen an Navigation oder Trainingslogik; Weight unverändert. Vorbereitung auf `feat/training-pwa-diagnostics`, kein Commit/Push/Merge.
+
+
+### Auftrag 34 – Direktdiagnose und Startlogik
+
+- Kleinen viewport-festen Diagnoseknopf ergänzt; Bericht erfasst die sichtbare Section und Geometrie vor Öffnen des separaten Diagnosefensters. Die bestehende Diagnoseauswertung und Kopierfunktion werden gemeinsam genutzt.
+- Begrenztes, ausschließlich im Arbeitsspeicher gehaltenes Protokoll (24 Messpunkte) für Ansichtswechsel, Layoutabschluss, Scroll-Ereignisse/Scrollruhe, pageshow und VisualViewport ergänzt. Dokument-/Main-/Section-Höhen sowie zusätzliche Navigations-CSS-Werte aufgenommen. Keine Layoutkorrektur.
+- Neuen Dokumentstart von Rückkehr in ein bestehendes Dokument unterschieden: aktive Einheit zuerst, sonst bei neuem Dokument Startseite. Warme Rückkehr und BFCache behalten Tages-/60-Minuten-Regeln.
+- Shell v7, Diagnosekennung training-diagnostics-2 und Prüfsummen aktualisiert. Gezielte Daten-/Browserregression für Direktmessung, Kopieren, Kaltstart, BFCache, Inaktivität und unveränderte laufende Einheiten ergänzt.
+
+Vorbereitung auf `fix/training-view-diagnostics-start`; keine Verwaltungs-/Trainingslogikänderungen, keine Weight-Änderungen, kein Commit/Push/Merge.

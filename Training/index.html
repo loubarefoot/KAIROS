@@ -91,6 +91,16 @@
     <noscript><p class="card">Bitte aktiviere JavaScript, um die Navigation zu verwenden.</p></noscript>
   </main>
 
+  <button type="button" id="diagnostics-live" aria-label="Diagnose der sichtbaren Ansicht öffnen">Diagnose</button>
+  <dialog id="diagnostics-live-dialog" aria-labelledby="diagnostics-live-title">
+    <h2 id="diagnostics-live-title">Diagnose der sichtbaren Ansicht</h2>
+    <p class="muted">Messung vor dem Öffnen dieses Fensters. Für eine neue Messung schließen und erneut öffnen. Das Protokoll enthält auch Ansichtswechsel und Scrollen.</p>
+    <textarea id="diagnostics-live-report" readonly rows="14" aria-label="Ansichtsdiagnosebericht" spellcheck="false"></textarea>
+    <p id="diagnostics-live-status" role="status" aria-live="polite"></p>
+    <button type="button" id="diagnostics-live-copy" class="btn-secondary">Diagnose kopieren</button>
+    <button type="button" id="diagnostics-live-close" class="btn-secondary">Schließen</button>
+  </dialog>
+
   <dialog id="confirm-dialog" aria-labelledby="confirm-title">
     <h2 id="confirm-title">Löschen bestätigen</h2><p id="confirm-text"></p>
     <form method="dialog"><button class="btn-secondary" value="cancel" autofocus>Abbrechen</button><button class="btn-danger" value="delete">Löschen</button></form>

@@ -1,17 +1,26 @@
 (() => {
   'use strict';
   // Unique identifier for this temporary diagnostic build based on published main.
-  const BUILD = 'training-diagnostics-1 (Basis 55f1be8, Diagnose-Shell v6)';
+  const BUILD = 'training-diagnostics-2 (Basis 8a01d8d, Diagnose-Shell v7)';
   const panel = document.getElementById('diagnostics-panel');
   if (!panel) return;
   const report = document.getElementById('diagnostics-report');
   const status = document.getElementById('diagnostics-status');
   const refresh = document.getElementById('diagnostics-refresh');
   const lastScroll = new Map();
+  const history = [];
+  const liveButton = document.getElementById('diagnostics-live');
+  const liveDialog = document.getElementById('diagnostics-live-dialog');
+  const liveReport = document.getElementById('diagnostics-live-report');
+  const liveStatus = document.getElementById('diagnostics-live-status');
+  let scrollTimer;
   const describe = element => !element ? 'unbekannt' : element.id ? '#' + element.id : element.tagName.toLowerCase();
   document.addEventListener('scroll', event => {
     const element = event.target === document ? document.scrollingElement : event.target;
-    if (element instanceof Element) lastScroll.set(describe(element), {scrollTop: element.scrollTop, scrollLeft: element.scrollLeft, time: new Date().toISOString()});
+    if (liveDialog.open) return;
+    if (element instanceof Element) lastScroll.set(describe(element), {scrollTop: element.scrollTop, scrollLeft: element.scrollLeft, time: new Date().toISOString(), section: document.querySelector('.view:not([hidden])')?.id || 'unbekannt'});
+    record('Scroll-Ereignis');
+    clearTimeout(scrollTimer); scrollTimer = setTimeout(()=>record('Nach Scrollen (120 ms Ruhe)'),120);
   }, true);
   function dimensions(element) {
     if (!element) return 'unbekannt';
@@ -23,21 +32,42 @@
   function snapshot(trigger) {
     const viewport = window.visualViewport, nav = document.querySelector('.tabbar'), rect = nav?.getBoundingClientRect();
     const style = nav && getComputedStyle(nav);
+    const visible = document.querySelector('.view:not([hidden])');
+    const main = document.getElementById('main');
     return {
       measuredAt: new Date().toISOString(), measurement: trigger,
       diagnosticBuildFromLoadedJS: BUILD,
+      visibleSection: {id: visible?.id || 'unbekannt', title: visible?.querySelector('h1')?.textContent || 'unbekannt'},
+      documentHeight: document.scrollingElement?.scrollHeight ?? 'unbekannt',
+      mainHeight: main?.getBoundingClientRect().height ?? 'unbekannt',
+      sectionHeight: visible?.getBoundingClientRect().height ?? 'unbekannt',
       url: location.origin + location.pathname,
       standalone: {apple: typeof navigator.standalone === 'boolean' ? navigator.standalone : 'unbekannt', media: matchMedia('(display-mode: standalone)').matches},
       viewport: {innerHeight, clientHeight: document.documentElement.clientHeight,
         visualHeight: viewport?.height ?? 'unbekannt', offsetTop: viewport?.offsetTop ?? 'unbekannt', scale: viewport?.scale ?? 'unbekannt'},
       navigation: rect ? {top: rect.top, bottom: rect.bottom, height: rect.height, left: rect.left, right: rect.right,
-        position: style.position, bottomCSS: style.bottom, paddingBottom: style.paddingBottom, background: style.backgroundColor} : 'unbekannt',
+        position: style.position, bottomCSS: style.bottom, paddingBottom: style.paddingBottom, background: style.backgroundColor,
+        heightCSS: style.height, minHeightCSS: style.minHeight, transform: style.transform, boxSizing: style.boxSizing} : 'unbekannt',
       scroll: {windowX: scrollX, windowY: scrollY, documentScroller: describe(document.scrollingElement),
         containers: [document.scrollingElement, document.body, document.getElementById('main')].filter((e,i,a)=>e && a.indexOf(e)===i).map(dimensions),
         observedScrollingContainers: lastScroll.size ? Object.fromEntries(lastScroll) : 'unbekannt – noch kein Scroll-Ereignis beobachtet'},
       focus: describe(document.activeElement)
     };
   }
+  function record(trigger) {
+    if (liveDialog.open) return;
+    history.push(snapshot(trigger));
+    if (history.length > 24) history.shift();
+  }
+  window.addEventListener('kairos-training-viewchange',()=>{
+    record('Nach Ansichtswechsel (sofort)');
+    requestAnimationFrame(()=>record('Nach Ansichtswechsel (Layout)'));
+  });
+  window.addEventListener('pageshow',()=>requestAnimationFrame(()=>record('pageshow (Layout)')));
+  window.visualViewport?.addEventListener('resize',()=>record('VisualViewport resize'));
+  window.visualViewport?.addEventListener('scroll',()=>record('VisualViewport scroll'));
+  record('Diagnose geladen – sichtbare Startansicht');
+  requestAnimationFrame(()=>record('Startansicht (Layout)'));
   function askWorker(worker) {
     if (!worker) return Promise.resolve({present: false, version: 'unbekannt'});
     return new Promise(resolve => {
@@ -80,8 +110,10 @@
   let sequence = 0;
   async function update(values) {
     const id = ++sequence;
+    values.recentMeasurements = history.slice();
     status.textContent = 'Worker und geladenes Stylesheet werden geprüft …';
     report.value = JSON.stringify(values,null,2);
+    liveReport.value = report.value;
     const controller = navigator.serviceWorker?.controller;
     let registration;
     try { registration = await navigator.serviceWorker?.getRegistration(location.href); } catch { /* unknown below */ }
@@ -96,20 +128,32 @@
       registrationAvailable:!!registration,
       note:'controller steuert diese Seite. Erwarteter Datei-Hash vom Worker und geladener CSSOM-Hash sind unterschiedliche Messgrößen.'};
     report.value = JSON.stringify(values,null,2);
+    liveReport.value = report.value;
     status.textContent = 'Aktualisiert. Die Geometrie stammt vom Messzeitpunkt oben. Keine Trainingsdaten enthalten.';
+    liveStatus.textContent = status.textContent;
   }
   let pointerSnapshot;
   refresh.addEventListener('pointerdown',()=>{pointerSnapshot=snapshot('Antippen vor Fokus-/Tastaturwechsel');});
   refresh.addEventListener('click',()=>{const values=pointerSnapshot || snapshot('Aktualisieren');pointerSnapshot=null;update(values);});
   panel.addEventListener('toggle',()=>{if(panel.open) update(snapshot('Diagnose geöffnet'));});
-  document.getElementById('diagnostics-copy').addEventListener('click',async()=>{
+  async function copyReport(field, message) {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
-      await navigator.clipboard.writeText(report.value);
-      status.textContent='Diagnose kopiert. Du kannst sie jetzt in den Chat einfügen.';
+      await navigator.clipboard.writeText(field.value);
+      message.textContent='Diagnose kopiert. Du kannst sie jetzt in den Chat einfügen.';
     } catch {
-      report.focus(); report.select(); report.setSelectionRange(0,report.value.length);
-      status.textContent='Bitte den markierten Bericht über das iPhone-Auswahlmenü kopieren.';
+      field.focus(); field.select(); field.setSelectionRange(0,field.value.length);
+      message.textContent='Bitte den markierten Bericht über das iPhone-Auswahlmenü kopieren.';
     }
+  }
+  document.getElementById('diagnostics-copy').addEventListener('click',()=>copyReport(report,status));
+  document.getElementById('diagnostics-live-copy').addEventListener('click',()=>copyReport(liveReport,liveStatus));
+  document.getElementById('diagnostics-live-close').addEventListener('click',()=>liveDialog.close());
+  let liveSnapshot;
+  liveButton.addEventListener('pointerdown',()=>{liveSnapshot=snapshot('Direktdiagnose vor Fokus-/Fensterwechsel');});
+  liveButton.addEventListener('click',()=>{
+    const values=liveSnapshot || snapshot('Direktdiagnose vor Fensterwechsel');liveSnapshot=null;
+    liveStatus.textContent='Worker und geladenes Stylesheet werden geprüft …';
+    update(values);liveDialog.showModal();
   });
 })();

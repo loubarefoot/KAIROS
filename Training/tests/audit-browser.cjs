@@ -106,7 +106,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const before=await page.evaluate(()=>caches.keys());failedUpdate=true;
   await page.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();await reg.update();if(reg.installing)await new Promise(resolve=>{const worker=reg.installing;worker.addEventListener('statechange',()=>{if(['redundant','installed'].includes(worker.state))resolve();});});});
   assert.deepEqual(await page.evaluate(()=>caches.keys()),before);assert.equal(await page.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting),false);
-  await context.setOffline(true);await page.reload();assert.ok(await page.locator('#view-backup').isVisible());assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).completedSessions.length),1);
+  await context.setOffline(true);await page.reload();assert.ok(await page.locator('#view-start').isVisible());assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).completedSessions.length),1);
   for(const width of [320,390,844,1280]){await page.setViewportSize({width,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   assert.deepEqual(errors,[]);console.log('PASS: stale multi-tab form rejected, regular global weight saved, plan/exercise keyboard focus repeated, active overview, invalid backup preserved, reused VERSION failed update keeps offline shell, mobile widths.');
  }finally{if(browser)await browser.close();server.close();}

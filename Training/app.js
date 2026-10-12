@@ -23,6 +23,7 @@
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
     window.scrollTo(0,0);
     if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
+    window.dispatchEvent(new CustomEvent('kairos-training-viewchange', {detail: {view: name}}));
   }
   const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   function rowControls(index, length) {
@@ -243,7 +244,7 @@
     if (document.visibilityState === 'hidden' || (entered && !away)) return;
     store.refresh();
     const state = store.getState(), now = Date.now();
-    const view = KairosTrainingNavigation.entryView(state, now);
+    const view = KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
     if (view === 'summary') {
       const last = state.completedSessions.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
       summaryId = last?.id || null;
