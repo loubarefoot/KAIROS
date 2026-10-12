@@ -6,10 +6,10 @@ Dieser Skill definiert die praktische Arbeitsweise eines KI-Agenten bei der Entw
 
 Er ergänzt die bestehenden KAIROS-Dokumentationen:
 
-* docs/Kairos.md – übergeordnete Vision, Prinzipien und Entscheidungen
+* docs/KAIROS.md – übergeordnete Vision, Prinzipien und Entscheidungen
 * docs/Development.md – Entwicklungs-, Git- und Workflow-Regeln
 * Modul-Dokumentationen – konkrete Anforderungen und Verhalten
-* docs/Design-System.md – gemeinsame UI-/UX-Grundlagen
+* docs/DesignSystem.md – gemeinsame UI-/UX-Grundlagen
 
 Der Skill beschreibt insbesondere, wie ein KI-Agent Aufgaben bearbeitet.
 
@@ -119,7 +119,7 @@ Technische Verbesserung
 
 Wenn während der Umsetzung eine technisch bessere Lösung gefunden wird:
 
-* reine technische Verbesserungen ohne Änderung des gewünschten Ergebnisses dürfen selbstständig umgesetzt werden,
+* reine technische Verbesserungen ohne Änderung des gewünschten Ergebnisses dürfen nur innerhalb des vereinbarten Entwicklungsauftrags selbstständig umgesetzt werden,
 * Änderungen an Verhalten, UI/UX, Architektur oder Scope dürfen nicht eigenständig umgesetzt werden.
 
 Verbesserungen dürfen jederzeit vorgeschlagen werden.
@@ -130,7 +130,9 @@ Ein Vorschlag ist jedoch keine automatische Umsetzungserlaubnis.
 
 5. Scope und Eigenständigkeit
 
-Der KI-Agent arbeitet grundsätzlich innerhalb des konkret erteilten Auftrags.
+Der KI-Agent arbeitet grundsätzlich innerhalb des konkret erteilten Auftrags. Ein ausdrücklich freigegebener Entwicklungsauftrag erlaubt notwendige Dateiänderungen innerhalb seines Umfangs.
+
+Analyseaufträge bleiben vollständig lesend, sofern nicht ausdrücklich anders beauftragt.
 
 Kleine notwendige Änderungen
 
@@ -164,15 +166,9 @@ Entdeckte Probleme dürfen niemals stillschweigend ignoriert werden.
 
 Wenn während einer Aufgabe ein zusätzlicher Bug, eine Lücke oder ein anderes relevantes Problem entdeckt wird, muss der KI-Agent dies transparent mitteilen.
 
-Kleine Probleme
+Probleme außerhalb des Auftrags
 
-Kleine, klar abgegrenzte und risikoarme Probleme dürfen gegebenenfalls direkt behoben werden, wenn:
-
-* die Behebung überschaubar ist,
-* keine relevanten anderen Funktionen betroffen sind,
-* der Scope dadurch nicht wesentlich erweitert wird.
-
-Die zusätzliche Änderung muss anschließend erwähnt werden.
+Probleme außerhalb des vereinbarten Auftrags dürfen erkannt und gemeldet, aber nicht eigenmächtig behoben werden. Dies gilt auch für kleine, klar abgegrenzte und risikoarme Probleme. Eine Behebung erfordert einen ausdrücklich freigegebenen zusätzlichen Auftrag.
 
 Größere Probleme
 
@@ -424,12 +420,9 @@ Vorschläge müssen klar von tatsächlich umgesetzten Änderungen getrennt werde
 
 19. Git und Commits
 
-Git-Aktionen und Commits dürfen durchgeführt werden, wenn sie:
+Für ausdrücklich freigegebene Entwicklungsaufträge darf der KI-Agent auf einem Arbeitsbranch Änderungen durchführen, testen und nach erfolgreicher Umsetzung committen, sofern dies Bestandteil des Auftrags ist.
 
-* ausdrücklich beauftragt,
-* oder Bestandteil des konkreten Auftrags
-
-sind.
+Ein Merge in main erfolgt ausschließlich nach erfolgreichem Review und ausdrücklicher Freigabe durch den Nutzer.
 
 Ein Commit bedeutet nicht automatisch eine Produktfreigabe.
 
@@ -445,7 +438,7 @@ Auch wenn ein Commit ursprünglich Bestandteil des Auftrags ist, muss zuerst:
 
 werden.
 
-Erst danach darf der beauftragte Commit erfolgen.
+Erst danach darf der beauftragte Commit auf dem Arbeitsbranch erfolgen. Ein vorheriges Produktreview ist für diesen Commit nicht erforderlich.
 
 ⸻
 
