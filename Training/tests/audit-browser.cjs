@@ -5,8 +5,8 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
  let failedUpdate=false;
  const root=path.resolve(__dirname,'..');
  const server=http.createServer((req,res)=>{
-  const name=req.url.split('?')[0].split('/').pop()||'index.html';
-  if(!['index.html','styles.css','data.js','library.js','management.js','session.js','navigation.js','app.js','sw.js'].includes(name)){res.writeHead(404);res.end();return;}
+  const name=req.url.split('?')[0].split('/KAIROS/Training/')[1]||'index.html';
+  if(!['index.html','styles.css','data.js','library.js','management.js','session.js','navigation.js','app.js','sw.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'].includes(name)){res.writeHead(404);res.end();return;}
   let body=fs.readFileSync(path.join(root,name));
   if(failedUpdate && name==='app.js')body=Buffer.concat([body,Buffer.from('\n// Changed audit build\n')]);
   if(failedUpdate && name==='sw.js'){
@@ -14,13 +14,13 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    const changed=Buffer.concat([old,Buffer.from('\n// Changed audit build\n')]);
    body=body.toString().replace(crypto.createHash('sha256').update(old).digest('hex'),crypto.createHash('sha256').update(changed).digest('hex')).replace('cache.put(url, responses[i])',"(url.endsWith('app.js') ? Promise.reject(new Error('quota')) : cache.put(url, responses[i]))");
   }
-  res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');res.setHeader('Cache-Control','no-store');res.end(body);
+  res.setHeader('Content-Type',name.endsWith('.png')?'image/png':name.endsWith('.webmanifest')?'application/manifest+json':name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');res.setHeader('Cache-Control','no-store');res.end(body);
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  let browser;
  try{
   browser=await chromium.launch({executablePath:process.env.KAIROS_CHROMIUM_PATH || '/usr/bin/chromium',headless:true,args:['--no-sandbox']});
-  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),url='http://127.0.0.1:'+server.address().port+'/Training/';
+  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),url='http://127.0.0.1:'+server.address().port+'/KAIROS/Training/';
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(url);await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
   await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(state=>{state.exercises.slice(0,3).forEach((exercise,i)=>{exercise.weightKg=10+i*10;});state.plans=['One','Two','Three'].map(name=>D.createPlan({name,exerciseIds:state.exercises.slice(0,3).map(e=>e.id)}));state.planOrder=state.plans.map(p=>p.id);});});

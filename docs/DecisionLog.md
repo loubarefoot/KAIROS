@@ -66,3 +66,10 @@ Die Startseitenlogik nutzt unverändert die vorhandenen drei Einstellungen und d
 Die freigegebene Cache-Korrektur ergänzt den vorhandenen versionierten Scope-Cache um einen deterministischen Inhaltsfingerabdruck aus den Shell-Prüfsummen. Unterschiedliche Shells erhalten damit auch bei versehentlich gleicher Versionsnummer getrennte Caches; ein fehlgeschlagener Schreibvorgang darf nur den neu angelegten Inhaltscache entfernen. Identische vorhandene Inhalte werden vollständig geprüft und schreibfrei wiederverwendet. Der Fingerabdruck bleibt nach Worker-Neustarts stabil. Wartende Aktivierung, Training-Scope und lokale Trainingsdaten bleiben unverändert.
 
 Die weiteren freigegebenen Korrekturen binden Gewichtsformulare an ihren ursprünglichen Kontext, vervollständigen Zeitvalidierung und erhalten Fokus bzw. zutreffende Übersichtszustände. Sie ändern keine Produktanforderungen oder gespeicherten Datenformate.
+
+
+## 11.10.2026 – Training: eigenständige PWA im bestehenden Pages-Unterpfad
+
+Der freigegebene Vorbereitungsauftrag ergänzt die Home-Screen-App unter `/KAIROS/Training/`. Eine feste Manifest-ID für diesen Pfad trennt die App-Identität von Weight; relative Ressourcen-, Start- und Scope-Pfade erhalten die statische Unterpfad-Auslieferung. Echte undurchsichtige PNGs unterstützen iOS ohne SVG-Daten-URL als Home-Screen-Icon. Manifest und Icons werden Teil der vollständig geprüften Offline-Shell.
+
+Die bestehende Pages-Quelle `main`, `/(root)` bleibt erhalten. Eine spätere freigegebene Übernahme nach `main` löst die Veröffentlichung aus. Weight-Code, Training-Speicherschlüssel, Worker-Scope und wartende Updates bleiben unverändert. Noch kein Commit, Push, Merge oder Deployment; der konkrete Zusammenführungs- und Gerätetestplan steht in `TrainingPWA.md`.

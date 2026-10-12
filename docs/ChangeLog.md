@@ -123,3 +123,14 @@ Keine Hosting-Änderungen, Cloud-Synchronisierung, zusätzlichen Produktfunktion
 - Gezielte Daten-/Cache- und Browser-Regressionsprüfungen für alle fünf freigegebenen Befunde ergänzt.
 
 Keine weiteren Audit-Themen, Produktfunktionen, Hosting-Einstellungen oder Weight-Dateien geändert.
+
+
+### Training – iPhone-PWA für GitHub Pages vorbereitet
+
+- Eigenes Manifest mit Training-App-ID, relativem Start/Scope und Standalone-Anzeige ergänzt.
+- Drei undurchsichtige PNG-Icons in 192/512/180 Pixeln mit grüner Hantel auf Anthrazit sowie Manifest-/Icon-Verweise und iOS-Metadaten ergänzt.
+- Offline-Shell auf `v3` und zwölf vollständig MIME-/SHA-256-geprüfte Ressourcen erweitert. Scope und wartende Aktivierung erhalten.
+- PWA-/Offline-Prüfungen und reproduzierbaren Browserlauf unter `/KAIROS/Training/` einschließlich Update, Browser-Neustart und Weight-Regression ergänzt.
+- Hosting-Dokumentation und Plan für spätere Dokumentationszusammenführung und Veröffentlichung ergänzt.
+
+Vorbereitung auf `feat/training-v1`; keine zusätzlichen Training-Funktionen, Weight-Änderungen, Commits, Pushes, Merges oder Pages-Einstellungsänderungen. Physischer iPhone-Test und Veröffentlichung stehen aus.
