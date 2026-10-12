@@ -157,3 +157,10 @@ Die Shell-Version ist für diese Dateiänderungen auf `v2` erhöht; Prüfsummen 
 ## PWA-Vorbereitung
 
 Shell-Version `v3` ergänzt Manifest und drei Icons zum bestehenden achtteiligen App-Cache. PNG- und Manifest-MIME-Typen werden vor Installation geprüft; Manifest akzeptiert `application/manifest+json` oder `application/json`. SHA-256-Prüfungen umfassen alle zwölf Ressourcen. Worker-Scope, wartende Aktivierung, Speicherformat und Training-Funktionen bleiben erhalten. Änderungen an diesen PWA-Ressourcen benötigen wie andere Shell-Änderungen eine erhöhte Version und neue Hashes.
+
+
+## iPhone-UI-Korrektur 1
+
+Die App-Hülle ist viewport-fest mit `100dvh` und einem Prozenthöhen-Fallback. `main.wrap` ist der einzige scrollende Inhaltsbereich; die Bottom-Navigation liegt als eigene nicht schrumpfende Zeile darunter. Ihre Hintergrundfläche umfasst die untere Safe Area, der Inhalt benötigt keine zusätzliche Navigationshöhe als unteren Abstand. Ansichtswechsel scrollen `main` zum Anfang. `enterApp()` stellt die Ansicht ohne erzwungenen Überschriftenfokus wieder her; ausdrückliche Ansichtswechsel behalten die vorhandene Fokusführung und Tastaturindikatoren. Die allgemein gültige Regel `button + button` wird ausschließlich für benachbarte Navigationstabs aufgehoben.
+
+Shell v4 enthält die geänderten CSS-/App-Prüfsummen. Browserprüfungen decken kurze/lange Inhalte, Größenänderungen, isoliertes Scrollen, Erreichbarkeit letzter Aktionen, Öffnen/Wiederherstellen, Pointer- und Tastaturfokus ab. Ein synthetischer 34-Pixel-Inset prüft die Layoutgeometrie; die tatsächliche iOS-Safe-Area, Bildschirmtastatur und installierte PWA müssen auf dem physischen iPhone nachgeprüft werden. Das ursprüngliche iPhone-Verhalten der bereits `position: fixed` verwendenden Navigation konnte in Chromium nicht direkt reproduziert werden.

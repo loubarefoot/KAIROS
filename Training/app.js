@@ -13,7 +13,7 @@
   let trainingView = 'start', editingPlan = null, addingToPlan = null;
   let currentView = 'start', away = false, entered = false;
   let summaryId = null, finishing = false, durationInterval = null, importing = false;
-  function showView(name) {
+  function showView(name, { focusHeading = true } = {}) {
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });
@@ -21,7 +21,8 @@
     if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== name) store.update(state => { state.settings.lastView = name; });
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
-    window.scrollTo(0,0); target.querySelector('h1').focus({preventScroll:true});
+    $('main').scrollTo(0,0);
+    if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
   }
   const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   function rowControls(index, length) {
@@ -253,7 +254,7 @@
       candidate.settings.lastBackgroundAt = null;
       candidate.settings.lastView = view;
     });
-    render(); showView(view);
+    render(); showView(view, {focusHeading: false});
   }
   render();
   enterApp();

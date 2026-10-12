@@ -134,3 +134,15 @@ Keine weiteren Audit-Themen, Produktfunktionen, Hosting-Einstellungen oder Weigh
 - Hosting-Dokumentation und Plan für spätere Dokumentationszusammenführung und Veröffentlichung ergänzt.
 
 Vorbereitung auf `feat/training-v1`; keine zusätzlichen Training-Funktionen, Weight-Änderungen, Commits, Pushes, Merges oder Pages-Einstellungsänderungen. Physischer iPhone-Test und Veröffentlichung stehen aus.
+
+
+## 12.10.2026
+
+### Training – iPhone-Navigation und Fokus gezielt korrigiert
+
+- Viewport-feste App-Hülle mit dynamischer Höhe und ausschließlich scrollendem Hauptinhalt eingerichtet. Bottom-Navigation belegt eine eigene, nicht überlagernde Zeile einschließlich unterer Safe Area. Ansichtswechsel setzen den Inhaltsscroll zurück.
+- Navigation von 68 auf 56 Pixel Grundhöhe verkleinert, Innenabstände reduziert, Icons auf 26 Pixel und Beschriftungen auf 0,8 rem vergrößert. Unbeabsichtigten 10-Pixel-Abstand am zweiten Navigationsbutton durch die allgemeine Geschwisterregel gezielt aufgehoben.
+- Beim Öffnen/Wiederherstellen kein erzwungener Überschriftenfokus; bei bewussten Ansichtswechseln Fokusführung erhalten. Überschriften erhalten einen grünen Tastaturindikator über `:focus-visible`; kein pauschales Abschalten von Fokusstilen.
+- Shell auf v4 erhöht und CSS-/JavaScript-Prüfsummen aktualisiert. Mobile Scroll-/Fokusprüfungen ergänzt; echter iPhone-/Safe-Area-Test bleibt notwendig.
+
+Keine Änderungen an Training-Verwaltung, Datenformat, Icons oder Weight. Vorbereitung auf `fix/training-iphone-ui-1`, noch kein Commit, Push oder Merge.
