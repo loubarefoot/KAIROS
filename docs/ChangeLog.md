@@ -208,3 +208,10 @@ Die Strukturabweichung ist belegt; dass sie den nativen schwarzen Bereich beseit
 - Ein nichtinteraktiver, eindeutig markierter temporärer Block mit 1200 Pixel Mindesthöhe ausschließlich in der Startseite ergänzt. Zur vollständigen Entfernung stehen BEGIN/END-Kommentare um den Block. Keine dauerhafte Designentscheidung.
 - Viewport-Meta, gesamte CSS-Datei, Navigation, Scroll-/Fokuslogik, Funktionsmodule und Weight unverändert. Diagnose-Buildkennung aktualisiert; Worker v12 und alle 13 Ressourcen-Prüfsummen geprüft.
 - Regression prüft lange Startansicht, nichtinteraktiven Block und dessen Ausblendung in anderen Ansichten. Physischer iPhone-Kaltstart bleibt der entscheidende Ursachen-Test.
+
+
+### Auftrag 45 – Gemeinsame Dokument-Mindesthöhe
+
+- V12-Testblock vollständig entfernt. Der gemeinsame ScrollArea-Inhaltsbereich erhält eine Viewport-Mindesthöhe (Fallback 100vh, modern max aus Prozent-/svh-/dvh-/lvh-Höhe). Nur ScrollArea verwendet content-box: Die bereits vorhandene Navigationsreserve von 80 Pixel und der bestehende obere Safe-Area-Abstand liegen außerhalb dieser Mindesthöhe. Dadurch hat auch eine kurze Ansicht echten Dokument-Scrollbereich; keine neue Padding-/47-Pixel-Kompensation.
+- lvh verhindert, dass ein kleinerer dynamischer Viewport allein die Mindesthöhe zusammenzieht; größere Viewports und echte Inhaltslängen werden berücksichtigt. Keine JS-Höhenmessung oder Scroll-/Fokus-/Trainingslogikänderung. Native iOS-Wirkung muss noch am Gerät bestätigt werden.
+- Worker v13 und 13 Prüfsummen aktualisiert; Regressionen für kurze/leere/lange Ansichten und echte Browser-Viewport-Verkleinerung/-Wiederherstellung. Vorbereitung auf fix/training-minimum-document-height; kein Commit/Push/Merge/Deployment.

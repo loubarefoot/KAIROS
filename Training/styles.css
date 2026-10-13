@@ -7,12 +7,14 @@
   --muted: #a0a8b5;
   --accent: #78c99b;
   --tab-height: 80px;
-  --kairos-training-css-build: "training-weight-shell-1";
+  --kairos-training-css-build: "training-minimum-height-1";
 }
 * { box-sizing: border-box; }
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent;scrollbar-width:none;-ms-overflow-style:none;}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;background:transparent;}
-#scrollArea{min-height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:none;-ms-overflow-style:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:80px;}
+/* The viewport minimum applies to content; the existing navigation reserve stays outside it.
+   lvh retains the full viewport when iOS temporarily reduces dvh. Larger content grows naturally. */
+#scrollArea{box-sizing:content-box;min-height:100vh;min-height:max(100%,100svh,100dvh,100lvh);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:none;-ms-overflow-style:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:80px;}
 #scrollArea::-webkit-scrollbar{display:none;width:0;background:transparent;}
 .wrap{max-width:520px;margin:0 auto;padding:20px 16px 24px;}
 [hidden] { display: none !important; }

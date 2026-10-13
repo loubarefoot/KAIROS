@@ -87,3 +87,10 @@ Die Navigationsdiagnose muss vor einem Wechsel zu Einstellungen messen. Ein klei
 Training übernimmt die Trennung von äußerem Scroll-/Safe-Area-Container und innerem Inhaltscontainer aus Weight für alle Ansichten. Die bisherige Zusammenlegung koppelte Mindesthöhe, Overflow und Inhaltsabstände in einer Box. Es werden keine numerischen Viewport-Kompensationen oder neuen Navigations-/Bottom-Abstände eingeführt. Die strukturelle Angleichung ist gezielt; die ursächliche Beteiligung am iOS-Viewport-Fehler bleibt bis zum Gerätetest offen.
 
 Der temporäre Diagnoseknopf reserviert Platz im Inhaltsfluss. Das begrenzte Scrollprotokoll erhält Messungen vor dem Zurückscrollen zum Knopf. Der native Dialog hält Schließen und Kopieren außerhalb des scrollenden Berichts, damit kleine Viewports die Bedienelemente nicht abschneiden.
+
+
+## Auftrag 45 – Mindesthöhe statt Testinhalt
+
+Der erfolgreiche v12-Gerätetest begründet einen echten Dokument-Scrollbereich auch auf kurzen Training-Ansichten. Der gemeinsame äußere Container erhält eine Viewport-Mindesthöhe im Inhaltsbox-Modell: vorhandene Navigationsreserve bleibt außerhalb der Mindesthöhe, ohne neue Abstände. Die größte verfügbare Viewport-/Prozenthöhe verhindert das alleinige Zusammenziehen auf einen kleineren dynamischen Viewport. Alte Browser erhalten 100vh als Fallback. Lange Inhalte wachsen weiter natürlich; keine festen Gerätepixel oder JS-Höhensteuerung.
+
+V12-Testblock vollständig entfernt. Die native iOS-Wirkung der minimalen Höhenregel bleibt vor Veröffentlichung beziehungsweise beim anschließenden Gerätetest zu bestätigen. Vorbereitung ohne Commit/Push/Merge gemäß Auftrag.

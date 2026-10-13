@@ -28,6 +28,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    await page.setViewportSize({width,height});
    await page.locator('[data-tab=settings]').click();
    await page.locator('[data-view=exercises]:visible').click();
+   assert.ok(await page.evaluate(()=>document.scrollingElement.scrollHeight>=innerHeight+80));
    const before=await page.locator('.tabbar').boundingBox();
    assert.ok(Math.abs(before.y+before.height-height)<1);assert.equal(before.height,80);
    assert.equal(await page.locator('.tab').last().evaluate(e=>getComputedStyle(e).marginTop),'0px');
@@ -48,6 +49,28 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    const short=await page.locator('.tabbar').boundingBox();assert.ok(Math.abs(short.y+short.height-height)<1);
   }
   await page.setViewportSize({width:390,height:844});
+  await page.reload();
+  for (const selector of ['[data-view=training]:visible','[data-view=active]:visible','[data-tab=settings]','[data-view=backup]:visible']) {
+    await page.locator(selector).click();
+    assert.ok(await page.evaluate(()=>document.scrollingElement.scrollHeight>=innerHeight+80));
+    assert.equal(await page.locator('#scrollArea').evaluate(e=>getComputedStyle(e).boxSizing),'content-box');
+    assert.equal(await page.locator('#temporary-start-height-test').count(),0);
+  }
+  // Real layout shrink/restore, not only a mocked visualViewport property.
+  for (const height of [797,568,844]) {
+    await page.setViewportSize({width:390,height});
+    assert.ok(await page.evaluate(()=>document.scrollingElement.scrollHeight>=innerHeight+80));
+    const bar=await page.locator('.tabbar').boundingBox();assert.ok(Math.abs(bar.y+bar.height-height)<1);
+  }
+  await page.setViewportSize({width:390,height:797});await page.reload();
+  // Model different viewport units explicitly; this verifies the CSS arithmetic, not native iOS.
+  const largeViewportProbe=await page.addStyleTag({content:fs.readFileSync(path.join(root,'styles.css'),'utf8').replaceAll('100lvh','844px')});
+  assert.ok(await page.evaluate(()=>document.scrollingElement.scrollHeight>=844+80));
+  assert.equal(await page.locator('#scrollArea').evaluate(e=>getComputedStyle(e).paddingBottom),'80px');
+  assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).height),'80px');
+  await largeViewportProbe.evaluate(e=>e.remove());
+  console.log('PASS: viewport-sized content minimum plus existing 80px reserve on short/empty/long views, real resize and restoration; no test block.');
+  await page.setViewportSize({width:390,height:844});await page.reload();
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(()=>document.activeElement.matches(':focus-visible')),true);
   await page.locator('[data-tab=training]').focus();await page.keyboard.press('Enter');

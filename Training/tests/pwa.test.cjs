@@ -30,12 +30,12 @@ test('home-screen icons are opaque PNGs in the required native dimensions', () =
   }
 });
 
-test('page shell rules and viewport match the functioning Weight reference without duplicate overrides', () => {
+test('unchanged shell rules retain Weight parity; the document minimum is the explicit exception', () => {
   const weight = fs.readFileSync(path.join(root, '../Weight/index.html'), 'utf8');
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
   assert.equal(html.match(/<meta name="viewport"[^>]+>/)[0], weight.match(/<meta name="viewport"[^>]+>/)[0]);
-  for (const selector of ['html,body','html::-webkit-scrollbar,body::-webkit-scrollbar','#scrollArea','#scrollArea::-webkit-scrollbar','.wrap','.tabbar']) {
+  for (const selector of ['html,body','html::-webkit-scrollbar,body::-webkit-scrollbar','#scrollArea::-webkit-scrollbar','.wrap','.tabbar']) {
     const rule = weight.slice(weight.indexOf(selector + '{')).split('}')[0] + '}';
     assert.ok(css.includes(rule), selector);
     assert.equal(css.split(selector + '{').length - 1, 1, selector);
