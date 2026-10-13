@@ -16,7 +16,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await open();assert.ok(await page.locator('#view-plan-editor').isVisible());assert.ok(await page.locator('#view-plans').isHidden());
   assert.equal(await page.evaluate(()=>['INPUT','TEXTAREA'].includes(document.activeElement.tagName)),false);
   const original=await state();await page.locator('#plan-form [name=name]').fill('Draft plan');await page.locator('#plan-form [name=description]').fill('Description');
-  await page.locator('#add-exercise-form button').click();await page.locator('#add-exercise-form button').click();
+  await page.locator('#exercise-choices [data-add-exercise]').first().click();await page.locator('#exercise-choices [data-add-exercise]').first().click();
   const weightedId=await page.locator('#plan-exercises .sort-row').first().getAttribute('data-id');
   await page.locator('#plan-exercises [data-draft-field=weightKg]').first().fill('17,5');
   await page.evaluate(()=>{window.originalNameInput=document.querySelector('#plan-form [name=name]');window.originalWeightInput=document.querySelector('[data-draft-field=weightKg]');});
@@ -40,7 +40,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.evaluate(()=>Storage.prototype.setItem=window.originalSetItem);await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=save]').click();await page.locator('#view-plans').waitFor({state:'visible'});assert.equal((await state()).plans[0].name,'Retry');
   // Another tab changes global weight; its update must survive a stale draft save.
   await page.locator('[data-edit-plan]').first().click();await page.locator('#plan-form [name=name]').fill('Stale');const other=await context.newPage();await other.goto(url);await other.evaluate(()=>{const s=KairosTrainingData.createStore();s.load();s.update(v=>v.exercises[0].weightKg=30);});await other.close();
-  await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=save]').click();assert.ok(await page.locator('#view-plan-editor').isVisible());assert.match(await page.locator('#plan-error').innerText(),/inzwischen geändert/);assert.equal((await state()).exercises[0].weightKg,30);assert.equal((await state()).plans[0].name,'Retry');
+  await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=save]').click();await page.locator('#plan-error').waitFor({state:'visible'});assert.ok(await page.locator('#view-plan-editor').isVisible());assert.match(await page.locator('#plan-error').innerText(),/inzwischen geändert/);assert.equal((await state()).exercises[0].weightKg,30);assert.equal((await state()).plans[0].name,'Retry');
   await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=discard]').click();
   // Native Escape cancels and background return keeps the same editor DOM.
   await page.locator('[data-edit-plan]').first().click();await page.locator('#plan-form [name=description]').fill('Pending');await page.locator('#back-plan').click();await page.keyboard.press('Escape');assert.ok(await page.locator('#view-plan-editor').isVisible());

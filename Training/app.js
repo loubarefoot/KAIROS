@@ -41,6 +41,7 @@
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });
+    if (currentView === 'exercises' && name !== 'exercises') { $('exercise-search').value = ''; renderExerciseList(); }
     currentView = name;
     if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== savedView(name)) store.update(state => { state.settings.lastView = savedView(name); });
     if (target.dataset.area === 'training') trainingView = name;
@@ -49,6 +50,8 @@
     if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
     window.dispatchEvent(new CustomEvent('kairos-training-viewchange', {detail: {view: name}}));
   }
+  const weightField = (attributes, value = null) => `<label class="compact-weight">Gewicht<span class="weight-input-unit"><input ${attributes} inputmode="decimal" type="text" value="${value === null ? '' : esc(value)}"><span class="weight-unit">kg</span></span></label>`;
+  const searchIcon = '<svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg>';
   const savedView = name => name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name;
   const numericWeightLabel = exercise => exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   const planDetails = plan => (plan.description.trim() ? esc(plan.description) + ' · ' : '') + plan.exerciseIds.length + (plan.exerciseIds.length === 1 ? ' Übung' : ' Übungen');
@@ -182,7 +185,7 @@
     const exercise = id ? store.getState().exercises.find(item => item.id===id) : {name:'',weightKg:null,repetitions:10,isMax:false,source:'custom'};
     $('exercise-editor').hidden = false;
     $('title-exercise-editor').textContent = id ? 'Übung bearbeiten' : 'Eigene Übung erstellen';
-    $('exercise-editor').innerHTML = `<form class="card" id="exercise-form" data-id="${esc(id || '')}" data-original="${esc(JSON.stringify(exercise))}"><label>Name<input name="name" required value="${esc(exercise.name)}"></label><label>Gewicht (kg)<input name="weight" inputmode="decimal" type="text" value="${exercise.weightKg===null?'':exercise.weightKg}"></label><p class="muted">Gewichte gelten in allen Trainingsplänen. Gewicht darf leer bleiben.</p><p id="exercise-error" class="storage-error" role="alert" hidden></p><button class="btn-primary" type="submit">Übung speichern</button><button class="btn-secondary" type="button" id="cancel-exercise">Abbrechen</button>${id && exercise.source==='custom'?`<button class="btn-danger" type="button" data-delete-exercise="${esc(id)}">Übung dauerhaft löschen</button>`:''}</form>`;
+    $('exercise-editor').innerHTML = `<form class="card" id="exercise-form" data-id="${esc(id || '')}" data-original="${esc(JSON.stringify(exercise))}"><label>Name<input name="name" required value="${esc(exercise.name)}"></label>${weightField('name="weight"',exercise.weightKg)}<p class="muted">Gewichte gelten in allen Trainingsplänen. Gewicht darf leer bleiben.</p><p id="exercise-error" class="storage-error" role="alert" hidden></p><div class="form-actions"><button class="btn-primary" type="submit">Übung speichern</button><button class="btn-secondary" type="button" id="cancel-exercise">Abbrechen</button>${id && exercise.source==='custom'?`<button class="btn-danger" type="button" data-delete-exercise="${esc(id)}">Übung dauerhaft löschen</button>`:''}</div></form>`;
     showView('exercise-editor', {focusHeading:false});
   }
   function pendingNewExercise() {
@@ -219,13 +222,16 @@
     $('plan-editor').innerHTML = `<form class="card compact-plan-form" id="plan-form"><label>Name<input name="name" required value="${esc(plan.name)}"></label><label>Beschreibung<textarea name="description" rows="2">${esc(plan.description)}</textarea></label><p class="muted">Änderungen beim Verlassen speichern. Gewichte gelten in allen Plänen.</p></form>
       <p class="card storage-error" id="plan-error" role="alert" hidden></p>
       <div class="plan-exercise-heading"><h2>Übungen im Plan</h2><p id="plan-order-status" class="muted" role="status" aria-live="polite"></p></div><div id="plan-exercises" class="sortable" data-sort="draft"></div>
-      <details class="card exercise-add-panel" open><summary>Übungen hinzufügen</summary><form id="add-exercise-form"><label>Vorhandene Übung<select name="exercise" id="exercise-choice"></select></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form><form id="plan-new-exercise-form"><h2>Eigene Übung</h2><label>Name<input name="name"></label><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal"></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form></details>`;
+      <details class="card exercise-add-panel" open><summary>Übungen hinzufügen</summary><div class="exercise-picker"><label>Vorhandene Übung suchen<span class="search-field">${searchIcon}<input type="search" id="plan-exercise-search" autocomplete="off"></span></label><div id="exercise-choices" class="exercise-choices" role="group" aria-label="Vorhandene Übungen"></div></div><form id="plan-new-exercise-form"><h2>Eigene Übung</h2><label>Name<input name="name"></label>${weightField('name="weight"')}<button class="btn-secondary" type="submit">Übung hinzufügen</button></form></details>`;
     renderPlanExercises(); displayView('plan-editor', {focusHeading: false});
   }
-  function updatePlanChoices() {
-    const available = planDraft.exercises.filter(item => !planDraft.plan.exerciseIds.includes(item.id)).sort((a,b)=>a.name.localeCompare(b.name,'de',{sensitivity:'base'}));
-    $('exercise-choice').innerHTML = available.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
-    $('add-exercise-form').querySelector('button').disabled = !available.length;
+  function updatePlanChoices({resetScroll = false} = {}) {
+    const list = $('exercise-choices'), scroll = resetScroll ? 0 : list.scrollTop;
+    const query = $('plan-exercise-search').value.trim().toLocaleLowerCase('de');
+    const available = planDraft.exercises.filter(item => !planDraft.plan.exerciseIds.includes(item.id) && item.name.toLocaleLowerCase('de').includes(query)).sort((a,b)=>a.name.localeCompare(b.name,'de',{sensitivity:'base'}));
+    list.innerHTML = available.map(item => `<button type="button" class="exercise-choice" data-add-exercise="${esc(item.id)}"><span>${esc(item.name)}</span><span class="muted">${esc(numericWeightLabel(item))}</span></button>`).join('') || '<p class="empty">' + (query ? 'Keine passenden Übungen.' : 'Alle Übungen sind bereits im Plan.') + '</p>';
+    list.scrollTop = scroll;
+    if (store.getStatus().blocked) list.querySelectorAll('button').forEach(button=>{button.disabled=true;});
   }
   function renderPlanExercises() {
     const list = $('plan-exercises'), order = planDraft.plan.exerciseIds;
@@ -236,7 +242,7 @@
       let row = Array.from(list.children).find(item => item.dataset.id === id);
       if (!row) {
         row = document.createElement('div'); row.className = 'card sort-row plan-exercise'; row.dataset.id = id;
-        row.innerHTML = `<div class="plan-exercise-title"><span class="exercise-position" aria-label="Position"></span><label class="exercise-name-field">Übungsname<input data-draft-field="name" type="text" value="${esc(exercise.name)}" required></label></div><label class="compact-weight">Gewicht (kg)<input data-draft-field="weightKg" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : esc(exercise.weightKg)}"></label><div class="row-actions">${rowControls(index,order.length)}<button type="button" data-remove-exercise="${esc(id)}">Entfernen</button></div>`;
+        row.innerHTML = `<span class="exercise-position" aria-label="Position"></span><div class="plan-exercise-content"><label class="exercise-name-field">Übungsname<input data-draft-field="name" type="text" value="${esc(exercise.name)}" required></label>${weightField('data-draft-field="weightKg"',exercise.weightKg)}<div class="row-actions">${rowControls(index,order.length)}<button type="button" data-remove-exercise="${esc(id)}">Entfernen</button></div></div>`;
       }
       row.dataset.index = index;
       row.querySelector('.exercise-position').textContent = index + 1;
@@ -256,6 +262,7 @@
   }
   document.addEventListener('input', event => {
     if (event.target.id === 'exercise-search') { renderExerciseList(); return; }
+    if (event.target.id === 'plan-exercise-search' && planDraft) { updatePlanChoices({resetScroll:true}); return; }
     if (!planDraft) return;
     const field = event.target;
     if (field.form?.id === 'plan-form') planDraft.plan[field.name] = field.value;
@@ -266,7 +273,7 @@
   });
   document.addEventListener('change', event => { if(event.target.name==='max' && ['training-weight-form'].includes(event.target.form?.id)) event.target.form.elements.weight.disabled=event.target.checked; });
   document.addEventListener('submit', event => {
-    if(!['exercise-form','plan-form','add-exercise-form','training-weight-form','plan-new-exercise-form'].includes(event.target.id)) return;
+    if(!['exercise-form','plan-form','training-weight-form','plan-new-exercise-form'].includes(event.target.id)) return;
     event.preventDefault(); const form=event.target;
     if(form.id==='training-weight-form') {
       if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:form.elements.max.checked,repetitions:Number(form.elements.repetitions.value)},JSON.parse(form.dataset.context)))) $('training-weight-editor').hidden=true;
@@ -290,9 +297,6 @@
       showView('plans');
     } else if(form.id === 'plan-new-exercise-form') {
       addNewDraftExercise();
-    } else if (planDraft) {
-      const id = form.elements.exercise.value;
-      if (id && !planDraft.plan.exerciseIds.includes(id)) { planDraft.plan.exerciseIds.push(id); renderPlanExercises(); }
     }
 
   });
@@ -314,6 +318,13 @@
     else if(button.id==='new-plan') planEditor();
     else if(button.dataset.editPlan) planEditor(button.dataset.editPlan);
     else if(button.id==='back-plan') showView('plans');
+    else if(button.dataset.addExercise && planDraft) {
+      const id = button.dataset.addExercise;
+      if (planDraft.exercises.some(item=>item.id===id) && !planDraft.plan.exerciseIds.includes(id)) {
+        planDraft.plan.exerciseIds.push(id); renderPlanExercises();
+        $('plan-order-status').textContent = planDraft.exercises.find(item=>item.id===id).name + ' hinzugefügt';
+      }
+    }
     else if(button.dataset.removeExercise && planDraft) { planDraft.plan.exerciseIds = planDraft.plan.exerciseIds.filter(id => id !== button.dataset.removeExercise); renderPlanExercises(); }
     else if(button.dataset.deleteExercise && await confirmDelete('Diese eigene Übung dauerhaft löschen und aus allen Trainingsplänen entfernen? Gespeicherte und laufende Einheiten bleiben unverändert.')) { if(result(()=>management.deleteExercise(button.dataset.deleteExercise))) { $('exercise-editor').hidden=true; showView('exercises'); } }
     else if(button.dataset.deletePlan && await confirmDelete('Diesen Trainingsplan löschen? Übungen sowie gespeicherte und laufende Einheiten bleiben erhalten.')) { if(result(()=>management.deletePlan(button.dataset.deletePlan))) { editingPlan=null; $('plan-editor').hidden=true; } }
@@ -348,6 +359,7 @@
   function leaveApp() {
     if (away || !entered) return;
     away = true;
+    if (currentView === 'exercises') { $('exercise-search').value = ''; renderExerciseList(); }
     store.refresh();
     if (store.getStatus().loaded && !store.getStatus().blocked) store.update(state => {
       state.settings.lastView = savedView(currentView);

@@ -111,3 +111,8 @@ Die allgemeinen Tages-/60-Minuten-Regeln werden auch mit offenem Planeditor ausg
 ## 13.10.2026 – Auftrag 55: Kompakte Verwaltungsoberflächen
 
 Die beauftragte v16-Oberfläche speichert Planentwürfe ausschließlich nach ausdrücklicher Wahl im Verlassensdialog. Zurück-Pfeil und Tabs führen nach Speichern/Verwerfen zum gewählten Ziel. MAX und Wiederholungen entfallen in Planverwaltung/Bibliothek als sichtbare Eingaben; vorhandene Werte bleiben erhalten, neue Übungen verwenden zehn Wiederholungen. Die Suche und alphabetische Anzeige verändern keine gespeicherten Reihenfolgen. Die eigene Übungsansicht benötigt kein neues persistiertes Schemafeld. Die Diagnose trennt die Kennung geladener Diagnosefunktionen von dynamisch abgefragten Shell-Versionen. Noch keine Veröffentlichung.
+
+
+## 13.10.2026 – Auftrag 57: Suchbare Übungsauswahl und einheitliche Gewichtsfelder
+
+Der beauftragte v17-Schritt ersetzt nur die bisherige Dropdown-Bedienung durch eine alphabetische, scrollbare Suchliste. Auswählen fügt eine bestehende Übungs-ID zum lokalen Planentwurf hinzu; Übernahme erfolgt weiter ausschließlich durch den bestehenden Speichern/Verwerfen/Abbrechen-Dialog. Die Bibliotheksuche wird beim Verlassen zurückgesetzt. Schmale Gewichtsfelder mit rechtsstehendem „kg“ und eine separate Nummernspalte verbessern die Ausrichtung ohne Änderung von Datenformat, globalen Gewichten oder Navigationshülle.

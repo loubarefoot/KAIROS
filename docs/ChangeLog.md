@@ -251,3 +251,12 @@ Vorbereitet auf `feat/training-plan-management-v1`; kein Commit, Push, Merge ode
 - Diagnose ohne veraltete v14-Beschriftung; v16-Shell/Hash-Vorbereitung und Browserregressionen. Bei Code-Review Wiederholbarkeit einer fehlgeschlagenen Neuanlage im eigenen Übungseditor abgesichert.
 
 Vorbereitet auf `feat/training-v16-ux`; kein Commit, Push, Merge oder Deployment.
+
+
+### Auftrag 57 – Training v17: UI und Bedienbarkeit
+
+- Nummernspalte links; Name, Gewicht und Sortier-/Entfernungsaktionen bündig rechts in Planübungskarten.
+- Einheitliche schmale Gewichtseingaben mit „Gewicht“ und „kg“ daneben; kompakte Verwaltungsbuttons.
+- Bibliotheksuche mit Lupe und Reset beim Verlassen; vollständige Liste beim erneuten Öffnen.
+- Dropdown durch alphabetische, durchsuchbare Scrollliste mit Touch-Auswahl zum Planentwurf ersetzt.
+- Neue mobile UI-/Auswahlregressionen, aktualisierte Dokumentation und v17-Shell-Prüfsummen. Geschützte Daten-/Entwurfslogik und Weight unverändert; keine Migration.
