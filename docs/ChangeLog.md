@@ -201,3 +201,10 @@ Die Strukturabweichung ist belegt; dass sie den nativen schwarzen Bereich beseit
 - Training-Farben, Inhalte, größere Tab-Icons/-Beschriftung, Touch-/Tastaturfokus, Startlogik, native Dialoge und vorhandene Diagnose bleiben erhalten. Navigation weiterhin außerhalb des Scrollbereichs.
 - JavaScript geprüft: keine globale Viewport-Höhensteuerung; ScrollArea-Rücksetzung, gezielter Eingabefokus, Speicherfehler-scrollIntoView und Drag-Autoscroll bleiben funktionsbezogen unverändert. Shell v11, Kennung training-weight-shell-1 und alle 13 Prüfsummen aktualisiert.
 - Referenzparität und Regressionen geprüft; tatsächliche Wirkung auf den iOS-Streifen bleibt am Gerät zu bestätigen.
+
+
+### Auftrag 44 – Isolierter Startseitenhöhen-Test v12
+
+- Ein nichtinteraktiver, eindeutig markierter temporärer Block mit 1200 Pixel Mindesthöhe ausschließlich in der Startseite ergänzt. Zur vollständigen Entfernung stehen BEGIN/END-Kommentare um den Block. Keine dauerhafte Designentscheidung.
+- Viewport-Meta, gesamte CSS-Datei, Navigation, Scroll-/Fokuslogik, Funktionsmodule und Weight unverändert. Diagnose-Buildkennung aktualisiert; Worker v12 und alle 13 Ressourcen-Prüfsummen geprüft.
+- Regression prüft lange Startansicht, nichtinteraktiven Block und dessen Ausblendung in anderen Ansichten. Physischer iPhone-Kaltstart bleibt der entscheidende Ursachen-Test.
