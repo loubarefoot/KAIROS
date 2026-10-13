@@ -1,18 +1,14 @@
 (() => {
   'use strict';
   // Unique identifier for this temporary diagnostic build based on published main.
-  const BUILD = 'training-minimum-height-1 (Basis ca177ff, Shell v13)';
-  const panel = document.getElementById('diagnostics-panel');
-  if (!panel) return;
-  const report = document.getElementById('diagnostics-report');
-  const status = document.getElementById('diagnostics-status');
-  const refresh = document.getElementById('diagnostics-refresh');
+  const BUILD = 'training-compact-diagnostics-1 (Basis feae196, Shell v14)';
   const lastScroll = new Map();
   const history = [];
   const liveButton = document.getElementById('diagnostics-live');
   const liveDialog = document.getElementById('diagnostics-live-dialog');
   const liveReport = document.getElementById('diagnostics-live-report');
   const liveStatus = document.getElementById('diagnostics-live-status');
+  if (!liveButton || !liveDialog || !liveReport || !liveStatus) return;
   let scrollTimer;
   const describe = element => !element ? 'unbekannt' : element.id ? '#' + element.id : element.tagName.toLowerCase();
   document.addEventListener('scroll', event => {
@@ -111,9 +107,8 @@
   async function update(values) {
     const id = ++sequence;
     values.recentMeasurements = history.slice();
-    status.textContent = 'Worker und geladenes Stylesheet werden geprüft …';
-    report.value = JSON.stringify(values,null,2);
-    liveReport.value = report.value;
+    liveStatus.textContent = 'Worker und geladenes Stylesheet werden geprüft …';
+    liveReport.value = JSON.stringify(values,null,2);
     const controller = navigator.serviceWorker?.controller;
     let registration;
     try { registration = await navigator.serviceWorker?.getRegistration(location.href); } catch { /* unknown below */ }
@@ -127,15 +122,9 @@
     values.serviceWorker = {controller:controlling, registrationActive:active, waiting,
       registrationAvailable:!!registration,
       note:'controller steuert diese Seite. Erwarteter Datei-Hash vom Worker und geladener CSSOM-Hash sind unterschiedliche Messgrößen.'};
-    report.value = JSON.stringify(values,null,2);
-    liveReport.value = report.value;
-    status.textContent = 'Aktualisiert. Die Geometrie stammt vom Messzeitpunkt oben. Keine Trainingsdaten enthalten.';
-    liveStatus.textContent = status.textContent;
+    liveReport.value = JSON.stringify(values,null,2);
+    liveStatus.textContent = 'Aktualisiert. Die Geometrie stammt vom Messzeitpunkt oben. Keine Trainingsdaten enthalten.';
   }
-  let pointerSnapshot;
-  refresh.addEventListener('pointerdown',()=>{pointerSnapshot=snapshot('Antippen vor Fokus-/Tastaturwechsel');});
-  refresh.addEventListener('click',()=>{const values=pointerSnapshot || snapshot('Aktualisieren');pointerSnapshot=null;update(values);});
-  panel.addEventListener('toggle',()=>{if(panel.open) update(snapshot('Diagnose geöffnet'));});
   async function copyReport(field, message) {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
@@ -146,7 +135,6 @@
       message.textContent='Bitte den markierten Bericht über das iPhone-Auswahlmenü kopieren.';
     }
   }
-  document.getElementById('diagnostics-copy').addEventListener('click',()=>copyReport(report,status));
   document.getElementById('diagnostics-live-copy').addEventListener('click',()=>copyReport(liveReport,liveStatus));
   let liveSnapshot;
   liveButton.addEventListener('pointerdown',()=>{liveSnapshot=snapshot('Direktdiagnose vor Fokus-/Fensterwechsel');});

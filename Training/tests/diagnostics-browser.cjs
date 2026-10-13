@@ -17,41 +17,37 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.goto(url);await page.evaluate(()=>navigator.serviceWorker.ready);await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
   await page.locator('[data-tab=settings]').click();const state=await page.evaluate(()=>localStorage.getItem('kairos.training.state'));
   const navBefore=await page.locator('.tabbar').boundingBox();
-  await page.locator('#diagnostics-panel summary').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  const read=async()=>JSON.parse(await page.locator('#diagnostics-report').inputValue());
-  let data=await read();assert.match(data.diagnosticBuildFromLoadedJS,/training-minimum-height-1/);
+  assert.equal(await page.locator('#diagnostics-panel,#diagnostics-keyboard,#diagnostics-refresh,#diagnostics-copy,#diagnostics-report,#diagnostics-status').count(),0);
+  const open=async()=>{await page.locator('#diagnostics-live').click();await page.waitForFunction(()=>document.getElementById('diagnostics-live-status').textContent.startsWith('Aktualisiert'));};
+  const close=async()=>{await page.locator('#diagnostics-live-close').click();};
+  const read=async()=>JSON.parse(await page.locator('#diagnostics-live-report').inputValue());
+  await open();
+  let data=await read();assert.match(data.diagnosticBuildFromLoadedJS,/training-compact-diagnostics-1/);
+  assert.equal(data.visibleSection.id,'view-settings');
   assert.equal(data.stylesheet.versionFromLoadedRules,'training-minimum-height-1');assert.match(data.stylesheet.loadedCSSOM_SHA256,/^[a-f0-9]{64}$/);
-  assert.equal(data.serviceWorker.controller.version,'v13');assert.equal(data.serviceWorker.registrationActive.version,'v13');assert.equal(data.serviceWorker.waiting.present,false);
+  assert.equal(data.serviceWorker.controller.version,'v14');assert.equal(data.serviceWorker.registrationActive.version,'v14');assert.equal(data.serviceWorker.waiting.present,false);
   assert.equal(data.serviceWorker.controller.expectedStylesheetFileSHA256,require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,'styles.css'))).digest('hex'));
   assert.equal(data.viewport.innerHeight,844);assert.equal(data.navigation.height,80);assert.equal(data.standalone.media,false);
-  workerUpdate=true;
+  await close();workerUpdate=true;
   await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();if(r.installing)await new Promise(resolve=>{const w=r.installing;const check=()=>{if(['installed','redundant'].includes(w.state))resolve();};w.addEventListener('statechange',check);check();});});
-  await page.locator('#diagnostics-refresh').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  data=await read();assert.equal(data.serviceWorker.waiting.present,true);assert.equal(data.serviceWorker.waiting.version,'v13');assert.equal(data.serviceWorker.waiting.state,'installed');
-
-  await page.locator('#diagnostics-keyboard').fill('not exported');
-  await page.evaluate(()=>Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>300}));
-  await page.locator('#diagnostics-refresh').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  data=await read();assert.equal(data.viewport.visualHeight,300);assert.match(data.measurement,/vor Fokus/);assert.equal(data.focus,'#diagnostics-keyboard');assert.ok(!(await page.locator('#diagnostics-report').inputValue()).includes('not exported'));
-  await page.evaluate(()=>delete visualViewport.height);
-  await page.evaluate(()=>window.scrollTo(0,500));await page.waitForFunction(()=>window.scrollY>0);
-  await page.locator('#diagnostics-refresh').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  data=await read();assert.equal(typeof data.scroll.observedScrollingContainers,'object');
+  await open();data=await read();assert.equal(data.serviceWorker.waiting.present,true);assert.equal(data.serviceWorker.waiting.version,'v14');assert.equal(data.serviceWorker.waiting.state,'installed');await close();
+  // Input focus/value exclusion remains tested without retaining a production keyboard probe.
+  await page.evaluate(()=>{const input=document.createElement('input');input.id='test-keyboard';input.value='not exported';document.getElementById('view-settings').append(input);input.focus();Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>300});visualViewport.dispatchEvent(new Event('resize'));});
+  await open();data=await read();assert.equal(data.viewport.visualHeight,300);assert.match(data.measurement,/vor Fokus/);assert.equal(data.focus,'#test-keyboard');assert.ok(!(await page.locator('#diagnostics-live-report').inputValue()).includes('not exported'));await close();
+  await page.evaluate(()=>{delete visualViewport.height;document.getElementById('test-keyboard').remove();window.scrollTo(0,80);});await page.waitForFunction(()=>window.scrollY>0);
+  await open();data=await read();assert.equal(typeof data.scroll.observedScrollingContainers,'object');
   await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.copiedDiagnosis=value;}}});});
-  await page.locator('#diagnostics-copy').click();assert.equal(await page.evaluate(()=>window.copiedDiagnosis),await page.locator('#diagnostics-report').inputValue());
+  await page.locator('#diagnostics-live-copy').click();assert.equal(await page.evaluate(()=>window.copiedDiagnosis),await page.locator('#diagnostics-live-report').inputValue());
   await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined});});
-  await page.locator('#diagnostics-copy').click();assert.match(await page.locator('#diagnostics-status').innerText(),/Auswahlmenü/);
-  assert.equal(await page.locator('#diagnostics-report').evaluate(e=>e.selectionEnd-e.selectionStart), (await page.locator('#diagnostics-report').inputValue()).length);
+  await page.locator('#diagnostics-live-copy').click();assert.match(await page.locator('#diagnostics-live-status').innerText(),/Auswahlmenü/);
+  assert.equal(await page.locator('#diagnostics-live-report').evaluate(e=>e.selectionEnd-e.selectionStart),(await page.locator('#diagnostics-live-report').inputValue()).length);await close();
   // A silent old controller must never be reported as the new worker's version.
   await page.evaluate(()=>Object.defineProperty(navigator.serviceWorker,'controller',{configurable:true,value:{scriptURL:location.href+'sw.js',state:'activated',postMessage(){}}}));
-  await page.locator('#diagnostics-refresh').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  data=await read();assert.equal(data.serviceWorker.controller.version,'unbekannt');assert.equal(data.serviceWorker.registrationActive.version,'v13');
+  await open();data=await read();assert.equal(data.serviceWorker.controller.version,'unbekannt');assert.equal(data.serviceWorker.registrationActive.version,'v14');await close();
   assert.equal(await page.evaluate(()=>localStorage.getItem('kairos.training.state')),state);
   assert.deepEqual(await page.locator('.tabbar').boundingBox(),navBefore);assert.equal(externalRequests,0);assert.deepEqual(errors,[]);
   await page.evaluate(()=>delete navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();
-  await page.locator('[data-tab=settings]').click();
-  await page.locator('#diagnostics-panel summary').click();await page.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  assert.equal((await read()).serviceWorker.controller.version,'v13');
+  await page.locator('[data-tab=settings]').click();await open();assert.equal((await read()).serviceWorker.controller.version,'v14');await close();
 
   await context.setOffline(false);
   // Direct measurements must identify the visible view, not the settings panel.
@@ -120,9 +116,9 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   assert.deepEqual(errors,[]);
   console.log('PASS: direct start/training/active snapshots, view/scroll history and copy, fresh document, warm BFCache, 60 minutes/day change, active session/time/status preserved.');
   await context.close();
-  const blocked=await browser.newContext({serviceWorkers:'block'}),noSW=await blocked.newPage();await noSW.goto(url);await noSW.locator('[data-tab=settings]').click();await noSW.locator('#diagnostics-panel summary').click();
-  await noSW.waitForFunction(()=>document.getElementById('diagnostics-status').textContent.startsWith('Aktualisiert'));
-  assert.equal(JSON.parse(await noSW.locator('#diagnostics-report').inputValue()).serviceWorker.controller.version,'unbekannt');await blocked.close();
-  console.log('PASS: actual controller and waiting worker v13, silent controller unknown, CSSOM marker/hash, viewport/nav/scroll/focus, copy and fallback, offline diagnosis, unsupported worker, no external requests or data changes.');
+  const blocked=await browser.newContext({serviceWorkers:'block'}),noSW=await blocked.newPage();await noSW.goto(url);await noSW.locator('[data-tab=settings]').click();await noSW.locator('#diagnostics-live').click();
+  await noSW.waitForFunction(()=>document.getElementById('diagnostics-live-status').textContent.startsWith('Aktualisiert'));
+  assert.equal(JSON.parse(await noSW.locator('#diagnostics-live-report').inputValue()).serviceWorker.controller.version,'unbekannt');await blocked.close();
+  console.log('PASS: actual controller and waiting worker v14, silent controller unknown, CSSOM marker/hash, viewport/nav/scroll/focus, copy and fallback, offline diagnosis, unsupported worker, no external requests or data changes.');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

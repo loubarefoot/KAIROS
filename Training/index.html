@@ -53,15 +53,6 @@
       <div class="card"><h2>Trainingspläne</h2><p class="muted">Pläne und ihre Übungsreihenfolge verwalten.</p><button class="btn-secondary" data-view="plans">Trainingspläne öffnen</button></div>
       <div class="card"><h2>Übungen</h2><p class="muted">Übungen und ihre Gewichte verwalten.</p><button class="btn-secondary" data-view="exercises">Übungsverwaltung öffnen</button></div>
       <div class="card"><h2>Datenimport und -export</h2><p class="muted">Trainingsdaten als JSON sichern und wiederherstellen.</p><button class="btn-secondary" data-view="backup">Import und Export öffnen</button></div>
-      <details class="card" id="diagnostics-panel">
-        <summary>Vorübergehende iPhone-Diagnose</summary>
-        <p class="muted">Nur technische Werte, keine Trainingsdaten. Keine Übertragung. Zum Prüfen der Tastatur hier tippen und anschließend aktualisieren.</p>
-        <label>Tastaturprobe (wird nicht gespeichert)<input id="diagnostics-keyboard" type="text" autocomplete="off"></label>
-        <button class="btn-secondary" id="diagnostics-refresh" type="button">Diagnose aktualisieren</button>
-        <button class="btn-secondary" id="diagnostics-copy" type="button">Diagnose kopieren</button>
-        <p id="diagnostics-status" role="status" aria-live="polite"></p>
-        <label>Diagnosebericht<textarea id="diagnostics-report" readonly rows="18" spellcheck="false" aria-label="Diagnosebericht"></textarea></label>
-      </details>
     </section>
 
     <section class="view" id="view-plans" data-area="settings" aria-labelledby="title-plans" hidden>
