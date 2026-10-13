@@ -3,7 +3,7 @@
   const D = KairosTrainingData;
   const $ = id => document.getElementById(id);
   const esc = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  const store = D.createStore({ onStatus(status) { $('storage-status').textContent = status.message; $('storage-status').hidden = !status.message; $('retry-save').hidden = !status.dirty || status.blocked; if (status.message && $('view-plan-editor')?.hidden) $('storage-status').scrollIntoView({ block: 'start' }); } });
+  const store = D.createStore({ onStatus(status) { $('storage-status').textContent = status.message; $('storage-status').hidden = !status.message; $('retry-save').hidden = !status.dirty || status.blocked; if (status.message && $('view-plan-editor')?.hidden && $('view-exercise-editor')?.hidden) $('storage-status').scrollIntoView({ block: 'start' }); } });
   store.load();
   if (store.getStatus().isNew && !store.getStatus().blocked) store.initializeLibrary(KairosTrainingLibrary.create(D));
   const management = KairosTrainingManagement.create(store, D);
@@ -42,13 +42,16 @@
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });
     currentView = name;
-    if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== (name === 'plan-editor' ? 'plans' : name)) store.update(state => { state.settings.lastView = name === 'plan-editor' ? 'plans' : name; });
+    if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== savedView(name)) store.update(state => { state.settings.lastView = savedView(name); });
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
     $('scrollArea').scrollTop = 0;
     if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
     window.dispatchEvent(new CustomEvent('kairos-training-viewchange', {detail: {view: name}}));
   }
+  const savedView = name => name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name;
+  const numericWeightLabel = exercise => exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
+  const planDetails = plan => (plan.description.trim() ? esc(plan.description) + ' · ' : '') + plan.exerciseIds.length + (plan.exerciseIds.length === 1 ? ' Übung' : ' Übungen');
   const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   function rowControls(index, length) {
     return `<button type="button" class="drag-handle" aria-label="Durch Ziehen verschieben">☰</button><button type="button" data-move="-1" aria-label="Nach oben" ${index===0?'disabled':''}>↑</button><button type="button" data-move="1" aria-label="Nach unten" ${index===length-1?'disabled':''}>↓</button>`;
@@ -56,9 +59,9 @@
   function render() {
     const state = store.getState();
     const plans = state.planOrder.map(id => state.plans.find(plan => plan.id === id));
-    document.querySelectorAll('[data-plan-list]').forEach(list => { list.innerHTML = plans.length ? plans.map(plan => `<div class="plan-summary"><strong>${esc(plan.name)}</strong><p class="muted">${esc(plan.description)} · ${plan.exerciseIds.length} Übungen</p><button class="btn-secondary" data-start-plan="${esc(plan.id)}" ${!plan.exerciseIds.length || state.activeSession || store.getStatus().blocked ? 'disabled' : ''}>Training starten${plan.exerciseIds.length ? '' : ' – keine Übungen'}</button></div>`).join('') : '<p class="empty">Noch keine Trainingspläne vorhanden.</p>'; });
-    $('plan-list').innerHTML = plans.map((plan,index) => `<div class="card sort-row" data-id="${esc(plan.id)}" data-index="${index}"><strong>${esc(plan.name)}</strong><p class="muted">${esc(plan.description)} · ${plan.exerciseIds.length} Übungen</p><div class="row-actions">${rowControls(index,plans.length)}<button data-edit-plan="${esc(plan.id)}">Bearbeiten</button><button data-delete-plan="${esc(plan.id)}">Löschen</button></div></div>`).join('') || '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
-    $('exercise-list').innerHTML = state.exercises.map(exercise => `<div class="card"><strong>${esc(exercise.name)}</strong><p class="muted">${exercise.source==='builtin'?'Grundbibliothek':'Eigene Übung'} · ${esc(weightLabel(exercise))} · ${exercise.repetitions} Wiederholungen</p><button class="btn-secondary" data-edit-exercise="${esc(exercise.id)}">Bearbeiten</button></div>`).join('') || '<p class="empty">Keine Übungen vorhanden.</p>';
+    document.querySelectorAll('[data-plan-list]').forEach(list => { list.innerHTML = plans.length ? plans.map(plan => `<div class="card plan-summary"><strong>${esc(plan.name)}</strong><p class="muted">${planDetails(plan)}</p><button class="btn-secondary" data-start-plan="${esc(plan.id)}" ${!plan.exerciseIds.length || state.activeSession || store.getStatus().blocked ? 'disabled' : ''}>Training starten${plan.exerciseIds.length ? '' : ' – keine Übungen'}</button></div>`).join('') : '<p class="empty">Noch keine Trainingspläne vorhanden.</p>'; });
+    $('plan-list').innerHTML = plans.map((plan,index) => `<div class="card sort-row" data-id="${esc(plan.id)}" data-index="${index}"><strong>${esc(plan.name)}</strong><p class="muted">${planDetails(plan)}</p><div class="row-actions">${rowControls(index,plans.length)}<button data-edit-plan="${esc(plan.id)}">Bearbeiten</button><button data-delete-plan="${esc(plan.id)}">Löschen</button></div></div>`).join('') || '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
+    renderExerciseList();
     $('active-overview').textContent = state.activeSession ? 'Training „' + state.activeSession.planName + '“ läuft. Du kannst es in der Trainingsansicht fortsetzen.' : 'Noch kein Training gestartet.';
     // The draft editor owns its DOM; background renders never rebuild its fields.
     renderActive();
@@ -68,6 +71,12 @@
     $('import-unavailable').hidden = !state.activeSession;
     const blocked = store.getStatus().blocked || !store.getStatus().loaded;
     document.querySelectorAll('#new-plan, #new-exercise, [data-edit-plan], [data-delete-plan], [data-edit-exercise], .drag-handle, [data-move]').forEach(button => { if(blocked) button.disabled = true; });
+  }
+  function renderExerciseList() {
+    const query = $('exercise-search').value.trim().toLocaleLowerCase('de');
+    const exercises = store.getState().exercises.filter(item => item.name.toLocaleLowerCase('de').includes(query)).sort((a,b) => a.name.localeCompare(b.name, 'de', {sensitivity:'base'}) || a.id.localeCompare(b.id));
+    $('exercise-list').innerHTML = exercises.map(exercise => `<div class="card library-exercise"><div><strong>${esc(exercise.name)}</strong><p class="muted">${esc(numericWeightLabel(exercise))}</p></div><button class="btn-secondary" data-edit-exercise="${esc(exercise.id)}">Bearbeiten</button></div>`).join('') || '<p class="empty">' + (query ? 'Keine passenden Übungen.' : 'Keine Übungen vorhanden.') + '</p>';
+    if (store.getStatus().blocked) $('exercise-list').querySelectorAll('button').forEach(button => {button.disabled=true;});
   }
   function renderActive() {
     const session = store.getState().activeSession;
@@ -169,27 +178,27 @@
     return new Promise(resolve => dialog.addEventListener('close', () => resolve(dialog.returnValue === 'delete'), {once:true}));
   }
   const confirmDelete = text => confirmAction(text, 'Löschen bestätigen', 'Löschen');
-  function exerciseEditor(id = null, planId = null) {
+  function exerciseEditor(id = null) {
     const exercise = id ? store.getState().exercises.find(item => item.id===id) : {name:'',weightKg:null,repetitions:10,isMax:false,source:'custom'};
-    addingToPlan = planId;
     $('exercise-editor').hidden = false;
-    $('exercise-editor').innerHTML = `<form class="card" id="exercise-form" data-id="${esc(id || '')}"><h2>${id?'Übung bearbeiten':'Eigene Übung erstellen'}</h2><label>Name<input name="name" required value="${esc(exercise.name)}"></label><label>Gewicht (kg)<input name="weight" inputmode="decimal" type="text" value="${exercise.weightKg===null?'':exercise.weightKg}" ${exercise.isMax?'disabled':''}></label><label class="check"><input name="max" type="checkbox" ${exercise.isMax?'checked':''}> MAX-Modus</label><label>Wiederholungen<input name="repetitions" type="number" min="1" step="1" required value="${exercise.repetitions}"></label><p class="muted">Gewicht darf leer bleiben. Bei MAX bleibt das vorherige Gewicht erhalten.</p><button class="btn-primary" type="submit">Übung speichern</button><button class="btn-secondary" type="button" id="cancel-exercise">Abbrechen</button>${id && exercise.source==='custom'?`<button class="btn-danger" type="button" data-delete-exercise="${esc(id)}">Übung dauerhaft löschen</button>`:''}</form>`;
-    showView('exercises'); $('exercise-form').elements.name.focus();
+    $('title-exercise-editor').textContent = id ? 'Übung bearbeiten' : 'Eigene Übung erstellen';
+    $('exercise-editor').innerHTML = `<form class="card" id="exercise-form" data-id="${esc(id || '')}" data-original="${esc(JSON.stringify(exercise))}"><label>Name<input name="name" required value="${esc(exercise.name)}"></label><label>Gewicht (kg)<input name="weight" inputmode="decimal" type="text" value="${exercise.weightKg===null?'':exercise.weightKg}"></label><p class="muted">Gewichte gelten in allen Trainingsplänen. Gewicht darf leer bleiben.</p><p id="exercise-error" class="storage-error" role="alert" hidden></p><button class="btn-primary" type="submit">Übung speichern</button><button class="btn-secondary" type="button" id="cancel-exercise">Abbrechen</button>${id && exercise.source==='custom'?`<button class="btn-danger" type="button" data-delete-exercise="${esc(id)}">Übung dauerhaft löschen</button>`:''}</form>`;
+    showView('exercise-editor', {focusHeading:false});
   }
   function pendingNewExercise() {
     const form = $('plan-new-exercise-form');
-    return !!(form && (form.elements.name.value || form.elements.weight.value || form.elements.max.checked || form.elements.repetitions.value !== '10'));
+    return !!(form && (form.elements.name.value || form.elements.weight.value));
   }
   function hasPlanChanges() { return management.draftChanged(planDraft) || pendingNewExercise(); }
   function addNewDraftExercise() {
     const form = $('plan-new-exercise-form');
     if (!form.reportValidity()) return false;
     try {
-      const exercise = D.createExercise({name:form.elements.name.value.trim(), weightKg:form.elements.weight.value, isMax:form.elements.max.checked, repetitions:Number(form.elements.repetitions.value)});
+      const exercise = D.createExercise({name:form.elements.name.value.trim(), weightKg:form.elements.weight.value, isMax:false, repetitions:10});
       const key = name => name.trim().replace(/\s+/gu, ' ').toLocaleLowerCase('de');
       if (planDraft.exercises.some(item => key(item.name) === key(exercise.name))) throw new Error('Doppelte Übungsnamen.');
       planDraft.exercises.push(exercise); planDraft.plan.exerciseIds.push(exercise.id);
-      form.reset(); form.elements.weight.disabled = false; renderPlanExercises(); planMessage('');
+      form.reset(); renderPlanExercises(); planMessage('');
       return true;
     } catch (error) { planMessage(error.message); return false; }
   }
@@ -207,14 +216,14 @@
     const plan = planDraft.plan;
     $('plan-editor').hidden = false;
     $('title-plan-editor').textContent = id ? 'Trainingsplan bearbeiten' : 'Trainingsplan erstellen';
-    $('plan-editor').innerHTML = `<form class="card" id="plan-form"><label>Name<input name="name" required value="${esc(plan.name)}"></label><label>Beschreibung<textarea name="description">${esc(plan.description)}</textarea></label><p class="muted">Änderungen werden erst beim Speichern übernommen. Gewichte gelten in allen Plänen derselben Übung.</p><button class="btn-primary" type="submit">Speichern</button><button class="btn-secondary" type="button" id="close-plan">Zurück zur Planübersicht</button></form>
+    $('plan-editor').innerHTML = `<form class="card compact-plan-form" id="plan-form"><label>Name<input name="name" required value="${esc(plan.name)}"></label><label>Beschreibung<textarea name="description" rows="2">${esc(plan.description)}</textarea></label><p class="muted">Änderungen beim Verlassen speichern. Gewichte gelten in allen Plänen.</p></form>
       <p class="card storage-error" id="plan-error" role="alert" hidden></p>
-      <div class="card"><h2>Übungen im Plan</h2><div id="plan-exercises" class="sortable" data-sort="draft"></div><form id="add-exercise-form"><label>Übung auswählen<select name="exercise" id="exercise-choice"></select></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form></div>
-      <form class="card" id="plan-new-exercise-form"><h2>Neue eigene Übung</h2><label>Name<input name="name"></label><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal"></label><label class="check"><input name="max" type="checkbox"> MAX-Modus</label><label>Wiederholungen<input name="repetitions" type="number" min="1" step="1" required value="10"></label><button class="btn-secondary" type="submit">Zum Entwurf hinzufügen</button></form>`;
+      <div class="plan-exercise-heading"><h2>Übungen im Plan</h2><p id="plan-order-status" class="muted" role="status" aria-live="polite"></p></div><div id="plan-exercises" class="sortable" data-sort="draft"></div>
+      <details class="card exercise-add-panel" open><summary>Übungen hinzufügen</summary><form id="add-exercise-form"><label>Vorhandene Übung<select name="exercise" id="exercise-choice"></select></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form><form id="plan-new-exercise-form"><h2>Eigene Übung</h2><label>Name<input name="name"></label><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal"></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form></details>`;
     renderPlanExercises(); displayView('plan-editor', {focusHeading: false});
   }
   function updatePlanChoices() {
-    const available = planDraft.exercises.filter(item => !planDraft.plan.exerciseIds.includes(item.id));
+    const available = planDraft.exercises.filter(item => !planDraft.plan.exerciseIds.includes(item.id)).sort((a,b)=>a.name.localeCompare(b.name,'de',{sensitivity:'base'}));
     $('exercise-choice').innerHTML = available.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
     $('add-exercise-form').querySelector('button').disabled = !available.length;
   }
@@ -226,10 +235,12 @@
       const exercise = planDraft.exercises.find(item => item.id === id);
       let row = Array.from(list.children).find(item => item.dataset.id === id);
       if (!row) {
-        row = document.createElement('div'); row.className = 'sort-row'; row.dataset.id = id;
-        row.innerHTML = `<strong>${esc(exercise.name)}</strong><label>Gewicht (kg)<input data-draft-field="weightKg" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : esc(exercise.weightKg)}" ${exercise.isMax ? 'disabled' : ''}></label><label class="check"><input data-draft-field="isMax" type="checkbox" ${exercise.isMax ? 'checked' : ''}> MAX-Modus</label><label>Wiederholungen<input data-draft-field="repetitions" type="number" min="1" step="1" value="${exercise.repetitions}" required></label><div class="row-actions">${rowControls(index,order.length)}<button type="button" data-remove-exercise="${esc(id)}">Entfernen</button></div>`;
+        row = document.createElement('div'); row.className = 'card sort-row plan-exercise'; row.dataset.id = id;
+        row.innerHTML = `<div class="plan-exercise-title"><span class="exercise-position" aria-label="Position"></span><label class="exercise-name-field">Übungsname<input data-draft-field="name" type="text" value="${esc(exercise.name)}" required></label></div><label class="compact-weight">Gewicht (kg)<input data-draft-field="weightKg" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : esc(exercise.weightKg)}"></label><div class="row-actions">${rowControls(index,order.length)}<button type="button" data-remove-exercise="${esc(id)}">Entfernen</button></div>`;
       }
       row.dataset.index = index;
+      row.querySelector('.exercise-position').textContent = index + 1;
+      row.setAttribute('aria-label', 'Position ' + (index + 1) + ': ' + exercise.name);
       row.querySelector('[data-move="-1"]').disabled = index === 0;
       row.querySelector('[data-move="1"]').disabled = index === order.length - 1;
       if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
@@ -239,29 +250,44 @@
   function reorderDraft(from, to) {
     const order = planDraft.plan.exerciseIds;
     if (to < 0 || to >= order.length) return;
+    const moved = order[from];
     order.splice(to, 0, order.splice(from, 1)[0]); renderPlanExercises();
+    $('plan-order-status').textContent = planDraft.exercises.find(item=>item.id===moved).name + ' auf Position ' + (to + 1);
   }
   document.addEventListener('input', event => {
+    if (event.target.id === 'exercise-search') { renderExerciseList(); return; }
     if (!planDraft) return;
     const field = event.target;
     if (field.form?.id === 'plan-form') planDraft.plan[field.name] = field.value;
     else if (field.dataset.draftField) {
       const exercise = planDraft.exercises.find(item => item.id === field.closest('.sort-row').dataset.id);
-      exercise[field.dataset.draftField] = field.type === 'checkbox' ? field.checked : field.dataset.draftField === 'repetitions' ? Number(field.value) : field.value;
-      if (field.dataset.draftField === 'isMax') field.closest('.sort-row').querySelector('[data-draft-field="weightKg"]').disabled = field.checked;
+      exercise[field.dataset.draftField] = field.value;
     }
   });
-  document.addEventListener('change', event => { if(event.target.name==='max' && ['exercise-form','training-weight-form','plan-new-exercise-form'].includes(event.target.form?.id)) event.target.form.elements.weight.disabled=event.target.checked; });
+  document.addEventListener('change', event => { if(event.target.name==='max' && ['training-weight-form'].includes(event.target.form?.id)) event.target.form.elements.weight.disabled=event.target.checked; });
   document.addEventListener('submit', event => {
     if(!['exercise-form','plan-form','add-exercise-form','training-weight-form','plan-new-exercise-form'].includes(event.target.id)) return;
     event.preventDefault(); const form=event.target;
     if(form.id==='training-weight-form') {
       if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:form.elements.max.checked,repetitions:Number(form.elements.repetitions.value)},JSON.parse(form.dataset.context)))) $('training-weight-editor').hidden=true;
     } else if(form.id==='exercise-form') {
-      const success=result(()=>management.saveExercise(form.dataset.id || null,{name:form.elements.name.value.trim(),weightKg:form.elements.weight.value,repetitions:Number(form.elements.repetitions.value),isMax:form.elements.max.checked},addingToPlan));
-      if(success) { $('exercise-editor').hidden=true; if(addingToPlan) { showView('plans'); planEditor(addingToPlan); } addingToPlan=null; }
+      const original = JSON.parse(form.dataset.original);
+      store.refresh();
+      const current = form.dataset.id ? store.getState().exercises.find(item=>item.id===form.dataset.id) : null;
+      const error = $('exercise-error');
+      if (form.dataset.id && JSON.stringify(current) !== JSON.stringify(original)) { error.textContent = 'Diese Übung wurde inzwischen geändert oder gelöscht. Bitte erneut öffnen.'; error.hidden = false; return; }
+      const previousIds = new Set(store.getState().exercises.map(item=>item.id));
+      const success=result(()=>management.saveExercise(form.dataset.id || null,{name:form.elements.name.value === original.name ? original.name : form.elements.name.value.trim(),weightKg:form.elements.weight.value,repetitions:original.repetitions,isMax:original.isMax}));
+      if(success) { $('exercise-editor').hidden=true; showView('exercises'); }
+      else {
+        if (store.getStatus().dirty && !store.getStatus().blocked) {
+          const pending = store.getState().exercises.find(item => form.dataset.id ? item.id === form.dataset.id : !previousIds.has(item.id));
+          if (pending) { form.dataset.id = pending.id; form.dataset.original = JSON.stringify(pending); }
+        }
+        error.textContent=store.getStatus().message;error.hidden=false;
+      }
     } else if(form.id==='plan-form') {
-      if (savePlanDraft()) { planDraft = null; editingPlan = null; render(); displayView('plans'); }
+      showView('plans');
     } else if(form.id === 'plan-new-exercise-form') {
       addNewDraftExercise();
     } else if (planDraft) {
@@ -284,13 +310,12 @@
     else if(button.dataset.tab) showView(button.dataset.tab==='training'?(store.getState().activeSession?'active':trainingView):'settings');
     else if(button.id==='new-exercise') exerciseEditor();
     else if(button.dataset.editExercise) exerciseEditor(button.dataset.editExercise);
-    else if(button.id==='cancel-exercise') { $('exercise-editor').hidden=true; if(addingToPlan) showView('plans'); addingToPlan=null; }
+    else if(button.id==='cancel-exercise') { $('exercise-editor').hidden=true; showView('exercises'); }
     else if(button.id==='new-plan') planEditor();
     else if(button.dataset.editPlan) planEditor(button.dataset.editPlan);
-    else if(button.id==='close-plan') showView('plans');
-    else if(button.id==='create-for-plan') exerciseEditor(null,editingPlan);
+    else if(button.id==='back-plan') showView('plans');
     else if(button.dataset.removeExercise && planDraft) { planDraft.plan.exerciseIds = planDraft.plan.exerciseIds.filter(id => id !== button.dataset.removeExercise); renderPlanExercises(); }
-    else if(button.dataset.deleteExercise && await confirmDelete('Diese eigene Übung dauerhaft löschen und aus allen Trainingsplänen entfernen? Gespeicherte und laufende Einheiten bleiben unverändert.')) { if(result(()=>management.deleteExercise(button.dataset.deleteExercise))) $('exercise-editor').hidden=true; }
+    else if(button.dataset.deleteExercise && await confirmDelete('Diese eigene Übung dauerhaft löschen und aus allen Trainingsplänen entfernen? Gespeicherte und laufende Einheiten bleiben unverändert.')) { if(result(()=>management.deleteExercise(button.dataset.deleteExercise))) { $('exercise-editor').hidden=true; showView('exercises'); } }
     else if(button.dataset.deletePlan && await confirmDelete('Diesen Trainingsplan löschen? Übungen sowie gespeicherte und laufende Einheiten bleiben erhalten.')) { if(result(()=>management.deletePlan(button.dataset.deletePlan))) { editingPlan=null; $('plan-editor').hidden=true; } }
     else if(button.dataset.move) {
       const row = button.closest('.sort-row'), list = row.parentElement, from = Number(row.dataset.index), direction = button.dataset.move;
@@ -325,7 +350,7 @@
     away = true;
     store.refresh();
     if (store.getStatus().loaded && !store.getStatus().blocked) store.update(state => {
-      state.settings.lastView = currentView === 'plan-editor' ? 'plans' : currentView;
+      state.settings.lastView = savedView(currentView);
       state.settings.lastBackgroundAt = Date.now();
     });
   }
@@ -334,7 +359,7 @@
     store.refresh();
     const state = store.getState(), now = Date.now();
     const entry = KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
-    const view = planDraft && currentView === 'plan-editor' && entry === 'plans' ? 'plan-editor' : entry;
+    const view = planDraft && currentView === 'plan-editor' && entry === 'plans' ? 'plan-editor' : currentView === 'exercise-editor' && entry === 'exercises' ? 'exercise-editor' : entry;
     if (view === 'summary') {
       const last = state.completedSessions.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
       summaryId = last?.id || null;
@@ -344,7 +369,7 @@
       candidate.settings.lastOpenedDay = KairosTrainingNavigation.day(now);
       candidate.settings.lastBackgroundAt = null;
       // Save the actual view while a leave decision is pending. displayView records its accepted destination.
-      candidate.settings.lastView = planDraft && currentView === 'plan-editor' ? 'plans' : view;
+      candidate.settings.lastView = planDraft && currentView === 'plan-editor' ? 'plans' : savedView(view);
     });
     render(); showView(view, {focusHeading: false});
   }

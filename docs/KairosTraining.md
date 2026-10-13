@@ -241,9 +241,9 @@ Dort können:
 - Übungen entfernt werden
 - die Reihenfolge der Übungen verändert werden
 
-Erstellen und Bearbeiten erfolgen in einer eigenen Editoransicht. Name, Beschreibung, Übungszuordnungen, Reihenfolge, neue eigene Übungen sowie Gewichte, MAX-Modus und Wiederholungen werden gemeinsam als lokaler Entwurf bearbeitet. Übungen können bereits beim Erstellen hinzugefügt werden. Beim Öffnen wird kein Eingabefeld automatisch fokussiert.
+Erstellen und Bearbeiten erfolgen in einer eigenen Editoransicht. Name, Beschreibung, Übungszuordnungen, Reihenfolge, neue eigene Übungen sowie Gewichte werden gemeinsam als lokaler Entwurf bearbeitet. Übungsnamen und Gewichte gelten global. Jede Übung steht in einer kompakten Karte mit Positionsnummer, Sortierung und Entfernen. MAX-Modus und Wiederholungen werden in Planverwaltung und Bibliothek nicht mehr angeboten; bestehende Werte bleiben intern unverändert erhalten. Neue eigene Übungen erhalten weiterhin zehn Wiederholungen und zunächst keinen MAX-Modus. Übungen können bereits beim Erstellen hinzugefügt werden. Beim Öffnen wird kein Eingabefeld automatisch fokussiert. Vorhandene und eigene Übungen werden über kompakte Formulare mit einheitlicher Aktion „Übung hinzufügen“ ergänzt.
 
-Erst „Speichern“ übernimmt den gesamten Entwurf gemeinsam. Nach erfolgreicher Speicherung erscheint die Planübersicht. Bei Speicherfehlern bleiben der bisherige Datenbestand und der Entwurf erhalten; der Editor bleibt geöffnet. Gewichtsänderungen gelten nach dem Speichern global für dieselbe Übung in allen Plänen. Laufende und abgeschlossene Einheiten behalten ihre Momentaufnahmen.
+Der Planeditor hat oben links einen Zurück-Pfeil statt eigener Speichern-/Zurück-Buttons. Ohne Änderungen führt er direkt zur Planübersicht. Bei Änderungen übernimmt erst „Speichern“ im Verlassensdialog den gesamten Entwurf gemeinsam. Nach Speichern oder Verwerfen wird zum gewählten Ziel navigiert; Tabwechsel verwenden denselben Dialog. Bei Speicherfehlern bleiben der bisherige Datenbestand und der Entwurf erhalten; der Editor bleibt geöffnet. Gewichtsänderungen gelten nach dem Speichern global für dieselbe Übung in allen Plänen. Laufende und abgeschlossene Einheiten behalten ihre Momentaufnahmen.
 
 Beim internen Verlassen eines geänderten Entwurfs erscheint ein KAIROS-Dialog mit „Speichern“, „Verwerfen“ und „Abbrechen“. Speichern übernimmt die Änderungen und führt zum gewählten Ziel; Verwerfen entfernt nur den Entwurf; Abbrechen bleibt im Editor. Ohne Änderungen wird direkt gewechselt. Noch nicht hinzugefügte Eingaben für eine neue Übung zählen ebenfalls als ungespeicherte Änderungen und werden beim Speichern nach erfolgreicher Validierung mit übernommen. Ungültige oder unvollständige Eingaben bleiben zur Korrektur erhalten.
 
@@ -267,6 +267,8 @@ Die Änderung betrifft den Trainingsplan und nicht die Übung selbst.
 ---
 
 # 8. Übungen
+
+Die Bibliothek zeigt Übungen alphabetisch sortiert mit Suchfunktion nach Namen und numerischem Gewicht. Wiederholungen, MAX und wiederkehrende Herkunftskennzeichnungen entfallen in dieser Übersicht. Erstellen/Bearbeiten öffnet eine eigene Ansicht ohne Eingabe-Autofokus mit Name und Gewicht sowie „Übung speichern“ und „Abbrechen“. Bestehende interne MAX-/Wiederholungswerte werden dabei nicht zurückgesetzt. Die MAX-Bedienung im aktiven Training bleibt unverändert.
 
 Training V1 enthält eine verbindlich freigegebene Grundbibliothek mit 52 Fitnessübungen gemäß Abschnitt 8.1. Sie deckt Brust, Rücken, Schultern, Arme, Beine, Bauch und Unterarme ab und berücksichtigt Maschinen, Kabelzüge, Kurz- und Langhanteln sowie Körpergewichtsübungen.
 

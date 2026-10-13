@@ -1,7 +1,7 @@
 (() => {
   'use strict';
-  // Unique identifier for this temporary diagnostic build based on published main.
-  const BUILD = 'training-compact-diagnostics-1 (Basis feae196, Shell v14)';
+  // Identifies loaded diagnostic code; shell versions come only from worker replies.
+  const BUILD = 'training-compact-diagnostics-2';
   const lastScroll = new Map();
   const history = [];
   const liveButton = document.getElementById('diagnostics-live');

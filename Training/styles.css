@@ -76,3 +76,33 @@ progress { width: 100%; height: 12px; accent-color: var(--accent); }
 .diagnostics-dialog-header h2 { margin-bottom: 8px; }
 .diagnostics-dialog-body { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
 #diagnostics-live-copy { flex: 0 0 auto; margin: 0; }
+
+/* v16 management components; application shell and navigation rules remain unchanged. */
+.editor-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.editor-heading h1 { flex: 1; margin: 0; text-align: left; }
+.back-button { flex: 0 0 44px; min-height: 44px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); color: var(--text); font-size: 1.5rem; }
+.compact-plan-form { padding: 14px; }
+.compact-plan-form label { margin: 0 0 10px; }
+.compact-plan-form textarea { min-height: 64px; }
+.compact-plan-form p { margin-bottom: 0; font-size: .8rem; }
+.plan-exercise-heading h2 { margin-bottom: 4px; }
+#plan-order-status { min-height: 1.2em; margin-bottom: 8px; font-size: .8rem; }
+#plan-exercises .plan-exercise { padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+.plan-exercise-title { display: flex; align-items: center; gap: 10px; }
+.exercise-position { flex: 0 0 28px; color: var(--accent); font-weight: 700; font-size: 1.1rem; text-align: center; }
+.plan-exercise .exercise-name-field { flex: 1; min-width: 0; margin: 0; font-size: .75rem; }
+.plan-exercise .exercise-name-field input { font-weight: 600; }
+.plan-exercise .compact-weight { margin: 8px 0; font-size: .8rem; }
+.plan-exercise .compact-weight input { max-width: 160px; }
+.plan-exercise .row-actions { gap: 6px; }
+.exercise-add-panel { padding: 14px; }
+.exercise-add-panel summary { font-weight: 600; cursor: pointer; min-height: 32px; }
+.exercise-add-panel form + form { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.exercise-add-panel h2 { margin-bottom: 4px; }
+.exercise-add-panel label { margin: 8px 0; }
+.library-search { margin: 14px 0; }
+.library-exercise { display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 10px; }
+.library-exercise > div { flex: 1; min-width: 0; }
+.library-exercise p { margin: 4px 0 0; }
+.library-exercise button { width: auto; flex: 0 0 auto; padding: 8px 10px; }
+[data-plan-list] .plan-summary { padding: 14px; }

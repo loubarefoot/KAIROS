@@ -1,23 +1,23 @@
 'use strict';
 // Bump VERSION whenever any shell file changes. Keep the previous worker until
 // the new complete shell is installed and all old controlled pages are closed.
-const VERSION = 'v15';
+const VERSION = 'v16';
 const PREFIX = 'kairos-training-shell:' + self.registration.scope + ':';
 const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'diagnostics.js'];
 const HASHES = {
-  "index.html": "03e53c2eaeeeb97a2abd79708ed8e4a2cfe8eb32a7bb3351ea3427cf4bd1b089",
-  "styles.css": "4fca4de0e7b7e8af120a8b4d36c6eba1382cc92107374c89afb1a18e75619e88",
+  "index.html": "71ce6ea69df79c5bbfbed6efb80572d1ac4748b2de5d41bc6ea718f16feda82d",
+  "styles.css": "69e23347738e1a4de077125585105d895261e65702a63a17089da54857148c5b",
   "data.js": "0fc65cd65a9287dea9c4e0e3b8df48692c4fd80b0ade63889db725e1ec86f616",
   "library.js": "f27ed498f9c4a22bc1e6e2ea223aa8806441acf62776f0a583a45a48fd5dfbc8",
   "management.js": "d1ad86c853f0ab79f4e6f66901934ee3a067eba6840b0ba87497529c7f6309f9",
   "session.js": "beda560abb6ec0b112433cf3d8c564055099a6fcf7cc37437f9a0f635639bf75",
   "navigation.js": "992d4e66d8521ca3abba93c4caa48f9bea8a915210f414a8e85b0876c720c95f",
-  "app.js": "6b86fd61e9d7d6ca0d35f39aa0491b31222f51fd412ecfc505c10e1e1bd0839c",
+  "app.js": "2208e569c62ec0c4b9f297cab56489f7e977db49cec1c0a531157ac7364d9371",
   "manifest.webmanifest": "2c43aaf1be2d8ad29a7f938f12654d52ed60d72c22aee254b683ab443a9fa7bc",
   "icons/icon-192.png": "7b853e1539b7b5b4741f3d84b363a14f698d8263c4c2fb85de5af31d817c8bf1",
   "icons/icon-512.png": "0fabf101438a17bd21f91ef09f5b6aabfcea15b86f2b350bbfe128f25e5856ac",
   "icons/apple-touch-icon.png": "d1077412ad73e2af11a0f35693be48f4363d20a7aae8748768515be76506ecd9",
-  "diagnostics.js": "a56d494f93a66275e9fb63781895de9a509ee78ad01c3f61b9b7f6d1b566aaa8"
+  "diagnostics.js": "f62ea1b8a53a1f73a501ba1414fd7428e5fcd6b06368bc01d16b43c75c44f24e"
 };
 // Deterministic across worker restarts, distinct for every shell content set.
 const cacheName = crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(HASHES))).then(buffer => PREFIX + VERSION + ':' + Array.from(new Uint8Array(buffer), byte => byte.toString(16).padStart(2, '0')).join(''));

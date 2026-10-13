@@ -106,3 +106,8 @@ Implementierung auf dem Arbeitsbranch vorbereitet, noch nicht veröffentlicht.
 ### Auftrag 53 – Wiederaufnahme und Schutz unberührter Stammdaten
 
 Die allgemeinen Tages-/60-Minuten-Regeln werden auch mit offenem Planeditor ausgewertet. Ein erforderlicher Wechsel wird bei Änderungen durch den vorhandenen Dreiwege-Dialog abgesichert; Abbrechen behält den Entwurf. Nur eine reguläre kurze Rückkehr zur Planverwaltung erhält den dokumentlokalen Editor unmittelbar. Das korrigiert die bisher zu weit gefasste Editor-Ausnahme. Beim Plan-Commit werden nur tatsächlich bearbeitete Übungsfelder übernommen und neue Übungen hinzugefügt; unveränderte Stammdaten werden nicht normalisiert. Keine neue Produktfunktion oder Datenmigration; weiterhin unveröffentlicht auf dem Arbeitsbranch.
+
+
+## 13.10.2026 – Auftrag 55: Kompakte Verwaltungsoberflächen
+
+Die beauftragte v16-Oberfläche speichert Planentwürfe ausschließlich nach ausdrücklicher Wahl im Verlassensdialog. Zurück-Pfeil und Tabs führen nach Speichern/Verwerfen zum gewählten Ziel. MAX und Wiederholungen entfallen in Planverwaltung/Bibliothek als sichtbare Eingaben; vorhandene Werte bleiben erhalten, neue Übungen verwenden zehn Wiederholungen. Die Suche und alphabetische Anzeige verändern keine gespeicherten Reihenfolgen. Die eigene Übungsansicht benötigt kein neues persistiertes Schemafeld. Die Diagnose trennt die Kennung geladener Diagnosefunktionen von dynamisch abgefragten Shell-Versionen. Noch keine Veröffentlichung.

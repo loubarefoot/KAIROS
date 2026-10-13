@@ -63,16 +63,21 @@
     </section>
 
     <section class="view" id="view-plan-editor" data-area="settings" aria-labelledby="title-plan-editor" hidden>
-      <h1 id="title-plan-editor" tabindex="-1">Trainingsplan bearbeiten</h1>
+      <div class="editor-heading"><button type="button" id="back-plan" class="back-button" aria-label="Zurück zur Planübersicht">←</button><h1 id="title-plan-editor" tabindex="-1">Trainingsplan bearbeiten</h1></div>
       <div id="plan-editor"></div>
     </section>
 
     <section class="view" id="view-exercises" data-area="settings" aria-labelledby="title-exercises" hidden>
       <h1 id="title-exercises" tabindex="-1">Übungen</h1>
       <button class="btn-primary" id="new-exercise">Eigene Übung erstellen</button>
-      <div id="exercise-editor" hidden></div>
+      <label class="library-search">Übungen suchen<input id="exercise-search" type="search" placeholder="Übungsname" autocomplete="off"></label>
       <div id="exercise-list"></div>
       <button class="btn-secondary" data-view="settings">Zurück zu Einstellungen</button>
+    </section>
+
+    <section class="view" id="view-exercise-editor" data-area="settings" aria-labelledby="title-exercise-editor" hidden>
+      <h1 id="title-exercise-editor" tabindex="-1">Übung bearbeiten</h1>
+      <div id="exercise-editor"></div>
     </section>
 
     <section class="view" id="view-backup" data-area="settings" aria-labelledby="title-backup" hidden>

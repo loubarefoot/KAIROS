@@ -209,3 +209,14 @@ Shell v15 und sämtliche Shell-Prüfsummen sind für spätere Veröffentlichung 
 ## Auftrag 53 – Review-Korrekturen
 
 Die Editor-Wiederaufnahme respektiert wieder die allgemeinen Tages-/60-Minuten-Regeln samt Entwurfsdialog. Plan-Speichern normalisiert keine unberührten Stammdaten. Ergänzte Tests prüfen Tageswechsel und exakte 60-Minuten-Grenze mit unveränderten/geänderten Entwürfen, alle Dialogaktionen einschließlich Erhalt nach Abbrechen, Verwerfen nach Gewichtsänderung/neuen Übungen, MAX-Rückwechsel, echte Mouse-Pointer-/Touch-Sortierung mit Abbruch sowie Konflikte durch gelöschte Pläne/Übungen und unveränderte Stammdaten. Shell v15 bleibt unveröffentlicht; Hashes werden auf den korrigierten Stand aktualisiert.
+
+
+## Auftrag 55 – Training v16 UX (Arbeitsbranch, unveröffentlicht)
+
+Plan- und Übungskarten sind kompakter. Planbeschriftungen verwenden Singular/Plural und zeigen bei leerer Beschreibung keinen Trennpunkt. Der Planeditor nutzt einen Zurück-Pfeil und ausschließlich den bestehenden Dreiwege-Dialog zum Übernehmen oder Verwerfen; sämtliche Felder bleiben im v15-Entwurf. Übungen können im Entwurf global umbenannt und gewichtet werden; Positionsnummern und eine Live-Meldung bestätigen Sortierungen.
+
+Bibliothek und vorhandene Übungsauswahl sind alphabetisch; Bibliotheksuche arbeitet ausschließlich auf einer Anzeige-Kopie und sortiert den Store nicht um. Die eigene Übungsbearbeitungsansicht wird intern als `exercise-editor` geführt, gespeichert bleibt `settings.lastView: exercises`; bei kurzer Rückkehr in dasselbe Dokument bleibt das offene Formular erhalten. Kein neues Schemafeld und keine Migration.
+
+MAX und Wiederholungen sind in Plan-/Bibliotheksoberflächen ausgeblendet, bleiben aber im Datenbestand erhalten. Numerische Eingaben bearbeiten `weightKg`, ohne einen vorhandenen `isMax`-Wert oder Wiederholungen zurückzusetzen. Neue eigene Übungen erhalten zehn Wiederholungen und `isMax: false`. Aktives Training und seine MAX-Bedienung bleiben unverändert. Die Übungsbearbeitung prüft ihren Ausgangskontext vor Übernahme, damit externe Änderungen ausgeblendeter Felder nicht überschrieben werden. Speicherfehler behalten ausstehende Änderungen wie bisher; ein erneutes Speichern verwendet die bereits erzeugte Übungs-ID statt einer zweiten Anlage.
+
+Die Diagnose kennzeichnet die geladenen Diagnosefunktionen ohne fest eingetragene Shell-Version. Worker-Versionen stammen weiterhin aus Antworten der tatsächlich abgefragten Worker. Shell v16 und alle 13 Prüfsummen werden gemeinsam vorbereitet. Tests: bestehende Daten-/Entwurfsregressionen, angepasste Editor-/Lifecycle-/Pointer-Prüfungen, `ux-browser.cjs` für Karten, Suche, eigene Bearbeitung, Verlassensdialog, globale Werte, ausgeblendete Daten, Wiederholung und Konflikte. Weight, Seitenhülle, Mindesthöhe und Bottom Navigation bleiben unverändert.

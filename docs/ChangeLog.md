@@ -241,3 +241,13 @@ Vorbereitet auf `feat/training-plan-management-v1`; kein Commit, Push, Merge ode
 - Unberührte Übungsfelder und unveränderte Plannamen bleiben erhalten; keine automatische Bereinigung der Bibliothek beim Plan-Speichern.
 - Gezielte Daten- und Browserregressionen für Lebenszyklus, Verwerfen globaler/neuer Übungen, MAX, Pointer/Touch und Löschkonflikte ergänzt. Shell v15 mit aktualisierten Prüfsummen vorbereitet.
 - Weight, CSS, Viewport-Metadaten und Navigationshülle unverändert. Kein Commit, Push, Merge oder Deployment.
+
+
+### Auftrag 55 – Training v16 UX (unveröffentlicht)
+
+- Kompakte Plan-/Übungskarten, korrekte Anzahlbeschriftung, Zurück-Pfeil im Planeditor und Übernahme ausschließlich über den Verlassensdialog.
+- Globale Übungsnamen und Gewichte direkt bearbeitbar, klare Positionsnummern und Sortiermeldung, kompakte einheitliche Hinzufügeaktionen.
+- Alphabetische Bibliothek mit Suche und eigener Bearbeitungsansicht ohne Autofokus; MAX-/Wiederholungsfelder ausgeblendet, intern erhalten. Neue Übungen weiterhin mit zehn Wiederholungen.
+- Diagnose ohne veraltete v14-Beschriftung; v16-Shell/Hash-Vorbereitung und Browserregressionen. Bei Code-Review Wiederholbarkeit einer fehlgeschlagenen Neuanlage im eigenen Übungseditor abgesichert.
+
+Vorbereitet auf `feat/training-v16-ux`; kein Commit, Push, Merge oder Deployment.
