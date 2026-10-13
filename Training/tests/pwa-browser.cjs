@@ -47,18 +47,25 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   assert.ok(await page.evaluate(async()=>!!(await caches.keys()).find(k=>k.includes(':v2:'))));
   assert.equal(await page.locator('link[rel=manifest]').count(),0); // Old page stays on v2 until closed.
   await page.close();const current=await context.newPage();current.on('pageerror',e=>errors.push(e.message));await current.goto(url);
-  await current.waitForFunction(async()=>!(await navigator.serviceWorker.getRegistration()).waiting);
+  await current.waitForFunction(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(registration.waiting || registration.active?.state!=='activated')return false;
+   return new Promise(resolve=>{const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(false);},1000);channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data.version==='v15');};registration.active.postMessage({type:'KAIROS_TRAINING_DIAGNOSTICS'},[channel.port2]);});
+  });
   await current.reload();await current.locator('#view-active').waitFor({state:'visible'});
   assert.equal(await current.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).activeSession.startedAt),state.activeSession.startedAt);
   assert.deepEqual(await current.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).activeSession.exercises.map(e=>e.status)),state.activeSession.exercises.map(e=>e.status));
   const registration=await current.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();return{scope:r.scope,script:r.active.scriptURL};});
   assert.deepEqual(registration,{scope:url,script:url+'sw.js'});
-  const cdp=await context.newCDPSession(current);let manifest;
+  // Request the served manifest before the CDP parser check; cached navigation can defer its fetch.
+  assert.equal(await current.locator('link[rel=manifest]').count(),1);
+  assert.ok(await current.evaluate(async()=>{const response=await fetch('manifest.webmanifest');return response.ok;}));
+  const cdp=await context.newCDPSession(current);let manifest;await cdp.send('Page.enable');
   for(let attempt=0;attempt<20;attempt++){manifest=await cdp.send('Page.getAppManifest');if(manifest.data)break;await current.waitForTimeout(100);}
-  assert.ok(manifest.data,'Browser manifest must finish loading');
+  assert.ok(manifest.data,'Browser manifest must finish loading: ' + JSON.stringify(manifest));
   assert.deepEqual(manifest.errors,[]);const parsed=JSON.parse(manifest.data);assert.equal(parsed.id,'/KAIROS/Training/');assert.equal(new URL(parsed.start_url,manifest.url).href,url);assert.equal(parsed.display,'standalone');
   assert.equal(await current.locator('meta[name=apple-mobile-web-app-capable]').getAttribute('content'),'yes');
-  const cached=await current.evaluate(async()=>{const names=await caches.keys(),name=names.find(k=>k.includes(':v14:'));const cache=await caches.open(name);return{names,urls:(await cache.keys()).map(r=>r.url)};});
+  const cached=await current.evaluate(async()=>{const names=await caches.keys(),name=names.find(k=>k.includes(':v15:'));const cache=await caches.open(name);return{names,urls:(await cache.keys()).map(r=>r.url)};});
   assert.equal(cached.urls.length,13);assert.ok(cached.urls.every(u=>u.startsWith(url)));assert.ok(!cached.names.some(k=>k.includes(':v2:')));assert.ok(cached.names.includes('weight-regression-cache'));
   for(const width of [320,390,844,1280]){await current.setViewportSize({width,height:844});assert.ok(await current.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   // Network-offline requests must be served by the worker, including new binary resources.
@@ -75,7 +82,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const saved=await current.evaluate(()=>localStorage.getItem('kairos.training.state'));
   assert.deepEqual(errors,[]);await context.close();context=await launch();await context.setOffline(true);
   const restarted=context.pages()[0]||await context.newPage();await restarted.goto(url);await restarted.locator('#view-start').waitFor({state:'visible'});assert.equal(await restarted.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).completedSessions.length),1);
-  console.log('PASS: /KAIROS/Training/, v2 -> v14 waiting/activation, incomplete icon update preserved, manifest identity, 13 cached resources, 4 mobile widths, offline finish/export/import, full browser-process offline restart, Weight data/cache preserved.');
+  console.log('PASS: /KAIROS/Training/, v2 -> v15 waiting/activation, incomplete icon update preserved, manifest identity, 13 cached resources, 4 mobile widths, offline finish/export/import, full browser-process offline restart, Weight data/cache preserved.');
   await context.setOffline(false);
   const chartPath=process.env.KAIROS_CHART_PATH;
   if(!chartPath)throw new Error('Set KAIROS_CHART_PATH to the unmodified Chart.js 4.4.1 file for Weight regression.');

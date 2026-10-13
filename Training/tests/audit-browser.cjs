@@ -118,7 +118,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   assert.deepEqual(await page.locator('.tabbar').boundingBox(),keyboardBefore);
   assert.equal(await page.locator('.tabbar').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(29, 33, 38)');
   assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).backgroundColor),'rgb(20, 23, 27)');
-  await page.locator('#close-plan').click();
+  await page.locator('#close-plan').click();await page.locator('#plan-leave-dialog [value=discard]').click();
   console.log('PASS: simulated visual viewport contraction/restoration does not lift the fixed navigation; input focus preserved, bottom background painted.');
   await page.locator('[data-tab=training]').click();
   console.log('PASS: short/long views, Weight-style document scrolling, bottom anchoring across five viewports, reopen focus and keyboard indicators.');
@@ -135,7 +135,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.locator('[data-tab=settings]').click();await page.getByRole('button',{name:'Trainingspläne öffnen',exact:true}).click();
   await page.locator('#plan-list [data-index="0"] [data-move="1"]').focus();await page.keyboard.press('Enter');assert.ok(await page.locator('#plan-list [data-index="1"] [data-move="1"]').evaluate(e=>e===document.activeElement));await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).plans.find(p=>p.id===JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).planOrder[2]).name),'One');
   await page.locator('#plan-list [data-index="2"] [data-edit-plan]').click();await page.locator('#plan-exercises [data-index="0"] [data-move="1"]').focus();await page.keyboard.press('Enter');assert.ok(await page.locator('#plan-exercises [data-index="1"] [data-move="1"]').evaluate(e=>e===document.activeElement));await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>document.activeElement.dataset.move),'-1');
-  await page.locator('[data-tab=training]').click();await page.locator('#finish-training').click();await page.locator('#confirm-dialog [value=delete]').click();await page.locator('#view-summary').waitFor({state:'visible'});
+  await page.locator('#plan-form [type=submit]').click();await page.locator('[data-tab=training]').click();await page.locator('#finish-training').click();await page.locator('#confirm-dialog [value=delete]').click();await page.locator('#view-summary').waitFor({state:'visible'});
   await page.getByRole('button',{name:'Zur Trainingsübersicht',exact:true}).click();assert.equal(await page.locator('#active-overview').innerText(),'Noch kein Training gestartet.');
   await page.locator('[data-tab=settings]').click();await page.locator('[data-view=backup]').click();
   const raw=await page.evaluate(()=>localStorage.getItem(KairosTrainingData.STORAGE_KEY));const invalid=JSON.parse(raw);invalid.settings.lastOpenedDay='2025-02-29';

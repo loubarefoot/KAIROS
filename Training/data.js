@@ -204,23 +204,23 @@
       return save();
     }
     // Commit destructive transitions only after successful persistence.
-    function commit(change) {
-      if (!loaded || blocked) return report('Training-Daten sind geschützt; der Abschluss kann nicht gespeichert werden.');
+    function commit(change, subject = null) {
+      if (!loaded || blocked) return report(subject ? 'Training-Daten sind geschützt; ' + subject + ' kann nicht gespeichert werden.' : 'Training-Daten sind geschützt; der Abschluss kann nicht gespeichert werden.');
       let candidate;
       try {
         candidate = copy(state); change(candidate); validateState(candidate); validateChange(state, candidate);
-      } catch (error) { return report('Abschluss nicht übernommen: ' + error.message); }
+      } catch (error) { return report((subject || 'Abschluss') + ' nicht übernommen: ' + error.message); }
       try {
         if (backend().getItem(STORAGE_KEY) !== baseline) {
           blocked = true;
-          return report('Training-Daten wurden außerhalb dieser Ansicht geändert. Der Abschluss wurde nicht gespeichert; die aktive Einheit bleibt erhalten.');
+          return report(subject ? 'Training-Daten wurden außerhalb dieser Ansicht geändert. ' + subject + ' wurde nicht gespeichert; vorhandene Daten bleiben erhalten.' : 'Training-Daten wurden außerhalb dieser Ansicht geändert. Der Abschluss wurde nicht gespeichert; die aktive Einheit bleibt erhalten.');
         }
         const json = JSON.stringify(candidate);
         backend().setItem(STORAGE_KEY, json);
         state = copy(candidate); baseline = json; dirty = false;
         return report('');
       } catch (error) {
-        return report('Der Trainingsabschluss konnte nicht gespeichert werden. Die Einheit bleibt aktiv. Bitte die App nicht schließen und den Abschluss erneut versuchen.');
+        return report(subject ? subject + ' konnte nicht gespeichert werden. Vorhandene Daten bleiben erhalten. Bitte die App nicht schließen und erneut speichern.' : 'Der Trainingsabschluss konnte nicht gespeichert werden. Die Einheit bleibt aktiv. Bitte die App nicht schließen und den Abschluss erneut versuchen.');
       }
     }
     function exportJSON() {

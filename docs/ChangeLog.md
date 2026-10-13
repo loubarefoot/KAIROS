@@ -223,3 +223,21 @@ Die Strukturabweichung ist belegt; dass sie den nativen schwarzen Bereich beseit
 - Kompakter Diagnoseknopf und nativer Dialog mit Kopieren/Manuell-Auswahl, Schließen, Worker-/CSS-/Viewport-Auswertung und Ereignisprotokoll vollständig erhalten; Auswertung schreibt direkt in den verbleibenden Dialog.
 - Mindesthöhe und gesamte CSS-Datei sowie Trainings-/Scroll-/Fokus-/Startlogik und Weight unverändert. Worker v14, neue Diagnose-JS-Kennung und 13 Prüfsummen aktualisiert; Diagnoseregressionen auf den verbleibenden Zugang übertragen.
 - Vorbereitung auf chore/training-compact-diagnostics; kein Commit/Push/Merge.
+
+
+## 13.10.2026 – Auftrag 51: Trainingsplanverwaltung V1 (Arbeitsbranch, unveröffentlicht)
+
+- Eigene Editoransicht für Erstellen/Bearbeiten mit gemeinsamem lokalem Entwurf; bestehende und neue Übungen, globale Gewichte/MAX/Wiederholungen sowie Reihenfolge direkt bearbeitbar.
+- Gemeinsame atomare Speicherung, Rückkehr zur Planübersicht, Dreiwege-Dialog beim internen Verlassen, Entwurfserhalt bei Schreibfehlern und Konfliktschutz.
+- Kein automatischer Eingabefokus; bestehende Editorzeilen bei Listenänderungen weiterverwendet.
+- Regressionstests ergänzt und Shell v15/Prüfsummen vorbereitet. Weight, Navigationsmarkup, CSS und bestehende Trainingsmomentaufnahmen unverändert.
+
+Vorbereitet auf `feat/training-plan-management-v1`; kein Commit, Push, Merge oder Deployment. Physischer iPhone-Test und Review stehen aus.
+
+
+### Auftrag 53 – Review-Befunde der Planverwaltung behoben (unveröffentlicht)
+
+- Tageswechsel und mindestens 60 Minuten Abwesenheit gelten wieder bei offenem Planeditor; notwendige Ansichtswechsel schützen geänderte Entwürfe über Speichern/Verwerfen/Abbrechen.
+- Unberührte Übungsfelder und unveränderte Plannamen bleiben erhalten; keine automatische Bereinigung der Bibliothek beim Plan-Speichern.
+- Gezielte Daten- und Browserregressionen für Lebenszyklus, Verwerfen globaler/neuer Übungen, MAX, Pointer/Touch und Löschkonflikte ergänzt. Shell v15 mit aktualisierten Prüfsummen vorbereitet.
+- Weight, CSS, Viewport-Metadaten und Navigationshülle unverändert. Kein Commit, Push, Merge oder Deployment.

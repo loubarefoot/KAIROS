@@ -3,14 +3,14 @@
   const D = KairosTrainingData;
   const $ = id => document.getElementById(id);
   const esc = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  const store = D.createStore({ onStatus(status) { $('storage-status').textContent = status.message; $('storage-status').hidden = !status.message; $('retry-save').hidden = !status.dirty || status.blocked; if (status.message) $('storage-status').scrollIntoView({ block: 'start' }); } });
+  const store = D.createStore({ onStatus(status) { $('storage-status').textContent = status.message; $('storage-status').hidden = !status.message; $('retry-save').hidden = !status.dirty || status.blocked; if (status.message && $('view-plan-editor')?.hidden) $('storage-status').scrollIntoView({ block: 'start' }); } });
   store.load();
   if (store.getStatus().isNew && !store.getStatus().blocked) store.initializeLibrary(KairosTrainingLibrary.create(D));
   const management = KairosTrainingManagement.create(store, D);
   const sessionFlow = KairosTrainingSession.create(store, D);
   const views = Array.from(document.querySelectorAll('.view'));
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));
-  let trainingView = 'start', editingPlan = null, addingToPlan = null;
+  let trainingView = 'start', editingPlan = null, addingToPlan = null, planDraft = null, leavingPlan = false;
   let currentView = 'start', away = false, entered = false;
   let summaryId = null, finishing = false, durationInterval = null, importing = false;
   // Touch navigation must not trigger iOS viewport adjustment through heading focus.
@@ -19,12 +19,30 @@
   document.addEventListener('pointerdown', event => { focusHeadingForInteraction = event.pointerType !== 'touch'; }, true);
   document.addEventListener('keydown', () => { focusHeadingForInteraction = true; }, true);
   document.addEventListener('click', event => { if (event.detail === 0) focusHeadingForInteraction = true; }, true);
-  function showView(name, { focusHeading = focusHeadingForInteraction } = {}) {
+  function showView(name, options = {}) {
+    if (name === 'plan-editor' && currentView === name) return;
+    if (currentView === 'plan-editor' && name !== 'plan-editor' && planDraft) {
+      if (hasPlanChanges()) { leavePlan(name, options); return; }
+      planDraft = null; editingPlan = null;
+    }
+    displayView(name, options);
+  }
+  async function leavePlan(name, options = {}) {
+    if (leavingPlan) return;
+    leavingPlan = true;
+    const dialog = $('plan-leave-dialog'); dialog.returnValue = 'cancel'; dialog.showModal();
+    const choice = await new Promise(resolve => dialog.addEventListener('close', () => resolve(dialog.returnValue), {once:true}));
+    leavingPlan = false;
+    if (choice === 'cancel' || !['save', 'discard'].includes(choice)) return;
+    if (choice === 'save' && !savePlanDraft()) return;
+    planDraft = null; editingPlan = null; render(); displayView(name, options);
+  }
+  function displayView(name, { focusHeading = focusHeadingForInteraction } = {}) {
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });
     currentView = name;
-    if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== name) store.update(state => { state.settings.lastView = name; });
+    if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== (name === 'plan-editor' ? 'plans' : name)) store.update(state => { state.settings.lastView = name === 'plan-editor' ? 'plans' : name; });
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
     $('scrollArea').scrollTop = 0;
@@ -42,7 +60,7 @@
     $('plan-list').innerHTML = plans.map((plan,index) => `<div class="card sort-row" data-id="${esc(plan.id)}" data-index="${index}"><strong>${esc(plan.name)}</strong><p class="muted">${esc(plan.description)} · ${plan.exerciseIds.length} Übungen</p><div class="row-actions">${rowControls(index,plans.length)}<button data-edit-plan="${esc(plan.id)}">Bearbeiten</button><button data-delete-plan="${esc(plan.id)}">Löschen</button></div></div>`).join('') || '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
     $('exercise-list').innerHTML = state.exercises.map(exercise => `<div class="card"><strong>${esc(exercise.name)}</strong><p class="muted">${exercise.source==='builtin'?'Grundbibliothek':'Eigene Übung'} · ${esc(weightLabel(exercise))} · ${exercise.repetitions} Wiederholungen</p><button class="btn-secondary" data-edit-exercise="${esc(exercise.id)}">Bearbeiten</button></div>`).join('') || '<p class="empty">Keine Übungen vorhanden.</p>';
     $('active-overview').textContent = state.activeSession ? 'Training „' + state.activeSession.planName + '“ läuft. Du kannst es in der Trainingsansicht fortsetzen.' : 'Noch kein Training gestartet.';
-    if (editingPlan) renderPlanExercises();
+    // The draft editor owns its DOM; background renders never rebuild its fields.
     renderActive();
     renderSavedSessions();
     $('export-training').disabled = !store.getStatus().loaded;
@@ -158,25 +176,84 @@
     $('exercise-editor').innerHTML = `<form class="card" id="exercise-form" data-id="${esc(id || '')}"><h2>${id?'Übung bearbeiten':'Eigene Übung erstellen'}</h2><label>Name<input name="name" required value="${esc(exercise.name)}"></label><label>Gewicht (kg)<input name="weight" inputmode="decimal" type="text" value="${exercise.weightKg===null?'':exercise.weightKg}" ${exercise.isMax?'disabled':''}></label><label class="check"><input name="max" type="checkbox" ${exercise.isMax?'checked':''}> MAX-Modus</label><label>Wiederholungen<input name="repetitions" type="number" min="1" step="1" required value="${exercise.repetitions}"></label><p class="muted">Gewicht darf leer bleiben. Bei MAX bleibt das vorherige Gewicht erhalten.</p><button class="btn-primary" type="submit">Übung speichern</button><button class="btn-secondary" type="button" id="cancel-exercise">Abbrechen</button>${id && exercise.source==='custom'?`<button class="btn-danger" type="button" data-delete-exercise="${esc(id)}">Übung dauerhaft löschen</button>`:''}</form>`;
     showView('exercises'); $('exercise-form').elements.name.focus();
   }
-  function planEditor(id = null) {
-    const plan = id ? store.getState().plans.find(item => item.id===id) : {name:'',description:''};
-    editingPlan = id;
-    $('plan-editor').hidden = false;
-    $('plan-editor').innerHTML = `<form class="card" id="plan-form" data-id="${esc(id || '')}"><h2>${id?'Trainingsplan bearbeiten':'Trainingsplan erstellen'}</h2><label>Name<input name="name" required value="${esc(plan.name)}"></label><label>Beschreibung<textarea name="description">${esc(plan.description)}</textarea></label><button class="btn-primary" type="submit">Plan speichern</button><button class="btn-secondary" type="button" id="close-plan">Schließen</button></form>${id?'<div class="card"><h2>Übungen im Plan</h2><div id="plan-exercises" class="sortable" data-sort="exercises"></div><form id="add-exercise-form"><label>Übung auswählen<select name="exercise" id="exercise-choice"></select></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form><button class="btn-secondary" id="create-for-plan">Neue eigene Übung hinzufügen</button></div>':''}`;
-    if(id) renderPlanExercises(); $('plan-form').elements.name.focus();
+  function pendingNewExercise() {
+    const form = $('plan-new-exercise-form');
+    return !!(form && (form.elements.name.value || form.elements.weight.value || form.elements.max.checked || form.elements.repetitions.value !== '10'));
   }
-  function renderPlanExercises() {
-    if (!$('plan-exercises')) return;
-    const state = store.getState(), plan = state.plans.find(item => item.id===editingPlan);
-    if(!plan) { editingPlan=null; $('plan-editor').hidden=true; return; }
-    $('plan-exercises').innerHTML = plan.exerciseIds.map((id,index) => { const exercise=state.exercises.find(item=>item.id===id); return `<div class="sort-row" data-index="${index}"><strong>${esc(exercise.name)}</strong><p class="muted">${esc(weightLabel(exercise))}</p><div class="row-actions">${rowControls(index,plan.exerciseIds.length)}<button data-remove-exercise="${esc(id)}">Entfernen</button></div></div>`; }).join('') || '<p class="empty">Dieser Plan enthält noch keine Übungen.</p>';
-    const available=state.exercises.filter(item=>!plan.exerciseIds.includes(item.id));
-    $('exercise-choice').innerHTML=available.map(item=>`<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
+  function hasPlanChanges() { return management.draftChanged(planDraft) || pendingNewExercise(); }
+  function addNewDraftExercise() {
+    const form = $('plan-new-exercise-form');
+    if (!form.reportValidity()) return false;
+    try {
+      const exercise = D.createExercise({name:form.elements.name.value.trim(), weightKg:form.elements.weight.value, isMax:form.elements.max.checked, repetitions:Number(form.elements.repetitions.value)});
+      const key = name => name.trim().replace(/\s+/gu, ' ').toLocaleLowerCase('de');
+      if (planDraft.exercises.some(item => key(item.name) === key(exercise.name))) throw new Error('Doppelte Übungsnamen.');
+      planDraft.exercises.push(exercise); planDraft.plan.exerciseIds.push(exercise.id);
+      form.reset(); form.elements.weight.disabled = false; renderPlanExercises(); planMessage('');
+      return true;
+    } catch (error) { planMessage(error.message); return false; }
+  }
+  function planMessage(message) { $('plan-error').textContent = message; $('plan-error').hidden = !message; }
+  function savePlanDraft() {
+    if (!$('plan-form').reportValidity()) return false;
+    for (const field of $('plan-exercises').querySelectorAll('input')) if (!field.reportValidity()) return false;
+    if (pendingNewExercise() && !addNewDraftExercise()) return false;
+    const outcome = management.saveDraft(planDraft);
+    if (!outcome.ok) { planMessage(outcome.message || store.getStatus().message); return false; }
+    return true;
+  }
+  function planEditor(id = null) {
+    planDraft = management.beginDraft(id); editingPlan = planDraft.plan.id;
+    const plan = planDraft.plan;
+    $('plan-editor').hidden = false;
+    $('title-plan-editor').textContent = id ? 'Trainingsplan bearbeiten' : 'Trainingsplan erstellen';
+    $('plan-editor').innerHTML = `<form class="card" id="plan-form"><label>Name<input name="name" required value="${esc(plan.name)}"></label><label>Beschreibung<textarea name="description">${esc(plan.description)}</textarea></label><p class="muted">Änderungen werden erst beim Speichern übernommen. Gewichte gelten in allen Plänen derselben Übung.</p><button class="btn-primary" type="submit">Speichern</button><button class="btn-secondary" type="button" id="close-plan">Zurück zur Planübersicht</button></form>
+      <p class="card storage-error" id="plan-error" role="alert" hidden></p>
+      <div class="card"><h2>Übungen im Plan</h2><div id="plan-exercises" class="sortable" data-sort="draft"></div><form id="add-exercise-form"><label>Übung auswählen<select name="exercise" id="exercise-choice"></select></label><button class="btn-secondary" type="submit">Übung hinzufügen</button></form></div>
+      <form class="card" id="plan-new-exercise-form"><h2>Neue eigene Übung</h2><label>Name<input name="name"></label><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal"></label><label class="check"><input name="max" type="checkbox"> MAX-Modus</label><label>Wiederholungen<input name="repetitions" type="number" min="1" step="1" required value="10"></label><button class="btn-secondary" type="submit">Zum Entwurf hinzufügen</button></form>`;
+    renderPlanExercises(); displayView('plan-editor', {focusHeading: false});
+  }
+  function updatePlanChoices() {
+    const available = planDraft.exercises.filter(item => !planDraft.plan.exerciseIds.includes(item.id));
+    $('exercise-choice').innerHTML = available.map(item => `<option value="${esc(item.id)}">${esc(item.name)}</option>`).join('');
     $('add-exercise-form').querySelector('button').disabled = !available.length;
   }
-  document.addEventListener('change', event => { if(event.target.name==='max' && ['exercise-form','training-weight-form'].includes(event.target.form?.id)) event.target.form.elements.weight.disabled=event.target.checked; });
+  function renderPlanExercises() {
+    const list = $('plan-exercises'), order = planDraft.plan.exerciseIds;
+    // Reuse rows (including focused inputs) when adding, removing or sorting.
+    for (const row of Array.from(list.children)) if (!order.includes(row.dataset.id)) row.remove();
+    order.forEach((id,index) => {
+      const exercise = planDraft.exercises.find(item => item.id === id);
+      let row = Array.from(list.children).find(item => item.dataset.id === id);
+      if (!row) {
+        row = document.createElement('div'); row.className = 'sort-row'; row.dataset.id = id;
+        row.innerHTML = `<strong>${esc(exercise.name)}</strong><label>Gewicht (kg)<input data-draft-field="weightKg" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : esc(exercise.weightKg)}" ${exercise.isMax ? 'disabled' : ''}></label><label class="check"><input data-draft-field="isMax" type="checkbox" ${exercise.isMax ? 'checked' : ''}> MAX-Modus</label><label>Wiederholungen<input data-draft-field="repetitions" type="number" min="1" step="1" value="${exercise.repetitions}" required></label><div class="row-actions">${rowControls(index,order.length)}<button type="button" data-remove-exercise="${esc(id)}">Entfernen</button></div>`;
+      }
+      row.dataset.index = index;
+      row.querySelector('[data-move="-1"]').disabled = index === 0;
+      row.querySelector('[data-move="1"]').disabled = index === order.length - 1;
+      if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
+    });
+    updatePlanChoices();
+  }
+  function reorderDraft(from, to) {
+    const order = planDraft.plan.exerciseIds;
+    if (to < 0 || to >= order.length) return;
+    order.splice(to, 0, order.splice(from, 1)[0]); renderPlanExercises();
+  }
+  document.addEventListener('input', event => {
+    if (!planDraft) return;
+    const field = event.target;
+    if (field.form?.id === 'plan-form') planDraft.plan[field.name] = field.value;
+    else if (field.dataset.draftField) {
+      const exercise = planDraft.exercises.find(item => item.id === field.closest('.sort-row').dataset.id);
+      exercise[field.dataset.draftField] = field.type === 'checkbox' ? field.checked : field.dataset.draftField === 'repetitions' ? Number(field.value) : field.value;
+      if (field.dataset.draftField === 'isMax') field.closest('.sort-row').querySelector('[data-draft-field="weightKg"]').disabled = field.checked;
+    }
+  });
+  document.addEventListener('change', event => { if(event.target.name==='max' && ['exercise-form','training-weight-form','plan-new-exercise-form'].includes(event.target.form?.id)) event.target.form.elements.weight.disabled=event.target.checked; });
   document.addEventListener('submit', event => {
-    if(!['exercise-form','plan-form','add-exercise-form','training-weight-form'].includes(event.target.id)) return;
+    if(!['exercise-form','plan-form','add-exercise-form','training-weight-form','plan-new-exercise-form'].includes(event.target.id)) return;
     event.preventDefault(); const form=event.target;
     if(form.id==='training-weight-form') {
       if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:form.elements.max.checked,repetitions:Number(form.elements.repetitions.value)},JSON.parse(form.dataset.context)))) $('training-weight-editor').hidden=true;
@@ -184,9 +261,14 @@
       const success=result(()=>management.saveExercise(form.dataset.id || null,{name:form.elements.name.value.trim(),weightKg:form.elements.weight.value,repetitions:Number(form.elements.repetitions.value),isMax:form.elements.max.checked},addingToPlan));
       if(success) { $('exercise-editor').hidden=true; if(addingToPlan) { showView('plans'); planEditor(addingToPlan); } addingToPlan=null; }
     } else if(form.id==='plan-form') {
-      const existing=form.dataset.id;
-      if(result(()=>management.savePlan(existing || null,{name:form.elements.name.value.trim(),description:form.elements.description.value}))) { if(existing) planEditor(existing); else { editingPlan=null; $('plan-editor').hidden=true; } }
-    } else result(()=>management.addExercise(editingPlan,form.elements.exercise.value));
+      if (savePlanDraft()) { planDraft = null; editingPlan = null; render(); displayView('plans'); }
+    } else if(form.id === 'plan-new-exercise-form') {
+      addNewDraftExercise();
+    } else if (planDraft) {
+      const id = form.elements.exercise.value;
+      if (id && !planDraft.plan.exerciseIds.includes(id)) { planDraft.plan.exerciseIds.push(id); renderPlanExercises(); }
+    }
+
   });
   document.addEventListener('click', async event => {
     const button=event.target.closest('button'); if(!button || button.disabled) return;
@@ -205,13 +287,14 @@
     else if(button.id==='cancel-exercise') { $('exercise-editor').hidden=true; if(addingToPlan) showView('plans'); addingToPlan=null; }
     else if(button.id==='new-plan') planEditor();
     else if(button.dataset.editPlan) planEditor(button.dataset.editPlan);
-    else if(button.id==='close-plan') { editingPlan=null; $('plan-editor').hidden=true; }
+    else if(button.id==='close-plan') showView('plans');
     else if(button.id==='create-for-plan') exerciseEditor(null,editingPlan);
-    else if(button.dataset.removeExercise) result(()=>management.removeExercise(editingPlan,button.dataset.removeExercise));
+    else if(button.dataset.removeExercise && planDraft) { planDraft.plan.exerciseIds = planDraft.plan.exerciseIds.filter(id => id !== button.dataset.removeExercise); renderPlanExercises(); }
     else if(button.dataset.deleteExercise && await confirmDelete('Diese eigene Übung dauerhaft löschen und aus allen Trainingsplänen entfernen? Gespeicherte und laufende Einheiten bleiben unverändert.')) { if(result(()=>management.deleteExercise(button.dataset.deleteExercise))) $('exercise-editor').hidden=true; }
     else if(button.dataset.deletePlan && await confirmDelete('Diesen Trainingsplan löschen? Übungen sowie gespeicherte und laufende Einheiten bleiben erhalten.')) { if(result(()=>management.deletePlan(button.dataset.deletePlan))) { editingPlan=null; $('plan-editor').hidden=true; } }
     else if(button.dataset.move) {
       const row = button.closest('.sort-row'), list = row.parentElement, from = Number(row.dataset.index), direction = button.dataset.move;
+      if (list.dataset.sort === 'draft') { const id = row.dataset.id; reorderDraft(from, from + Number(direction)); const moved = Array.from(list.children).find(item => item.dataset.id === id); (moved.querySelector(`[data-move="${direction}"]:not(:disabled)`) || moved.querySelector('[data-move]:not(:disabled)') || moved.querySelector('.drag-handle')).focus({preventScroll:true}); return; }
       const identity = list.dataset.sort === 'plans' ? row.dataset.id : store.getState().plans.find(plan => plan.id === editingPlan).exerciseIds[from];
       result(() => management.reorder(list.dataset.sort === 'plans' ? null : editingPlan, from, from + Number(direction)));
       const order = list.dataset.sort === 'plans' ? store.getState().planOrder : store.getState().plans.find(plan => plan.id === editingPlan).exerciseIds;
@@ -235,14 +318,14 @@
     if(found) { drag.to=Number(found.dataset.index); rows.forEach(row=>row.classList.toggle('drop-target',row===found)); }
     if(event.clientY>innerHeight-110) window.scrollBy(0,12); else if(event.clientY<80) window.scrollBy(0,-12);
   });
-  function endDrag(commit) { if(!drag) return; const current=drag; drag=null; current.list.querySelectorAll('.sort-row').forEach(row=>row.classList.remove('dragging','drop-target')); if(commit && current.from!==current.to) result(()=>management.reorder(current.list.dataset.sort==='plans'?null:editingPlan,current.from,current.to)); }
+  function endDrag(commit) { if(!drag) return; const current=drag; drag=null; current.list.querySelectorAll('.sort-row').forEach(row=>row.classList.remove('dragging','drop-target')); if(commit && current.from!==current.to) { if (current.list.dataset.sort === 'draft') reorderDraft(current.from, current.to); else result(()=>management.reorder(current.list.dataset.sort==='plans'?null:editingPlan,current.from,current.to)); } }
   document.addEventListener('pointerup',()=>endDrag(true)); document.addEventListener('pointercancel',()=>endDrag(false));
   function leaveApp() {
     if (away || !entered) return;
     away = true;
     store.refresh();
     if (store.getStatus().loaded && !store.getStatus().blocked) store.update(state => {
-      state.settings.lastView = currentView;
+      state.settings.lastView = currentView === 'plan-editor' ? 'plans' : currentView;
       state.settings.lastBackgroundAt = Date.now();
     });
   }
@@ -250,7 +333,8 @@
     if (document.visibilityState === 'hidden' || (entered && !away)) return;
     store.refresh();
     const state = store.getState(), now = Date.now();
-    const view = KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
+    const entry = KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
+    const view = planDraft && currentView === 'plan-editor' && entry === 'plans' ? 'plan-editor' : entry;
     if (view === 'summary') {
       const last = state.completedSessions.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
       summaryId = last?.id || null;
@@ -259,7 +343,8 @@
     if (store.getStatus().loaded && !store.getStatus().blocked) store.update(candidate => {
       candidate.settings.lastOpenedDay = KairosTrainingNavigation.day(now);
       candidate.settings.lastBackgroundAt = null;
-      candidate.settings.lastView = view;
+      // Save the actual view while a leave decision is pending. displayView records its accepted destination.
+      candidate.settings.lastView = planDraft && currentView === 'plan-editor' ? 'plans' : view;
     });
     render(); showView(view, {focusHeading: false});
   }

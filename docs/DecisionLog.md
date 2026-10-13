@@ -94,3 +94,15 @@ Der temporäre Diagnoseknopf reserviert Platz im Inhaltsfluss. Das begrenzte Scr
 Der erfolgreiche v12-Gerätetest begründet einen echten Dokument-Scrollbereich auch auf kurzen Training-Ansichten. Der gemeinsame äußere Container erhält eine Viewport-Mindesthöhe im Inhaltsbox-Modell: vorhandene Navigationsreserve bleibt außerhalb der Mindesthöhe, ohne neue Abstände. Die größte verfügbare Viewport-/Prozenthöhe verhindert das alleinige Zusammenziehen auf einen kleineren dynamischen Viewport. Alte Browser erhalten 100vh als Fallback. Lange Inhalte wachsen weiter natürlich; keine festen Gerätepixel oder JS-Höhensteuerung.
 
 V12-Testblock vollständig entfernt. Die native iOS-Wirkung der minimalen Höhenregel bleibt vor Veröffentlichung beziehungsweise beim anschließenden Gerätetest zu bestätigen. Vorbereitung ohne Commit/Push/Merge gemäß Auftrag.
+
+
+## 13.10.2026 – Auftrag 51: Gemeinsamer Trainingsplanentwurf
+
+Der beauftragte Planeditor trennt einen lokalen Arbeitsspeicherentwurf vom Training-Store. Eine einzige bestätigte Speicheraktion übernimmt Plan und betroffene Übungsstammdaten atomar über den bestehenden Commit-Pfad. Globale Gewichte und unabhängige Trainingsmomentaufnahmen bleiben erhalten; Schema 1 und Speicherschlüssel ändern sich nicht. Konkurrierende Stammdatenänderungen weisen den Entwurf ab, statt fremde Änderungen zu überschreiben. Ein KAIROS-Dreiwege-Dialog schützt interne Ansichtswechsel. Betriebssystembedingtes Beenden kann Arbeitsspeicherentwürfe verlieren; es wird keine zusätzliche persistierte Entwurfsspeicherung eingeführt.
+
+Implementierung auf dem Arbeitsbranch vorbereitet, noch nicht veröffentlicht.
+
+
+### Auftrag 53 – Wiederaufnahme und Schutz unberührter Stammdaten
+
+Die allgemeinen Tages-/60-Minuten-Regeln werden auch mit offenem Planeditor ausgewertet. Ein erforderlicher Wechsel wird bei Änderungen durch den vorhandenen Dreiwege-Dialog abgesichert; Abbrechen behält den Entwurf. Nur eine reguläre kurze Rückkehr zur Planverwaltung erhält den dokumentlokalen Editor unmittelbar. Das korrigiert die bisher zu weit gefasste Editor-Ausnahme. Beim Plan-Commit werden nur tatsächlich bearbeitete Übungsfelder übernommen und neue Übungen hinzugefügt; unveränderte Stammdaten werden nicht normalisiert. Keine neue Produktfunktion oder Datenmigration; weiterhin unveröffentlicht auf dem Arbeitsbranch.

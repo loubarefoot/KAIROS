@@ -2,7 +2,41 @@
   'use strict';
   function create(store, data) {
     const find = (items, id) => { const item = items.find(item => item.id === id); if (!item) throw new Error('Eintrag nicht gefunden.'); return item; };
-    return Object.freeze({
+    const copy = value => JSON.parse(JSON.stringify(value));
+    const signature = state => JSON.stringify([state.plans, state.planOrder, state.exercises]);
+    function beginDraft(id = null) {
+      const state = store.getState();
+      const plan = id ? copy(find(state.plans, id)) : data.createPlan({name: '', description: ''});
+      return {plan, exercises: copy(state.exercises), original: JSON.stringify([plan, state.exercises]), baseline: signature(state), isNew: !id};
+    }
+    function draftChanged(draft) {
+      let exercises;
+      try { exercises = draft.exercises.map(exercise => ({...exercise, weightKg: data.parseWeight(exercise.weightKg)})); }
+      catch { return true; }
+      return JSON.stringify([draft.plan, exercises]) !== draft.original;
+    }
+    function saveDraft(draft) {
+      store.refresh();
+      if (signature(store.getState()) !== draft.baseline) return {ok: false, message: 'Pläne oder Übungen wurden inzwischen geändert. Der Entwurf bleibt erhalten; bitte verwerfen und erneut öffnen.'};
+      return store.commit(state => {
+        const [originalPlan, originalExercises] = JSON.parse(draft.original);
+        const originals = new Map(originalExercises.map(exercise => [exercise.id, exercise]));
+        for (const exercise of draft.exercises) {
+          const original = originals.get(exercise.id);
+          if (!original) { state.exercises.push({...copy(exercise), weightKg: data.parseWeight(exercise.weightKg)}); continue; }
+          const target = find(state.exercises, exercise.id);
+          for (const field of ['name', 'weightKg', 'isMax', 'repetitions']) {
+            if (exercise[field] === original[field]) continue;
+            const value = field === 'weightKg' ? data.parseWeight(exercise[field]) : exercise[field];
+            if (value !== original[field]) target[field] = value;
+          }
+        }
+        const plan = {...copy(draft.plan), name: draft.plan.name === originalPlan.name ? originalPlan.name : draft.plan.name.trim()};
+        if (draft.isNew) { state.plans.push(plan); state.planOrder.push(plan.id); }
+        else Object.assign(find(state.plans, plan.id), plan);
+      }, 'Trainingsplan');
+    }
+    return Object.freeze({beginDraft, draftChanged, saveDraft,
       saveExercise(id, fields, planId = null) {
         return store.update(state => {
           if (id) Object.assign(find(state.exercises, id), { name: fields.name, weightKg: data.parseWeight(fields.weightKg), repetitions: fields.repetitions, isMax: fields.isMax });

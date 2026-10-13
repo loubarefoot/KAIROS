@@ -59,8 +59,12 @@
       <h1 id="title-plans" tabindex="-1">Trainingspläne</h1>
       <button class="btn-primary" id="new-plan">Trainingsplan erstellen</button>
       <div id="plan-list" class="sortable" data-sort="plans"></div>
-      <div id="plan-editor" hidden></div>
       <button class="btn-secondary" data-view="settings">Zurück zu Einstellungen</button>
+    </section>
+
+    <section class="view" id="view-plan-editor" data-area="settings" aria-labelledby="title-plan-editor" hidden>
+      <h1 id="title-plan-editor" tabindex="-1">Trainingsplan bearbeiten</h1>
+      <div id="plan-editor"></div>
     </section>
 
     <section class="view" id="view-exercises" data-area="settings" aria-labelledby="title-exercises" hidden>
@@ -101,6 +105,15 @@
   <dialog id="confirm-dialog" aria-labelledby="confirm-title">
     <h2 id="confirm-title">Löschen bestätigen</h2><p id="confirm-text"></p>
     <form method="dialog"><button class="btn-secondary" value="cancel" autofocus>Abbrechen</button><button class="btn-danger" value="delete">Löschen</button></form>
+  </dialog>
+  <dialog id="plan-leave-dialog" aria-labelledby="plan-leave-title">
+    <h2 id="plan-leave-title">Ungespeicherte Änderungen</h2>
+    <p>Änderungen vor dem Verlassen speichern?</p>
+    <form method="dialog">
+      <button class="btn-primary" value="save">Speichern</button>
+      <button class="btn-secondary" value="discard">Verwerfen</button>
+      <button class="btn-secondary" value="cancel" autofocus>Abbrechen</button>
+    </form>
   </dialog>
   <nav class="tabbar" aria-label="Hauptnavigation">
     <button class="tab active" data-tab="training" aria-current="page"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/></svg>Training</button>

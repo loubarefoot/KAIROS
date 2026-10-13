@@ -241,6 +241,14 @@ Dort können:
 - Übungen entfernt werden
 - die Reihenfolge der Übungen verändert werden
 
+Erstellen und Bearbeiten erfolgen in einer eigenen Editoransicht. Name, Beschreibung, Übungszuordnungen, Reihenfolge, neue eigene Übungen sowie Gewichte, MAX-Modus und Wiederholungen werden gemeinsam als lokaler Entwurf bearbeitet. Übungen können bereits beim Erstellen hinzugefügt werden. Beim Öffnen wird kein Eingabefeld automatisch fokussiert.
+
+Erst „Speichern“ übernimmt den gesamten Entwurf gemeinsam. Nach erfolgreicher Speicherung erscheint die Planübersicht. Bei Speicherfehlern bleiben der bisherige Datenbestand und der Entwurf erhalten; der Editor bleibt geöffnet. Gewichtsänderungen gelten nach dem Speichern global für dieselbe Übung in allen Plänen. Laufende und abgeschlossene Einheiten behalten ihre Momentaufnahmen.
+
+Beim internen Verlassen eines geänderten Entwurfs erscheint ein KAIROS-Dialog mit „Speichern“, „Verwerfen“ und „Abbrechen“. Speichern übernimmt die Änderungen und führt zum gewählten Ziel; Verwerfen entfernt nur den Entwurf; Abbrechen bleibt im Editor. Ohne Änderungen wird direkt gewechselt. Noch nicht hinzugefügte Eingaben für eine neue Übung zählen ebenfalls als ungespeicherte Änderungen und werden beim Speichern nach erfolgreicher Validierung mit übernommen. Ungültige oder unvollständige Eingaben bleiben zur Korrektur erhalten.
+
+Der Entwurf bleibt im Arbeitsspeicher. Beim Hintergrundwechsel wird er nicht automatisch gespeichert. Bei kurzer Rückkehr am selben Kalendertag in dasselbe Dokument bleibt der Editor erhalten, sofern die reguläre Wiederaufnahme wieder zur Planverwaltung führt. Tageswechsel, mindestens 60 Minuten Abwesenheit und laufende Einheiten werden weiterhin gemäß Abschnitt 5 ausgewertet. Vor einem erforderlichen Wechsel aus einem geänderten Entwurf erscheint der Dreiwege-Dialog; Abbrechen erhält den Editor samt Eingaben, ein unveränderter Entwurf blockiert den Wechsel nicht. Ein Schließen, Neuladen oder Beenden durch das Betriebssystem kann ihn verlieren; ein eigener Verlassensdialog lässt sich dabei nicht zuverlässig anzeigen. Die Bottom Navigation, Viewport-Regeln und Scrollstruktur bleiben unverändert.
+
 Die Reihenfolge soll möglichst komfortabel per Drag & Drop bzw. Drücken und Verschieben verändert werden können.
 
 Beispiel:
