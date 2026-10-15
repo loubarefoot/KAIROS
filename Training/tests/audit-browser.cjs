@@ -50,7 +50,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   }
   await page.setViewportSize({width:390,height:844});
   await page.reload();
-  for (const selector of ['[data-view=training]:visible','[data-tab=settings]','[data-view=backup]:visible']) {
+  for (const selector of ['[data-tab=settings]','[data-view=backup]:visible']) {
     await page.locator(selector).click();
     assert.ok(await page.evaluate(()=>document.scrollingElement.scrollHeight>=innerHeight+80));
     assert.equal(await page.locator('#scrollArea').evaluate(e=>getComputedStyle(e).boxSizing),'content-box');
@@ -133,12 +133,12 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const weights=await page.evaluate(()=>JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).exercises.slice(0,2).map(e=>e.weightKg));assert.deepEqual(weights,[10,20]);
   await other.close();await page.locator('#edit-training-weight').click();await page.locator('#training-weight-form [name=weight]').fill('25,25');await page.locator('#training-weight-form [type=submit]').click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).exercises[1].weightKg),25.25);
-  await page.getByRole('button',{name:'Trainingsübersicht',exact:true}).click();assert.match(await page.locator('#view-training .running-plan').innerText(),/One/);assert.equal(await page.locator('#view-training .running-plan [data-view=active]').count(),1);
+  await page.getByRole('button',{name:'Trainingsübersicht',exact:true}).click();assert.match(await page.locator('#view-start .running-plan').innerText(),/One/);assert.equal(await page.locator('#view-start .running-plan [data-view=active]').count(),1);
   await page.locator('[data-tab=settings]').click();await page.getByRole('button',{name:'Trainingspläne öffnen',exact:true}).click();
   await page.locator('#plan-list [data-index="0"] [data-move="1"]').focus();await page.keyboard.press('Enter');assert.ok(await page.locator('#plan-list [data-index="1"] [data-move="1"]').evaluate(e=>e===document.activeElement));await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).plans.find(p=>p.id===JSON.parse(localStorage.getItem(KairosTrainingData.STORAGE_KEY)).planOrder[2]).name),'One');
   await page.locator('#plan-list [data-index="2"] [data-edit-plan]').click();await page.locator('#plan-exercises [data-index="0"] [data-move="1"]').focus();await page.keyboard.press('Enter');assert.ok(await page.locator('#plan-exercises [data-index="1"] [data-move="1"]').evaluate(e=>e===document.activeElement));await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>document.activeElement.dataset.move),'-1');
-  await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=save]').click();await page.locator('[data-tab=training]').click();await page.locator('#finish-training').click();await page.locator('#confirm-dialog [value=delete]').click();await page.locator('#view-summary').waitFor({state:'visible'});
-  await page.getByRole('button',{name:'Zur Trainingsübersicht',exact:true}).click();assert.equal(await page.locator('#view-training .running-plan').count(),0);
+  await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=save]').click();await page.locator('[data-tab=training]').click();await page.locator('#finish-training').click();await page.locator('#finish-save').click();await page.locator('#view-start').waitFor({state:'visible'});
+  assert.equal(await page.locator('#view-start .running-plan').count(),0);
   await page.locator('[data-tab=settings]').click();await page.locator('[data-view=backup]').click();
   const raw=await page.evaluate(()=>localStorage.getItem(KairosTrainingData.STORAGE_KEY));const invalid=JSON.parse(raw);invalid.settings.lastOpenedDay='2025-02-29';
   await page.locator('#import-training').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(invalid))});await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('Import nicht übernommen'));assert.equal(await page.evaluate(()=>localStorage.getItem(KairosTrainingData.STORAGE_KEY)),raw);assert.ok(await page.locator('#confirm-dialog').isHidden());

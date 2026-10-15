@@ -133,3 +133,11 @@ Aktive Übungen verwenden zwei gefilterte Ansichten derselben geordneten Momenta
 Die aktuelle Übung wird aus derselben v18-Momentaufnahme als separate Hauptkarte gerendert und aus der offenen Liste herausgefiltert. Die übrigen Gruppen behalten ihre Reihenfolge. Übersichtskarten ordnen ausschließlich ihre Darstellung um; `planOrder` bleibt unverändert. Bei inzwischen gelöschtem Ursprungsplan bleibt das laufende Training über eine Karte aus seiner Momentaufnahme erreichbar. Bestehende Timer-, Abbruch-, Konflikt- und Speicherlogik bleibt erhalten.
 
 Neue Gestaltungsregeln gelten lokal für Übersicht und aktives Training. Die bewährte iOS-Hülle und Weight werden nicht angepasst. Diagnose ist ein ausdrücklicher interner Aufruf mit `?diagnostics=1`, statt Platz in der regulären Oberfläche zu belegen.
+
+## Training v20 – eingefrorener Abschluss ohne zusätzliche Historienstruktur
+
+Ein vollständiges Training verwendet bereits in `activeSession` die vorhandenen Felder `endedAt` und `durationMs`. Das Schema bleibt Version 1; neue Felder oder eine Bestandsmigration sind nicht nötig. Die Validierung erlaubt diesen ausstehenden Abschluss ausschließlich bei vollständig erledigten Übungen und schützt danach die gesamte Momentaufnahme vor Änderungen. Erst die explizite Speicherentscheidung verschiebt sie in die vorhandene Historie; bestätigtes Verwerfen entfernt ausschließlich die aktive Einheit.
+
+Der letzte Übungsabschluss verwendet einen atomaren Commit, damit bei Schreibfehlern kein nur vorgetäuschter vollständiger Zustand entsteht. Vollständig erledigte Einheiten sind vom Inaktivitätsabbruch ausgenommen. Frühere v19-Einheiten bei 100 % verwenden beim Wiederaufnehmen den gespeicherten letzten Aktivitätszeitpunkt als bestmögliche vorhandene Endzeit (ohne Aktivitätszeitpunkt den Zeitpunkt der ersten erfolgreichen Wiederaufnahme). Historische Einträge bleiben unberührt.
+
+`training` bleibt als eingehender Navigationswert alter Einstellungen/Backups akzeptiert, führt aber ausschließlich zur gemeinsamen Startseite `start`. Die zweite Inhaltsansicht entfällt. Übungsnummern werden aus der vollständigen Session-Reihenfolge berechnet, bevor die Ansicht nach Status filtert; neue Positionsfelder in Momentaufnahmen sind unnötig.

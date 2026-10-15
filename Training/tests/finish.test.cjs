@@ -13,10 +13,10 @@ test('partial finish preserves statuses and snapshots, immutable after edits, no
  assert.deepEqual(S.progress(final),{completed:1,total:3,percent:33});assert.equal(flow.finish(active.id).ok,false);assert.equal(store.getState().completedSessions.length,1);
  manage.deleteExercise(final.exercises[0].id);manage.deletePlan(final.planId);assert.deepEqual(store.getState().completedSessions[0],final);assert.deepEqual(store.getSavedState().completedSessions[0],final);
 });
-test('100% needs explicit finish; retry safely keeps active state on storage failure',()=>{
+test('100% freezes but needs explicit persistence decision; retry safely keeps active state on storage failure',()=>{
  const{store,flow,storage,setTime}=setup();flow.complete();flow.complete();flow.complete();assert.ok(store.getState().activeSession);const active=store.getState().activeSession,raw=storage.getItem();const write=storage.setItem;
  storage.setItem=()=>{throw new Error('quota');};setTime(5000);assert.equal(flow.finish(active.id).ok,false);assert.deepEqual(store.getState().activeSession,active);assert.equal(store.getState().completedSessions.length,0);assert.equal(storage.getItem(),raw);
- assert.equal(store.getSavedState().completedSessions.length,0);storage.setItem=write;setTime(6000);assert.ok(flow.finish(active.id).ok);assert.equal(store.getState().completedSessions.length,1);assert.equal(store.getState().completedSessions[0].durationMs,5000);
+ assert.equal(store.getSavedState().completedSessions.length,0);storage.setItem=write;setTime(6000);assert.ok(flow.finish(active.id).ok);assert.equal(store.getState().completedSessions.length,1);assert.equal(store.getState().completedSessions[0].durationMs,0);
 });
 test('pending unsaved progress survives failed finish and saves atomically with completion',()=>{
  const{store,flow,storage,setTime}=setup();const write=storage.setItem;storage.setItem=()=>{throw new Error('quota');};flow.complete();assert.ok(store.getStatus().dirty);const pending=store.getState();

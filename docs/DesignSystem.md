@@ -294,3 +294,11 @@ Die folgenden Regeln gelten zunächst für Trainingsübersicht und aktives Train
 - **Interaktion:** kurze Farb-/Konturübergänge von 100–140 ms, ausschließlich bei `prefers-reduced-motion: no-preference`. Keine Bewegungsanimation, keine verzögerte Bedienung und keine neuen externen Ressourcen.
 
 Die Implementierung bleibt auf Komponenten begrenzt. Insbesondere bleiben Root-Farben, `#scrollArea`, `.wrap`, `.tabbar`, Tab-Regeln und Viewport-Metadaten unverändert.
+
+## Training v20 – kompakte Bedienung und Abschluss
+
+Die gemeinsame Startseite übernimmt die v19-Hierarchie mit kompakter letzter Einheit. Plankarten nutzen Name/Beschreibung oben und Übungsanzahl plus Startaktion in einer gemeinsamen unteren Zeile. Die laufende Einheit behält Aktivstatus und Fortsetzung. Einstellungen verwenden dieselbe markante Titelstufe und drei kompakte Verwaltungsbereiche.
+
+Übungsnummern stehen als dezenter grüner Akzent in einer reservierten linken Spalte. Übrige offene Übungen verwenden gut lesbare Namen (1,08 rem), numerische Gewichte (1 rem, sekundär) und einen neutralen, klar umrandeten Pfeilbutton rechts neben dem Inhalt (44 × 44 px) mit zugänglichem Auswahlnamen statt einer zusätzlichen Aktionszeile. Die aktuelle Hauptkarte bleibt prominent; Abschluss und Überspringen werden nicht künstlich auf volle Kartenbreite gestreckt. Abgeschlossene Karten sind kompakter und nicht auswählbar.
+
+Der mobile Abschlussdialog folgt derselben Anthrazit-/Grün-Palette und zeigt Name, Dauer und Übungsanzahl. Aktionen passen sich an den verfügbaren Platz an; bei kleinen Viewports bleibt der Dialog scrollbar. Die Verwerfungsaktion erhält eine zusätzliche Bestätigung. Eingaben bekommen weiterhin keinen automatischen Fokus. Navigationshülle und Viewport-Regeln bleiben unverändert.

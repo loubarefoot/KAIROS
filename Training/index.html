@@ -30,14 +30,8 @@
     <button class="btn-secondary" id="retry-save" hidden>Speichern erneut versuchen</button>
     <section class="view" id="view-start" data-area="training" aria-labelledby="title-start">
       <h1 id="title-start" tabindex="-1">KAIROS Training</h1>
-      <div class="card"><h2>Letztes Training</h2><div id="last-training"><p class="empty">Noch kein Training vorhanden.</p></div></div>
-      <div class="plan-collection"><h2>Trainingspläne</h2><div data-plan-list></div><button class="btn-primary" data-view="training">Zur Trainingsansicht</button></div>
-    </section>
-
-    <section class="view" id="view-training" data-area="training" aria-labelledby="title-training" hidden>
-      <h1 id="title-training" tabindex="-1">Training</h1>
-      <div class="plan-collection"><h2>Trainingspläne</h2><div data-plan-list></div><button class="btn-secondary" data-view="plans">Trainingspläne verwalten</button></div>
-      <button class="btn-secondary" data-view="start">Zur Startansicht</button>
+      <div class="card last-training-card"><h2>Letztes Training</h2><div id="last-training"><p class="empty">Noch kein Training vorhanden.</p></div></div>
+      <div class="plan-collection"><h2>Trainingspläne</h2><div data-plan-list></div></div>
     </section>
 
     <section class="view" id="view-active" data-area="training" aria-labelledby="title-active" hidden>
@@ -49,9 +43,9 @@
 
     <section class="view" id="view-settings" data-area="settings" aria-labelledby="title-settings" hidden>
       <h1 id="title-settings" tabindex="-1">Einstellungen</h1>
-      <div class="card"><h2>Trainingspläne</h2><p class="muted">Pläne und ihre Übungsreihenfolge verwalten.</p><button class="btn-secondary" data-view="plans">Trainingspläne öffnen</button></div>
-      <div class="card"><h2>Übungen</h2><p class="muted">Übungen und ihre Gewichte verwalten.</p><button class="btn-secondary" data-view="exercises">Übungsverwaltung öffnen</button></div>
-      <div class="card"><h2>Datenimport und -export</h2><p class="muted">Trainingsdaten als JSON sichern und wiederherstellen.</p><button class="btn-secondary" data-view="backup">Import und Export öffnen</button></div>
+      <div class="card"><h2>Trainingspläne</h2><button class="btn-secondary" data-view="plans">Trainingspläne öffnen</button></div>
+      <div class="card"><h2>Übungen</h2><button class="btn-secondary" data-view="exercises">Übungsverwaltung öffnen</button></div>
+      <div class="card"><h2>Datenimport und -export</h2><button class="btn-secondary" data-view="backup">Import und Export öffnen</button></div>
     </section>
 
     <section class="view" id="view-plans" data-area="settings" aria-labelledby="title-plans" hidden>
@@ -106,6 +100,13 @@
     <button type="button" id="diagnostics-live-copy" class="btn-secondary">Diagnose kopieren</button>
   </dialog>
 
+  <dialog id="training-finish-dialog" aria-labelledby="finish-title">
+    <p class="finish-eyebrow">KAIROS Training</p><h2 id="finish-title">Training geschafft</h2>
+    <p id="finish-plan-name"></p>
+    <div class="finish-metrics"><div><span>Dauer</span><strong id="finish-duration"></strong></div><div><span>Übungen abgeschlossen</span><strong id="finish-count"></strong></div></div>
+    <p id="finish-note"></p><p id="finish-error" class="storage-error" role="alert" hidden></p>
+    <div class="finish-dialog-actions"><button type="button" class="btn-primary" id="finish-save" data-finish-action>Training speichern</button><button type="button" class="btn-secondary" id="finish-discard" data-finish-action>Training verwerfen</button><button type="button" class="btn-secondary" id="finish-continue">Weiter trainieren</button></div>
+  </dialog>
   <dialog id="confirm-dialog" aria-labelledby="confirm-title">
     <h2 id="confirm-title">Löschen bestätigen</h2><p id="confirm-text"></p>
     <form method="dialog"><button class="btn-secondary" value="cancel" autofocus>Abbrechen</button><button class="btn-danger" value="delete">Löschen</button></form>

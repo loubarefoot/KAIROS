@@ -66,7 +66,7 @@
   }
   const INACTIVITY_MS = 60 * 60 * 1000;
   function sessionExpired(session, now = Date.now()) {
-    return !!session && now - (session.lastActivityAt ?? session.startedAt) >= INACTIVITY_MS;
+    return !!session && !session.exercises.every(item=>item.status === 'completed') && now - (session.lastActivityAt ?? session.startedAt) >= INACTIVITY_MS;
   }
   function touchSession(session, now = Date.now()) {
     session.lastActivityAt = Math.max(now, session.lastActivityAt ?? session.startedAt);
@@ -77,7 +77,7 @@
   }
   function syncSessionOrder(state, plan, previousOrder, now = Date.now()) {
     const session = state.activeSession;
-    if (!session || session.planId !== plan.id) return;
+    if (!session || session.planId !== plan.id || session.exercises.every(item=>item.status === 'completed')) return;
     const ids = new Set(session.exercises.map(item=>item.id));
     const common = new Set(previousOrder.filter(id=>ids.has(id) && plan.exerciseIds.includes(id)));
     if (JSON.stringify(previousOrder.filter(id=>common.has(id))) === JSON.stringify(plan.exerciseIds.filter(id=>common.has(id)))) return;
@@ -100,7 +100,9 @@
       requireRule(time(session.endedAt) && session.endedAt >= session.startedAt && session.durationMs === session.endedAt - session.startedAt, 'Ungültige Trainingsdauer.');
     } else {
       requireRule(session.lastActivityAt === undefined || (time(session.lastActivityAt) && session.lastActivityAt >= session.startedAt), 'Ungültiger Aktivitätszeitpunkt.');
-      requireRule(session.endedAt === null && session.durationMs === null && Number.isSafeInteger(session.currentIndex) && session.currentIndex >= 0 && session.currentIndex < session.exercises.length, 'Ungültiger laufender Trainingszustand.');
+      const running = session.endedAt === null && session.durationMs === null;
+      const pending = session.exercises.every(item=>item.status === 'completed') && time(session.endedAt) && session.endedAt >= session.startedAt && session.durationMs === session.endedAt - session.startedAt;
+      requireRule((running || pending) && Number.isSafeInteger(session.currentIndex) && session.currentIndex >= 0 && session.currentIndex < session.exercises.length, 'Ungültiger laufender Trainingszustand.');
     }
     // Historical IDs intentionally need not refer to current plans/exercises.
   }
@@ -157,6 +159,7 @@
       requireRule(next.activeSession.id === previous.activeSession.id, 'Eine laufende Einheit darf nicht durch eine zweite ersetzt werden.');
       const original = previous.activeSession;
       const updated = next.activeSession;
+      if (original.endedAt !== null) requireRule(JSON.stringify(updated) === JSON.stringify(original), 'Ein eingefrorenes Training darf nicht mehr verändert werden.');
       requireRule(original.planId === updated.planId && original.planName === updated.planName && original.planDescription === updated.planDescription && original.startedAt === updated.startedAt, 'Laufende Plan-Momentaufnahme darf nicht verändert werden.');
       requireRule(original.lastActivityAt === undefined || (updated.lastActivityAt !== undefined && updated.lastActivityAt >= original.lastActivityAt), 'Aktivitätszeitpunkt darf nicht zurückgesetzt werden.');
       requireRule(original.exercises.length === updated.exercises.length && original.exercises.every(exercise => {

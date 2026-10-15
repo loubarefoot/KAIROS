@@ -5,7 +5,10 @@
     const completed = session.exercises.filter(exercise => exercise.status === 'completed').length;
     return { completed, total, percent: Math.round(completed / total * 100) };
   }
-  function elapsed(session, now = Date.now()) { return Math.max(0, now - session.startedAt); }
+  function elapsed(session, now = Date.now()) {
+    const recordedCompletion = session.exercises.every(item=>item.status === 'completed') ? session.lastActivityAt : null;
+    return Math.max(0, (session.endedAt ?? recordedCompletion ?? now) - session.startedAt);
+  }
   function formatDuration(milliseconds) {
     const seconds = Math.floor(Math.max(0, milliseconds) / 1000);
     return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(value => String(value).padStart(2, '0')).join(':');
@@ -23,9 +26,11 @@
       }, 'Inaktives Training verwerfen');
       return {...outcome, expired:true, discarded:outcome.ok};
     }
-    function prepare() {
+    function prepare({allowFinished = false} = {}) {
       const outcome = expire();
-      return outcome.expired ? {...outcome, ok:false, message:outcome.ok ? 'Das Training ist nach 60 Minuten Inaktivität abgelaufen.' : outcome.message} : null;
+      if (outcome.expired) return {...outcome, ok:false, message:outcome.ok ? 'Das Training ist nach 60 Minuten Inaktivität abgelaufen.' : outcome.message};
+      if (!allowFinished && store.getState().activeSession?.endedAt != null) return {ok:false, message:'Dieses Training ist vollständig abgeschlossen. Bitte speichern oder verwerfen.'};
+      return null;
     }
     function weightContext() {
       const state = store.getState(), session = active(state), exercise = session.exercises[session.currentIndex];
@@ -36,7 +41,9 @@
     }
     function mark(status, expected) {
       const expired = prepare(); if (expired) return expired;
-      return store.update(state => {
+      const current = store.getState().activeSession;
+      const finalStep = status === 'completed' && current && current.exercises.filter(item=>item.status !== 'completed').length === 1;
+      return (finalStep ? store.commit : store.update)(state => {
         const session = active(state), index = session.currentIndex;
         checkContext(session, expected);
         if (session.exercises[index].status === 'completed') throw new Error('Diese Übung ist bereits abgeschlossen.');
@@ -49,10 +56,32 @@
           ?? indices.find(i=>session.exercises[i].status==='skipped');
         if (next !== undefined) session.currentIndex = next;
         data.touchSession(session, now());
+        if (session.exercises.every(item=>item.status === 'completed')) freeze(session, now());
       });
+    }
+    function freeze(session, endedAt) {
+      if (endedAt < session.startedAt) throw new Error('Die Geräteuhr liegt vor dem Trainingsstart. Bitte die Uhrzeit prüfen.');
+      session.endedAt = endedAt;
+      session.durationMs = endedAt - session.startedAt;
+    }
+    function restoreCompletion(expectedId) {
+      store.refresh();
+      const session = store.getState().activeSession;
+      if (expectedId && session?.id !== expectedId) return {ok:false, message:'Diese Einheit ist nicht mehr aktiv.'};
+      if (!session || session.endedAt !== null || !session.exercises.every(item=>item.status === 'completed')) return {ok:true};
+      // Old complete v19 sessions have no frozen end; their final activity is the best recorded end.
+      return store.commit(state => freeze(active(state), session.lastActivityAt ?? now()), 'Trainingsdauer einfrieren');
     }
     return Object.freeze({
       expire,
+      restoreCompletion,
+      discard(expectedId) {
+        const expired = prepare({allowFinished:true}); if (expired) return expired;
+        return store.commit(state => {
+          if (active(state).id !== expectedId) throw new Error('Diese Einheit ist nicht mehr aktiv.');
+          state.activeSession = null;
+        }, 'Training verwerfen');
+      },
       start(planId) {
         const outcome = expire(); if (outcome.expired && !outcome.ok) return outcome;
         return store.update(state => {
@@ -68,11 +97,11 @@
         });
       },
       finish(expectedId) {
-        const expired = prepare(); if (expired) return expired;
+        const expired = prepare({allowFinished:true}); if (expired) return expired;
         return store.commit(state => {
           const session = active(state);
           if (session.id !== expectedId) throw new Error('Diese Einheit ist nicht mehr aktiv.');
-          const endedAt = now();
+          const endedAt = session.endedAt ?? now();
           if (endedAt < session.startedAt) throw new Error('Die Geräteuhr liegt vor dem Trainingsstart. Bitte die Uhrzeit prüfen.');
           const completed = { ...session, endedAt, durationMs: endedAt - session.startedAt };
           delete completed.currentIndex; delete completed.lastActivityAt;

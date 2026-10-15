@@ -283,3 +283,10 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Aktives Training mit markantem Titel, kompaktem Fortschrittskopf und eigener Hauptkarte für die aktuelle Übung. Übrige offene und abgeschlossene Übungen sind ruhiger gestaltet und bleiben in Planreihenfolge. Antippbares Hauptgewicht ersetzt den dauerhaften Bearbeitungstext.
 - Lokales Typografie-, Flächen-, Abstands- und Aktionssystem; zurückhaltende Übergänge berücksichtigen reduzierte Bewegung. Rückweg heißt „Trainingsübersicht“.
 - Diagnose im normalen Einstieg ausgeblendet; intern über `?diagnostics=1` einschließlich Offline-Einstieg weiterhin erreichbar. Worker v19 und alle 13 Shell-Prüfsummen vorbereitet. Keine Veröffentlichung im Rahmen dieses Auftrags.
+
+### Training v20 – Auftrag 63 (vorbereitet, unveröffentlicht)
+
+- Automatischer Abschluss bei vollständig erledigter Session: Dauer atomar einfrieren, Dialog nach Offline-/App-Neustart wiederherstellen, 60-Minuten-Abbruch für diesen Zustand ausnehmen.
+- Explizites Speichern oder bestätigtes Verwerfen, auch bei manuellem vorzeitigem Beenden. Speicherfehler behalten Daten und Dialog; keine doppelten Historieneinträge. Übersprungene Übungen bleiben offen.
+- Start und Trainingsübersicht zusammengeführt; alte Routen werden auf `start` geleitet. Plankarten, Einstellungen und Übungsaktionen kompakter; stabile Positionsnummern in allen drei Übungsbereichen.
+- Worker v20 und alle 13 Shell-Prüfsummen vorbereitet. Weight, v13-/Viewport-/Tabbar-Regeln und iOS-Dokumentation unverändert; kein Commit, Push oder Deployment in diesem Auftrag.

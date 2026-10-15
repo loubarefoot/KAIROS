@@ -3,7 +3,7 @@
   const D = KairosTrainingData;
   const $ = id => document.getElementById(id);
   const esc = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  const store = D.createStore({ onStatus(status) { $('storage-status').textContent = status.message; $('storage-status').hidden = !status.message; $('retry-save').hidden = !status.dirty || status.blocked; if (status.message && $('view-plan-editor')?.hidden && $('view-exercise-editor')?.hidden) $('storage-status').scrollIntoView({ block: 'start' }); } });
+  const store = D.createStore({ onStatus(status) { $('storage-status').textContent = status.message; $('storage-status').hidden = !status.message; $('retry-save').hidden = !status.dirty || status.blocked; if (status.message && !$('training-finish-dialog')?.open && $('view-plan-editor')?.hidden && $('view-exercise-editor')?.hidden) $('storage-status').scrollIntoView({ block: 'start' }); } });
   store.load();
   if (store.getStatus().isNew && !store.getStatus().blocked) store.initializeLibrary(KairosTrainingLibrary.create(D));
   const management = KairosTrainingManagement.create(store, D);
@@ -28,6 +28,7 @@
   document.addEventListener('keydown', () => { focusHeadingForInteraction = true; }, true);
   document.addEventListener('click', event => { if (event.detail === 0) focusHeadingForInteraction = true; }, true);
   function showView(name, options = {}) {
+    if (name === 'training') name = 'start';
     if (name === 'plan-editor' && currentView === name) return;
     if (currentView === 'plan-editor' && name !== 'plan-editor' && planDraft) {
       if (hasPlanChanges()) { leavePlan(name, options); return; }
@@ -46,6 +47,7 @@
     planDraft = null; editingPlan = null; render(); displayView(name, options);
   }
   function displayView(name, { focusHeading = focusHeadingForInteraction } = {}) {
+    if (name === 'training') name = 'start';
     if (name === 'active' && D.sessionExpired(store.getState().activeSession)) name = 'start';
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
@@ -61,7 +63,7 @@
   }
   const weightField = (attributes, value = null) => `<label class="compact-weight">Gewicht<span class="weight-input-unit"><input ${attributes} inputmode="decimal" type="text" value="${value === null ? '' : esc(value)}"><span class="weight-unit">kg</span></span></label>`;
   const searchIcon = '<svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg>';
-  const savedView = name => name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name;
+  const savedView = name => name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name === 'training' ? 'start' : name;
   const numericWeightLabel = exercise => exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   const planDetails = plan => (plan.description.trim() ? esc(plan.description) + ' · ' : '') + plan.exerciseIds.length + (plan.exerciseIds.length === 1 ? ' Übung' : ' Übungen');
   const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
@@ -91,6 +93,7 @@
     // The draft editor owns its DOM; background renders never rebuild its fields.
     renderActive();
     renderSavedSessions();
+    renderFinishDialog();
     $('export-training').disabled = !store.getStatus().loaded;
     $('import-training').disabled = importing || !!state.activeSession || store.getStatus().blocked || !store.getStatus().loaded;
     $('import-unavailable').hidden = !state.activeSession;
@@ -116,13 +119,13 @@
       const current = item.status !== 'completed' && index === session.currentIndex;
       if (featured ? !current : (item.status === 'completed') !== completed || current) return '';
       const context = esc(JSON.stringify({sessionId:session.id, exerciseId:item.id}));
-      return `<article class="card active-exercise ${current ? 'is-current' : completed ? 'is-completed' : ''}" data-session-exercise="${esc(item.id)}"><div class="active-exercise-heading"><h3 class="${current ? 'exercise-name' : ''}">${esc(item.name)}</h3>${current || item.status === 'skipped' ? `<span class="exercise-status">${current ? 'Aktuell' : 'Übersprungen · offen'}</span>` : ''}</div>
+      return `<article class="card active-exercise ${current ? 'is-current' : completed ? 'is-completed' : ''}" data-session-exercise="${esc(item.id)}"><div class="active-exercise-heading"><span class="session-exercise-number" aria-label="Position im Plan">${index + 1}</span><h3 class="${current ? 'exercise-name' : ''}">${esc(item.name)}</h3>${current || item.status === 'skipped' ? `<span class="exercise-status">${current ? 'Aktuell' : 'Übersprungen · offen'}</span>` : ''}</div>
         ${current ? `<button class="btn-secondary active-weight" id="edit-training-weight" aria-label="Gewicht ändern: ${esc(numericWeightLabel(item))}" ${disabled}>${item.weightKg === null ? '<span class="unset-weight">Gewicht offen</span>' : esc(item.weightKg.toLocaleString('de-DE')) + ' <span class="weight-kg">kg</span>'}</button>` : `<p class="active-weight-label">${esc(numericWeightLabel(item))}</p>`}
-        ${current ? `<div class="form-actions"><button class="btn-primary" id="complete-exercise" data-context="${context}" ${disabled}>Übung abgeschlossen</button><button class="btn-secondary" id="skip-exercise" data-context="${context}" ${disabled}>Überspringen</button></div>` : !completed ? `<button class="btn-secondary select-session-exercise" data-select-exercise="${index}" data-session-id="${esc(session.id)}" data-exercise-id="${esc(item.id)}" ${disabled}>Übung auswählen</button>` : ''}</article>`;
+        ${current ? `<div class="form-actions"><button class="btn-primary" id="complete-exercise" data-context="${context}" ${disabled}>Übung abgeschlossen</button><button class="btn-secondary" id="skip-exercise" data-context="${context}" ${disabled}>Überspringen</button></div>` : !completed ? `<button class="btn-secondary select-session-exercise" data-select-exercise="${index}" data-session-id="${esc(session.id)}" data-exercise-id="${esc(item.id)}" ${disabled} aria-label="Übung auswählen: ${esc(item.name)}"><span aria-hidden="true">→</span></button>` : ''}</article>`;
     }).join('');
     $('active-content').innerHTML = `<header class="training-session-header"><p class="session-eyebrow">Dein Training</p><h2>${esc(session.planName)}</h2><div class="session-metrics"><p class="duration"><span>Dauer</span><time id="training-duration">${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session))}</time></p><p id="training-progress"><strong>${progress.completed}<span> / ${progress.total}</span></strong><span>Übungen abgeschlossen</span></p><span class="progress-percent" aria-hidden="true">${progress.percent}%</span></div><progress max="${progress.total}" value="${progress.completed}" aria-labelledby="training-progress"></progress></header>
       <section id="current-exercise" aria-label="Aktuelle Übung">${cards(false,true)}</section>
-      ${progress.completed === progress.total ? '<div class="card"><p>Alle Übungen abgeschlossen. Das Training läuft weiterhin.</p></div>' : ''}
+      ${progress.completed === progress.total ? '<div class="card"><p>Alle Übungen abgeschlossen. Bitte Training speichern oder verwerfen.</p></div>' : ''}
       <section id="open-exercises" aria-labelledby="open-exercises-title"><h2 id="open-exercises-title">Offene Übungen</h2>${cards(false) || '<p class="empty">Keine offenen Übungen.</p>'}</section>
       <section id="completed-exercises" aria-labelledby="completed-exercises-title"><h2 id="completed-exercises-title">Abgeschlossene Übungen</h2>${cards(true) || '<p class="empty">Noch keine abgeschlossenen Übungen.</p>'}</section>
       <div class="finish-training-actions"><button class="btn-primary" id="finish-training" ${disabled || (finishing ? 'disabled' : '')}>Training beenden</button></div>`;
@@ -139,11 +142,13 @@
       const duration = KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session));
       if (label) label.textContent = duration;
       document.querySelectorAll('[data-overview-duration]').forEach(time => { time.textContent = duration; });
+      if ($('training-finish-dialog').open && session.endedAt === null) $('finish-duration').textContent = duration;
     }
   }
   function syncDuration(session) {
-    if (session && durationInterval === null) durationInterval = window.setInterval(tickDuration, 1000);
-    if (!session && durationInterval !== null) { window.clearInterval(durationInterval); durationInterval = null; }
+    const running = session && session.endedAt === null && !session.exercises.every(item=>item.status === 'completed');
+    if (running && durationInterval === null) durationInterval = window.setInterval(tickDuration, 1000);
+    if (!running && durationInterval !== null) { window.clearInterval(durationInterval); durationInterval = null; }
   }
   function renderSavedSessions() {
     const saved = store.getSavedState().completedSessions;
@@ -155,19 +160,47 @@
       $('training-summary').innerHTML = `<h2>${esc(summary.planName)}</h2><p>Datum: ${esc(new Date(summary.endedAt).toLocaleDateString('de-DE'))}</p><p>Dauer: ${KairosTrainingSession.formatDuration(summary.durationMs)}</p><p>Übungen: ${progress.completed} / ${progress.total}</p>`;
     }
   }
-  async function finishTraining() {
-    if (finishing || !store.getState().activeSession) return;
-    finishing = true;
-    const session = store.getState().activeSession, progress = KairosTrainingSession.progress(session);
-    try {
-      const confirmed = await confirmAction(`Training „${session.planName}“ beenden? ${progress.completed} von ${progress.total} Übungen sind abgeschlossen. Auch offene Übungen werden mit der Einheit gespeichert.`, 'Training beenden', 'Training beenden');
-      if (!confirmed) return;
-      const outcome = sessionFlow.finish(session.id);
-      render();
-      if (outcome.expired && currentView === 'active') showView('start', {focusHeading:false});
-      if (outcome.ok) { summaryId = session.id; $('training-weight-editor').hidden = true; renderSavedSessions(); showView('summary'); }
-    } finally { finishing = false; renderActive(); }
+  function renderFinishDialog(manual = false) {
+    const dialog = $('training-finish-dialog'), session = visibleSession();
+    if (!session) { if (dialog.open) dialog.close(); return; }
+    const automatic = session.exercises.every(item=>item.status === 'completed');
+    if (!automatic && !manual && !dialog.open) return;
+    if (!automatic && !manual && dialog.dataset.sessionId !== session.id) { dialog.close(); return; }
+    if (!dialog.open && document.querySelector('dialog[open]')) return;
+    const progress = KairosTrainingSession.progress(session);
+    if (dialog.dataset.sessionId !== session.id) delete dialog.dataset.error;
+    dialog.dataset.sessionId = session.id; dialog.dataset.automatic = String(automatic);
+    $('finish-title').textContent = automatic ? 'Training geschafft' : 'Training beenden';
+    $('finish-plan-name').textContent = session.planName;
+    $('finish-duration').textContent = KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session));
+    $('finish-count').textContent = progress.completed + ' / ' + progress.total;
+    $('finish-note').textContent = automatic ? (session.endedAt !== null ? 'Alle Übungen abgeschlossen. Deine Trainingsdauer ist eingefroren.' : 'Alle Übungen abgeschlossen. Die Dauer muss noch dauerhaft gesichert werden. Bitte erneut speichern.') : 'Offene und übersprungene Übungen werden beim Speichern als solche erhalten.';
+    $('finish-continue').hidden = automatic;
+    $('finish-error').textContent = dialog.dataset.error || store.getStatus().message; $('finish-error').hidden = !$('finish-error').textContent;
+    dialog.querySelectorAll('[data-finish-action]').forEach(button => { button.disabled = finishing || store.getStatus().blocked; });
+    if (!dialog.open) dialog.showModal();
   }
+  function finishTraining() {
+    checkSessionTimeout();
+    if (visibleSession()) renderFinishDialog(true); else { render(); showView('start'); }
+  }
+  async function resolveTraining(discard) {
+    if (finishing || !$('training-finish-dialog').open) return;
+    const dialog = $('training-finish-dialog'), expectedId = dialog.dataset.sessionId;
+    delete dialog.dataset.error;
+    finishing = true; renderFinishDialog();
+    try {
+      if (discard && !await confirmAction('Dieses Training wirklich verwerfen? Es wird kein Historieneintrag gespeichert. Bereits gespeicherte globale Gewichte bleiben erhalten.', 'Training verwerfen?', 'Training verwerfen')) return;
+      const prepared = discard ? {ok:true} : sessionFlow.restoreCompletion(expectedId);
+      const outcome = prepared.ok ? (discard ? sessionFlow.discard(expectedId) : sessionFlow.finish(expectedId)) : prepared;
+      render();
+      if (outcome.ok) { $('training-weight-editor').hidden = true; showView('start'); }
+      else if (outcome.expired) showView('start', {focusHeading:false});
+      else if (dialog.open && dialog.dataset.sessionId === expectedId) dialog.dataset.error = outcome.message || store.getStatus().message;
+    } finally { finishing = false; renderFinishDialog(); }
+  }
+  $('training-finish-dialog').addEventListener('cancel', event => { if ($('training-finish-dialog').dataset.automatic === 'true' || finishing) event.preventDefault(); });
+  document.addEventListener('close', () => queueMicrotask(() => renderFinishDialog()), true);
   function backupMessage(text, error = false) {
     const status = $('backup-status');
     status.textContent = text; status.hidden = false;
@@ -219,7 +252,7 @@
     card.append($('training-weight-editor'));
   }
 
-  function resumeActive() { checkSessionTimeout(); if (visibleSession()) { renderActive(); showView('active'); } }
+  function resumeActive() { sessionFlow.restoreCompletion(); checkSessionTimeout(); if (visibleSession()) { renderActive(); showView('active'); } }
   function result(action) { const outcome = action(); render(); if (outcome.expired && currentView === 'active') showView('start', {focusHeading:false}); return outcome.ok; }
   async function confirmAction(text, title, label) {
     const dialog = $('confirm-dialog'); $('confirm-text').textContent = text; $('confirm-title').textContent = title; dialog.querySelector('[value=delete]').textContent = label; dialog.returnValue = 'cancel'; dialog.showModal();
@@ -351,6 +384,9 @@
     const button=event.target.closest('button'); if(!button || button.disabled) return;
     if(button.id==='export-training') exportTraining();
     else if(button.id==='finish-training') finishTraining();
+    else if(button.id==='finish-save') resolveTraining(false);
+    else if(button.id==='finish-discard') resolveTraining(true);
+    else if(button.id==='finish-continue' && !finishing) $('training-finish-dialog').close();
     else if(button.dataset.startPlan) { result(()=>sessionFlow.start(button.dataset.startPlan)); if(store.getState().activeSession) showView('active'); }
     else if(button.id==='complete-exercise' || button.id==='skip-exercise') { $('training-weight-editor').hidden=true; result(()=>button.id==='complete-exercise'?sessionFlow.complete(JSON.parse(button.dataset.context)):sessionFlow.skip(JSON.parse(button.dataset.context))); }
     else if(button.dataset.selectExercise!==undefined) { $('training-weight-editor').hidden=true; result(()=>sessionFlow.select(Number(button.dataset.selectExercise), {sessionId:button.dataset.sessionId, exerciseId:button.dataset.exerciseId})); }
@@ -417,6 +453,7 @@
   function enterApp() {
     if (document.visibilityState === 'hidden' || (entered && !away)) return;
     store.refresh();
+    sessionFlow.restoreCompletion();
     const expired = checkSessionTimeout();
     const state = store.getState(), now = Date.now();
     const entry = expired ? 'start' : KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});

@@ -148,7 +148,9 @@ Die kompakte Startansicht erscheint bei jedem neuen App-/Dokumentstart ohne lauf
 
 Die 60 Minuten Inaktivität beginnen, sobald KAIROS in den Hintergrund wechselt oder verlassen wird. Kehrt KAIROS ohne laufendes Training nach weniger als 60 Minuten Abwesenheit in ein bereits bestehendes Dokument zurück, wird die zuletzt verwendete Ansicht wiederhergestellt. Ein neu geladenes Dokument startet dagegen auf der Startansicht. Eine BFCache-Wiederherstellung eines bestehenden Dokuments gilt als Rückkehr, nicht als neuer Dokumentstart. Ab 60 Minuten erscheint die Startansicht. Beim ersten Öffnen des Tages erscheint ebenfalls die Startansicht; diese Regel hat Vorrang vor der Wiederherstellung der zuletzt verwendeten Ansicht.
 
-Ein nicht abgelaufenes laufendes Training hat Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt automatisch fortgesetzt (siehe Abschnitt 12).
+Ein nicht abgelaufenes laufendes Training hat Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt fortgesetzt. Eine vollständig erledigte, noch nicht gespeicherte oder verworfene Einheit stellt stattdessen ihren Abschlussdialog mit eingefrorener Dauer wieder her (siehe Abschnitt 17).
+
+Seit v20 gibt es ausschließlich die gemeinsame Trainingsstartseite (`start`). Frühere Navigationswerte `training` werden dorthin geleitet; es gibt keine zweite Übersichtsansicht oder die Aktionen „Zur Trainingsansicht“/„Zur Startansicht“ mehr. Die Verwaltung bleibt über Einstellungen erreichbar.
 
 Die Startansicht zeigt:
 
@@ -164,7 +166,7 @@ Optional kann später zusätzlich die Trainingsdauer angezeigt werden.
 
 ## Trainingspläne
 
-Darunter werden alle vorhandenen Trainingspläne aufgelistet.
+Darunter werden alle vorhandenen Trainingspläne als kompakte Karten mit Name, Beschreibung, Übungsanzahl und Startaktion aufgelistet. Während einer Session steht der aktive Plan zuerst mit grünem Status, Dauer und Fortsetzen-Aktion. Andere Pläne bleiben sichtbar; ein paralleler Start ist gesperrt.
 
 Beispiel:
 
@@ -469,7 +471,7 @@ Gewichtsbearbeitung erfolgt direkt an der aktuellen Karte mit schmalem Feld, „
 
 ## 12.1 Automatischer Abbruch nach Trainingsinaktivität (v18)
 
-Nach mindestens 60 Minuten ohne relevante Trainingsaktion wird die laufende Einheit verworfen und nicht als abgeschlossen gespeichert. Auswahl, Abschließen, Überspringen, Gewichtseingabe im aktiven Training und tatsächlich übernommene Reihenfolgeänderungen dieses Plans aktualisieren den Aktivitätszeitpunkt. Öffnen, Anzeigen, Ansichtswechsel oder Änderungen anderer Pläne gelten nicht als Trainingsaktivität.
+Vollständig erledigte Einheiten mit ausstehender Abschlussentscheidung sind seit v20 vom Inaktivitätsabbruch ausgenommen. Für unvollständige Einheiten gilt weiterhin: Nach mindestens 60 Minuten ohne relevante Trainingsaktion wird die laufende Einheit verworfen und nicht als abgeschlossen gespeichert. Auswahl, Abschließen, Überspringen, Gewichtseingabe im aktiven Training und tatsächlich übernommene Reihenfolgeänderungen dieses Plans aktualisieren den Aktivitätszeitpunkt. Öffnen, Anzeigen, Ansichtswechsel oder Änderungen anderer Pläne gelten nicht als Trainingsaktivität.
 
 Der Zeitpunkt wird mit der laufenden Einheit gespeichert und vor Aktionen sowie beim Laden/Wiedereintritt geprüft. Ein Timer dient zusätzlich der Prüfung im sichtbaren Betrieb; Hintergrundsperre, Schließen und Neustart umgehen die Frist nicht. Beim Wiedereintritt hat nur eine noch nicht abgelaufene Einheit Vorrang vor Tages-/Startregeln. Ein Tageswechsel alleine verwirft keine innerhalb der Frist aktive Einheit.
 
@@ -487,7 +489,7 @@ bzw.
 
 tippen.
 
-Danach wird automatisch die erste noch nicht abgeschlossene Übung gemäß der aktuellen Planreihenfolge angezeigt, unabhängig von der Position der zuletzt abgeschlossenen Übung. Übersprungene Übungen zählen weiterhin als offen. Eine manuelle Auswahl bleibt bis zu ihrem Abschluss oder einer bewussten weiteren Trainingsaktion aktiv; eine reine Reihenfolgeänderung ersetzt sie nicht. Abgeschlossene Übungen können nicht erneut als offen ausgewählt werden. Auch nach Abschluss aller Übungen bleibt das Training bis zum ausdrücklichen Beenden aktiv, solange es nicht wegen Inaktivität abläuft (siehe Abschnitt 12.1).
+Danach wird automatisch die erste noch nicht abgeschlossene Übung gemäß der aktuellen Planreihenfolge angezeigt, unabhängig von der Position der zuletzt abgeschlossenen Übung. Übersprungene Übungen zählen weiterhin als offen. Eine manuelle Auswahl bleibt bis zu ihrem Abschluss oder einer bewussten weiteren Trainingsaktion aktiv; eine reine Reihenfolgeänderung ersetzt sie nicht. Abgeschlossene Übungen können nicht erneut als offen ausgewählt werden. Nach dem letzten noch offenen Übungsabschluss werden Endzeit und Dauer atomar eingefroren und der Abschlussdialog geöffnet. Übersprungene Übungen zählen weiterhin als offen und verhindern diesen automatischen Abschluss. Die eingefrorene Einheit bleibt bis zur ausdrücklichen Speicher- oder Verwerfungsentscheidung erhalten; siehe Abschnitt 17.
 
 Die einzelnen Sätze werden nicht separat dokumentiert.
 
@@ -545,7 +547,7 @@ Der Grund für das Überspringen muss in V1 nicht direkt abgefragt werden.
 
 Ein noch nicht abgelaufenes Training kann jederzeit beendet werden.
 
-Auch ein Training, bei dem nur wenige Übungen absolviert wurden, wird gespeichert.
+Auch ein Training mit wenigen absolvierten Übungen kann ausdrücklich gespeichert oder nach zusätzlicher Bestätigung verworfen werden.
 
 Beispiel:
 
@@ -562,29 +564,17 @@ Eine optionale Notiz kann später ergänzt werden.
 
 ---
 
-# 17. Trainingsabschluss
+# 17. Trainingsabschluss (v20)
 
-Das Training muss ausdrücklich durch den Nutzer beendet werden, auch wenn bereits alle Übungen abgeschlossen sind. Ein vorzeitiges Beenden ist jederzeit möglich.
+Nach dem letzten offenen Übungsabschluss werden Status, `endedAt` und `durationMs` gemeinsam dauerhaft gespeichert. Schlägt dieser Schreibvorgang fehl, bleibt die letzte Übung offen und kann erneut abgeschlossen werden. Bei 100 % stoppt die Dauer sofort; es entsteht noch kein Historieneintrag.
 
-Wenn das Training beendet wird, soll eine kurze Zusammenfassung angezeigt werden.
+Der Abschlussdialog zeigt Trainingsname, eingefrorene Dauer und abgeschlossene/gesamte Übungsanzahl. „Training speichern“ schreibt einmalig in die bestehende Historie und führt zur gemeinsamen Startseite. „Training verwerfen“ benötigt eine zusätzliche Bestätigung, entfernt nur die aktive Einheit ohne Historieneintrag und führt ebenfalls zur Startseite. Bereits gespeicherte globale Gewichte bleiben erhalten. Abbrechen der Verwerfungsbestätigung belässt die Einheit im Dialog.
 
-Beispielsweise:
+Ein vollständiger Abschlussdialog kann weder mit Escape noch durch bloßes Schließen der PWA verworfen werden. Nach Neustart, Offline-Start oder Tageswechsel erscheint er erneut, solange die Einheit nicht gespeichert oder verworfen wurde. Vollständige Einheiten unterliegen keinem 60-Minuten-Abbruch. Die eingefrorene Momentaufnahme wird auch durch spätere Planumsortierung nicht verändert.
 
-> Training abgeschlossen
->
-> Oberkörper A
->
-> Dauer: 63 min
->
-> Übungen: 8 / 8
+„Training beenden“ funktioniert weiterhin vorzeitig bei offenen oder übersprungenen Übungen. Der manuelle Dialog bietet Speichern, bestätigtes Verwerfen und „Weiter trainieren“; bis zur Entscheidung läuft die Dauer einer unvollständigen Einheit weiter. Der reguläre Inaktivitätsabbruch gilt für sie weiterhin. Speichern erhält alle ursprünglichen Übungsstatus und Momentaufnahmen; erst der erfolgreiche Commit beendet die Einheit.
 
-Bei einem unvollständigen Training entsprechend:
-
-> Übungen: 5 / 8
-
-Das Training wird anschließend automatisch gespeichert.
-
-Es soll nicht notwendig sein, einen zusätzlichen „Speichern“-Button zu drücken. Bei einem Speicherfehler gelten die Anforderungen aus Abschnitt 21.3; ein fehlgeschlagener Speichervorgang darf nicht als erfolgreich dargestellt werden.
+Speicherfehler behalten Session und Dialog, zeigen eine verständliche Fehlermeldung und erlauben erneutes Speichern beziehungsweise Verwerfen. Mehrfaches Tippen wird gesperrt; die gespeicherte Session-ID schützt zusätzlich gegen doppelte Historieneinträge und Aktionen auf eine inzwischen ersetzte Einheit. Import und Export verwenden weiterhin Schema 1 und die vorhandenen Felder; es gibt keine Bestandsmigration.
 
 ---
 
@@ -594,7 +584,7 @@ Der Timer startet automatisch beim Start des Trainings.
 
 Er läuft während der gesamten Trainingseinheit. Erneutes Öffnen und automatische Fortsetzung dürfen die bereits erfasste Trainingszeit nicht zurücksetzen.
 
-Beim Beenden des Trainings wird die Dauer automatisch gespeichert.
+Beim erfolgreichen Speichern eines Trainings wird seine Dauer mitgespeichert. Bei vollständig erledigten Einheiten steht sie bereits seit dem letzten Übungsabschluss fest.
 
 Beispiel:
 
@@ -869,3 +859,10 @@ Die Planeditor-Suche bleibt während der Eingabe ein unverändertes DOM-Eingabef
 Trainingsübersicht und aktives Training verwenden die lokal in `DesignSystem.md` definierten Gestaltungsregeln. In der Übersicht steht der laufende Plan zuerst mit „Aktiv“, Dauer und Fortsetzen-Aktion. Dies verändert weder die gespeicherte Planreihenfolge noch das aktive Training. Ein laufendes Training bleibt auch nach Löschung seines Ursprungsplans über eine aus der Momentaufnahme abgeleitete Karte erreichbar. Es gibt keinen separaten Aktiv-Block mehr.
 
 Im aktiven Training steht die aktuelle Übung einmalig direkt unter dem kompakten Fortschrittskopf. Offene und abgeschlossene Listen enthalten die übrigen Übungen in unveränderter Reihenfolge. Abschluss und Überspringen verwenden weiterhin ausschließlich die v18-Logik. Der Rückweg heißt „Trainingsübersicht“. Die Diagnose bleibt intern über `?diagnostics=1` erreichbar, ist beim normalen Einstieg jedoch ausgeblendet.
+
+
+### Training v20: kompakte Bedienung
+
+Offene, aktuelle und abgeschlossene Karten zeigen die Position in der vollständigen geordneten Session-Liste. Filtern, Abschließen, Überspringen oder Auswählen nummeriert die übrigen Karten nicht neu. Eine ausdrücklich gespeicherte Planumsortierung folgt während eines laufenden Trainings weiterhin der v18-Synchronisierung; eingefrorene vollständige Einheiten werden davon ausgenommen.
+
+Die zentrale Startseite enthält „KAIROS Training“, die kompakte letzte Einheit mit Datum und alle Plankarten. Die drei Einstellungsbereiche bleiben mit prominenter Überschrift und kompakteren Karten erhalten. Es gibt keine zusätzliche Statistiknavigation oder ein neues Zahnrad.

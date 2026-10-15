@@ -18,8 +18,8 @@ test('active session takes priority over all day/absence/view rules',()=>{
  const s=state();s.activeSession={id:'active'};s.settings.lastOpenedDay=null;s.settings.lastBackgroundAt=0;assert.equal(N.entryView(s,now),'active');
 });
 test('empty transient views fall back; saved summary can be restored',()=>{
- const s=state();s.settings.lastView='active';assert.equal(N.entryView(s,now),'training');
- s.settings.lastView='summary';assert.equal(N.entryView(s,now),'training');s.completedSessions=[{}];assert.equal(N.entryView(s,now),'summary');
+ const s=state();s.settings.lastView='active';assert.equal(N.entryView(s,now),'start');
+ s.settings.lastView='summary';assert.equal(N.entryView(s,now),'start');s.completedSessions=[{}];assert.equal(N.entryView(s,now),'summary');
 });
 test('clean stores refresh external data without overwriting; dirty and invalid data stay protected',()=>{
  let raw=null;const storage={getItem:()=>raw,setItem:(key,value)=>{raw=value;}};

@@ -10,7 +10,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.reload();const state=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state'))),initial=await state();
   const plans=async()=>{await page.locator('[data-tab=settings]').click();await page.locator('[data-view=plans]:visible').click();};
   const library=async()=>{await page.locator('[data-tab=settings]').click();await page.locator('[data-view=exercises]:visible').click();};
-  await page.locator('[data-view=training]:visible').click();
+  await page.locator('#view-active > [data-view=training]').click();assert.ok(await page.locator('#view-start').isVisible());
   assert.equal(await page.locator('[data-plan-list]:visible > .card').count(),2);assert.equal(await page.locator('[data-plan-list]:visible .plan-exercise-count').first().innerText(),'1 Übung');assert.equal(await page.locator('[data-plan-list]:visible .plan-description').innerText(),'Beschreibung');assert.equal(await page.locator('[data-plan-list]:visible .plan-exercise-count').nth(1).innerText(),'2 Übungen');
   await plans();assert.equal(await page.locator('#plan-list > .card').count(),2);assert.equal(await page.locator('#plan-list .muted').first().innerText(),'1 Übung');
   await page.locator('[data-edit-plan]').first().click();assert.equal(await page.locator('#plan-form button').count(),0);assert.ok(await page.locator('#back-plan').isVisible());assert.equal(await page.locator('#plan-editor input[name=max],#plan-editor input[name=repetitions],#plan-editor [data-draft-field=isMax]').count(),0);assert.equal(await page.evaluate(()=>['INPUT','TEXTAREA'].includes(document.activeElement.tagName)),false);
