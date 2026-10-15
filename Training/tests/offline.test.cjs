@@ -12,11 +12,11 @@ function worker({missing=false,corrupt=false,putFail=false,stores:existingStores
  return {dispatch,stores,getClaims:()=>claims};
 }
 test('shell hashes match files; full cache activation preserves other module caches',async()=>{
- const w=worker();await w.dispatch('install');const current=[...w.stores.keys()].find(k=>k.includes(':v20:'));assert.equal(w.stores.get(current).size,13);
+ const w=worker();await w.dispatch('install');const current=[...w.stores.keys()].find(k=>k.includes(':v21:'));assert.equal(w.stores.get(current).size,13);
  await w.dispatch('activate');assert.ok(![...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(w.stores.has('weight-cache'));assert.equal(w.getClaims(),1);
 });
 test('missing or corrupted shell fails install and keeps existing offline version',async()=>{
- for(const options of [{missing:true},{corrupt:true}]){const w=worker(options);await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(![...w.stores.keys()].some(k=>k.includes(':v20:')));}
+ for(const options of [{missing:true},{corrupt:true}]){const w=worker(options);await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(![...w.stores.keys()].some(k=>k.includes(':v21:')));}
 });
 test('only local Training shell requests and Training entry navigations are cached',async()=>{
  const w=worker();await w.dispatch('install');
@@ -27,13 +27,13 @@ test('only local Training shell requests and Training entry navigations are cach
 });
 
 test('failed cache writes remove only the incomplete new version',async()=>{
- const w=worker({putFail:true});await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(w.stores.has('weight-cache'));assert.ok(![...w.stores.keys()].some(k=>k.includes(':v20:')));
+ const w=worker({putFail:true});await assert.rejects(w.dispatch('install'));assert.ok([...w.stores.keys()].some(k=>k.endsWith(':old')));assert.ok(w.stores.has('weight-cache'));assert.ok(![...w.stores.keys()].some(k=>k.includes(':v21:')));
 });
 
 test('reused VERSION with changed content cannot delete the prior working shell on write failure',async()=>{
  const hashes=JSON.parse(source.match(/const HASHES = ([\s\S]*?);\n/)[1]);
  const priorHashes={...hashes,'app.js':'previous-build'};
- const scope='https://example.test/Training/',prefix='kairos-training-shell:'+scope+':v20:';
+ const scope='https://example.test/Training/',prefix='kairos-training-shell:'+scope+':v21:';
  const previous=prefix+crypto.createHash('sha256').update(JSON.stringify(priorHashes)).digest('hex');
  const stores=new Map([[previous,new Map([['https://example.test/Training/index.html',new Response('old working shell')]])],['weight-cache',new Map()]]);
  const w=worker({putFail:true,stores});await assert.rejects(w.dispatch('install'));

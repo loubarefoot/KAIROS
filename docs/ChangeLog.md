@@ -290,3 +290,10 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Explizites Speichern oder bestätigtes Verwerfen, auch bei manuellem vorzeitigem Beenden. Speicherfehler behalten Daten und Dialog; keine doppelten Historieneinträge. Übersprungene Übungen bleiben offen.
 - Start und Trainingsübersicht zusammengeführt; alte Routen werden auf `start` geleitet. Plankarten, Einstellungen und Übungsaktionen kompakter; stabile Positionsnummern in allen drei Übungsbereichen.
 - Worker v20 und alle 13 Shell-Prüfsummen vorbereitet. Weight, v13-/Viewport-/Tabbar-Regeln und iOS-Dokumentation unverändert; kein Commit, Push oder Deployment in diesem Auftrag.
+
+### Training v21 – Auftrag 65 (vorbereitet, unveröffentlicht)
+
+- Ganze offene Übungskarten als native Auswahlfläche statt separatem Pfeilbutton; schmaler grüner Akzent, dezente Druckrückmeldung und Tastaturfokus. Bestehende Maße, Texte und Status bleiben erhalten.
+- Dezente Trennlinien zwischen abgeschlossenen Übungen; untere Trainingsaktionen als erkennbare, kompakte Buttons.
+- Nur Aktionsabstände und „Weiter trainieren“ im Abschlussdialog angepasst. „Letztes Training“ kompakt vertikal, Einstellungen als drei antippbare Menüzeilen mit zentriertem Titel.
+- Geschützte v20-Komponenten werden im Browser direkt gegen den veröffentlichten v20-Code verglichen. Trainingslogik, Daten, Weight und iOS-Hülle bleiben unverändert. Worker v21 und 13 Prüfsummen vorbereitet; keine Veröffentlichung im Rahmen dieses Auftrags.

@@ -302,3 +302,16 @@ Die gemeinsame Startseite übernimmt die v19-Hierarchie mit kompakter letzter Ei
 Übungsnummern stehen als dezenter grüner Akzent in einer reservierten linken Spalte. Übrige offene Übungen verwenden gut lesbare Namen (1,08 rem), numerische Gewichte (1 rem, sekundär) und einen neutralen, klar umrandeten Pfeilbutton rechts neben dem Inhalt (44 × 44 px) mit zugänglichem Auswahlnamen statt einer zusätzlichen Aktionszeile. Die aktuelle Hauptkarte bleibt prominent; Abschluss und Überspringen werden nicht künstlich auf volle Kartenbreite gestreckt. Abgeschlossene Karten sind kompakter und nicht auswählbar.
 
 Der mobile Abschlussdialog folgt derselben Anthrazit-/Grün-Palette und zeigt Name, Dauer und Übungsanzahl. Aktionen passen sich an den verfügbaren Platz an; bei kleinen Viewports bleibt der Dialog scrollbar. Die Verwerfungsaktion erhält eine zusätzliche Bestätigung. Eingaben bekommen weiterhin keinen automatischen Fokus. Navigationshülle und Viewport-Regeln bleiben unverändert.
+
+## Training v21 – gezielter UX-Feinschliff
+
+Die v20-Gestaltung bleibt die Referenz. Nur folgende Komponenten werden angepasst:
+
+- Offene Übungen behalten Kartenhöhe, Textbreite, Nummer, Typografie, Grundfarbe und Statusanzeige. Eine transparente native Buttonfläche bedeckt die bestehende Karte; ein schmaler grüner Akzent rechts, dezente Druckrückmeldung und ein sichtbarer Tastaturfokus kennzeichnen die Auswahl. Es gibt keine sichtbaren Auswahltexte oder Symbole.
+- Abgeschlossene Übungen bleiben eine ruhige Liste. Zwischen zwei Einträgen liegt eine schwache Linie; Nummer, Name, Gewicht und bestehende Abstände bleiben erhalten.
+- „Training beenden“ ist wieder grün; „Trainingsübersicht“ erhält eine kompakte sekundäre Buttonkontur. Beide Ziele und Funktionen bleiben bestehen.
+- Im Abschlussdialog bleiben Informationen, Typografie, Farben und Buttonmaße erhalten. Nur der Aktionsbereich ordnet die Buttons untereinander an, mit 16 px Abstand zwischen Speichern und Verwerfen. „Weiter trainieren“ erhält eine erkennbare sekundäre Fläche und Kontur. Inhalt und Breite des Dialogs werden nicht umgestaltet.
+- Ausschließlich die Karte „Letztes Training“ zeigt Abschnittsbezeichnung, größeren Trainingsnamen und gedämpftes Datum kompakt untereinander. Alle Trainingsplankarten bleiben unverändert.
+- Einstellungen zeigt drei vollständig antippbare Zeilen mit Bezeichnung und kleinem Chevron; der bestehende Titel wird zentriert. Es gibt keine zusätzlichen Optionen.
+
+Hauptkarte, Trainingskopf, Fortschritt, Timer, Gewichtsfläche, Abschluss-/Überspringen-Aktionen, globale Palette und Navigationshülle werden nicht verändert.

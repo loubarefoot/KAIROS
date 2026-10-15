@@ -141,3 +141,7 @@ Ein vollständiges Training verwendet bereits in `activeSession` die vorhandenen
 Der letzte Übungsabschluss verwendet einen atomaren Commit, damit bei Schreibfehlern kein nur vorgetäuschter vollständiger Zustand entsteht. Vollständig erledigte Einheiten sind vom Inaktivitätsabbruch ausgenommen. Frühere v19-Einheiten bei 100 % verwenden beim Wiederaufnehmen den gespeicherten letzten Aktivitätszeitpunkt als bestmögliche vorhandene Endzeit (ohne Aktivitätszeitpunkt den Zeitpunkt der ersten erfolgreichen Wiederaufnahme). Historische Einträge bleiben unberührt.
 
 `training` bleibt als eingehender Navigationswert alter Einstellungen/Backups akzeptiert, führt aber ausschließlich zur gemeinsamen Startseite `start`. Die zweite Inhaltsansicht entfällt. Übungsnummern werden aus der vollständigen Session-Reihenfolge berechnet, bevor die Ansicht nach Status filtert; neue Positionsfelder in Momentaufnahmen sind unnötig.
+
+## Training v21 – native Auswahlfläche bei unveränderter Kartengeometrie
+
+Die vorhandene native Auswahl-Schaltfläche wird transparent auf die gesamte offene Übungskarte ausgedehnt. Der sichtbare Pfeil entfällt, während zugänglicher Name, Enter-/Leertastenbedienung und derselbe bestehende Auswahlhandler erhalten bleiben. Reservierte Inhaltsbreite und Kartenmaße bleiben bewusst bestehen. Die Anpassungen verwenden ausschließlich lokale Komponentenregeln; es gibt keine Änderung an Trainings-, Speicher-, Navigations- oder Viewport-Logik.

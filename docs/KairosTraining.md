@@ -866,3 +866,11 @@ Im aktiven Training steht die aktuelle Übung einmalig direkt unter dem kompakte
 Offene, aktuelle und abgeschlossene Karten zeigen die Position in der vollständigen geordneten Session-Liste. Filtern, Abschließen, Überspringen oder Auswählen nummeriert die übrigen Karten nicht neu. Eine ausdrücklich gespeicherte Planumsortierung folgt während eines laufenden Trainings weiterhin der v18-Synchronisierung; eingefrorene vollständige Einheiten werden davon ausgenommen.
 
 Die zentrale Startseite enthält „KAIROS Training“, die kompakte letzte Einheit mit Datum und alle Plankarten. Die drei Einstellungsbereiche bleiben mit prominenter Überschrift und kompakteren Karten erhalten. Es gibt keine zusätzliche Statistiknavigation oder ein neues Zahnrad.
+
+### Training v21: ausschließlich gezielter UX-Feinschliff
+
+Offene Übungen werden über die gesamte bestehende Kartenfläche gewählt. Die native Auswahlfläche unterstützt Touch, Enter und Leertaste sowie einen zugänglichen Namen. Pfeilbutton und sichtbarer Auswahltext entfallen; rechts bleibt ein schmaler grüner Akzent. Übersprungene Status bleiben erhalten. Abgeschlossene Einträge erhalten ausschließlich dezente Trennlinien. Nummerierung und Trainingsreihenfolge ändern sich dadurch nicht.
+
+Die unteren Aktionen erhalten klare primäre beziehungsweise sekundäre Buttondarstellung. Im Abschlussdialog ändern sich nur die vertikale Trennung der Speicher-/Verwerfungsaktionen und die Erkennbarkeit von „Weiter trainieren“. Die v20-Abschluss-, Bestätigungs-, Speicher- und Wiederherstellungslogik bleibt unverändert.
+
+„Letztes Training“ steht kompakt vertikal, einschließlich Leerzustand. Die Plankarten darunter bleiben unverändert. Einstellungen enthält nur die drei Menüzeilen „Trainingspläne“, „Übungen“ und „Datenimport und -export“ mit denselben bestehenden Zielen.
