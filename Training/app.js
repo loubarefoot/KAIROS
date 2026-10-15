@@ -51,13 +51,19 @@
     if (name === 'active' && D.sessionExpired(store.getState().activeSession)) name = 'start';
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
+    const viewChanged = currentView !== name;
     views.forEach(view => { view.hidden = view !== target; });
     if (currentView === 'exercises' && name !== 'exercises') { $('exercise-search').value = ''; renderExerciseList(); }
     currentView = name;
     if (store.getStatus().loaded && !store.getStatus().blocked && store.getState().settings.lastView !== savedView(name)) store.update(state => { state.settings.lastView = savedView(name); });
     if (target.dataset.area === 'training') trainingView = name;
     tabs.forEach(tab => { const active = tab.dataset.tab === target.dataset.area; tab.classList.toggle('active', active); if (active) tab.setAttribute('aria-current','page'); else tab.removeAttribute('aria-current'); });
-    $('scrollArea').scrollTop = 0;
+    // The v13 content minimum lets the document scroll as well as the wrapper.
+    // Reset both synchronously after a real view change, before focus or paint.
+    if (viewChanged) {
+      $('scrollArea').scrollTop = 0;
+      if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+    }
     if (focusHeading) target.querySelector('h1').focus({preventScroll:true});
     window.dispatchEvent(new CustomEvent('kairos-training-viewchange', {detail: {view: name}}));
   }

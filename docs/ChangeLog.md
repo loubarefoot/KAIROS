@@ -304,3 +304,11 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Offene Karten ohne rechten grünen Streifen, weiterhin vollständig antippbar mit bestehender Rückmeldung. Unteren Abstand vor den Trainingsaktionen von 32 auf 20 px reduziert; „← Übersicht“ und „Training beenden“ stehen nebeneinander.
 - Training-Tab führt immer zur obersten Trainingsübersicht. Die laufende Einheit bleibt erhalten und ist über „Training fortsetzen“ erreichbar; Wiederaufnahme-, Entwurfs- und Abschlussregeln bleiben bestehen.
 - Worker v22 mit 13 Shell-Prüfsummen vorbereitet. Geschützte Komponenten werden direkt gegen v21 verglichen. Kein Commit, Push oder Deployment in diesem Auftrag.
+
+### Training v23 – Auftrag 69 (vorbereitet, unveröffentlicht)
+
+- Bei tatsächlichen Ansichtswechseln werden `#scrollArea` und `document.scrollingElement` synchron auf den Anfang gesetzt. Bisher wurde nur der Wrapper zurückgesetzt, obwohl die v13-Hülle auch das Dokument scrollen lässt.
+- Kein Reset bei erneutem Anzeigen derselben Ansicht oder gewöhnlichen Trainings-/Formularänderungen; bestehende Fokus- und Entwurfsentscheidungen bleiben erhalten. CSS, HTML, Daten- und Speicherlogik unverändert.
+- Der künstliche Scrollweg kurzer Seiten bleibt bewusst offen: viewportfüllende Content-Mindesthöhe plus zusätzliche 80-px-Navigationsreserve erzeugen im Browser einen Scrollüberschuss. Eine Beseitigung würde die ausdrücklich geschützte v13-Geometrie betreffen; kein Layout-Umbau oder Scroll-Clamping eingeführt.
+- Qualitätssicherung: 78 automatisierte Tests und 13 Browser-Testläufe bestanden, einschließlich direkter v22-Fehlerreproduktion, synchroner Scrollprüfung und Schutzvergleich. Installierte iPhone-PWA weiterhin separat prüfen.
+- Worker v23 und 13 Shell-Prüfsummen vorbereitet; kein Commit, Push oder Deployment in diesem Auftrag.

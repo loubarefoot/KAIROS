@@ -145,3 +145,11 @@ Der letzte Übungsabschluss verwendet einen atomaren Commit, damit bei Schreibfe
 ## Training v21 – native Auswahlfläche bei unveränderter Kartengeometrie
 
 Die vorhandene native Auswahl-Schaltfläche wird transparent auf die gesamte offene Übungskarte ausgedehnt. Der sichtbare Pfeil entfällt, während zugänglicher Name, Enter-/Leertastenbedienung und derselbe bestehende Auswahlhandler erhalten bleiben. Reservierte Inhaltsbreite und Kartenmaße bleiben bewusst bestehen. Die Anpassungen verwenden ausschließlich lokale Komponentenregeln; es gibt keine Änderung an Trainings-, Speicher-, Navigations- oder Viewport-Logik.
+
+## Training v23 – Dokument-Scroll nur bei tatsächlichem Ansichtswechsel
+
+Die v13-Hülle wächst mit dem Inhalt; der Dokument-Scroller und `#scrollArea` sind nicht gleichzusetzen. Auftrag 69 erlaubt den gezielten synchronen Reset beider Scrollpositionen nach dem Umschalten der sichtbaren Ansicht und vor Fokus/Viewchange-Ereignis beziehungsweise Browser-Paint. Keine Timer, nachgelagerten Frame-Korrekturen, globalen Scroll-Listener oder Hüllenänderungen. Ein erneut angezeigter identischer Ansichtsname löst keinen Reset aus. Der bisherige Überschriftenfokus mit `preventScroll` bleibt erhalten.
+
+Die kurze Seite erzeugt wegen `content-box`, viewportfüllender `min-height` und zusätzlicher 80-px-Reserve weiterhin einen dauerhaften Scrollbereich, gegebenenfalls erweitert durch obere Safe Area oder den größeren `lvh`. Das ist aus der Geometrie belegbar; daraus folgt keine vollständige Diagnose interner iOS-Compositing-Effekte. Eine Beseitigung benötigt einen eigenen freigegebenen Eingriff in die Referenzhülle samt installiertem iPhone-PWA-Test. Die Hülle und `IOSNavigation.md` bleiben in diesem Auftrag unverändert.
+
+Für später vorgemerkt, ausdrücklich nicht implementiert: sichtbarer Seitentitel beziehungsweise Logo auf Trainings-/Einstellungsübersicht mit darunter scrollendem Inhalt. Keine Sticky-Header oder zusätzlichen Scrollcontainer in v23.

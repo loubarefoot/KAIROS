@@ -1,7 +1,7 @@
 'use strict';
 // Bump VERSION whenever any shell file changes. Keep the previous worker until
 // the new complete shell is installed and all old controlled pages are closed.
-const VERSION = 'v22';
+const VERSION = 'v23';
 const PREFIX = 'kairos-training-shell:' + self.registration.scope + ':';
 const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'diagnostics.js'];
 const HASHES = {
@@ -12,7 +12,7 @@ const HASHES = {
   "management.js": "1b51bff6a00150c1fb243d8e20c5355306dde7a6ad48817d0e2d67587240e1b7",
   "session.js": "0c99d25df7da2b72e2bd9a7f82b7cf4768ff2924e690c28b2ff1e333a778ef74",
   "navigation.js": "a99ea6e12e92ca54920211907a8811f7f9361f708d2d95efff68d07889d5f161",
-  "app.js": "d7778b0f0e5c492c92befa82d9cfce2d5eb8775a12c41f82aca038c03d1e72a1",
+  "app.js": "12740a14b73316459b2fc99df1330ddc277d7f5be783f4d2b40d6fb731b51f89",
   "manifest.webmanifest": "2c43aaf1be2d8ad29a7f938f12654d52ed60d72c22aee254b683ab443a9fa7bc",
   "icons/icon-192.png": "7b853e1539b7b5b4741f3d84b363a14f698d8263c4c2fb85de5af31d817c8bf1",
   "icons/icon-512.png": "0fabf101438a17bd21f91ef09f5b6aabfcea15b86f2b350bbfe128f25e5856ac",

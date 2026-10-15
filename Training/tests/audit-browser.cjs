@@ -42,6 +42,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    await page.locator('[data-tab=settings]').click();
    assert.equal(await page.evaluate(()=>window.testScrollCalls),0);
    assert.equal(await page.locator('#scrollArea').evaluate(e=>e.scrollTop),0);
+   assert.equal(await page.evaluate(()=>document.scrollingElement.scrollTop),0);
    await page.evaluate(()=>{window.scrollTo=window.testScrollTo;delete window.testScrollTo;delete window.testScrollCalls;});
    await page.reload();assert.equal(await page.evaluate(()=>document.activeElement.tagName==='H1'),false);
    await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));window.dispatchEvent(new Event('pageshow'));});
