@@ -297,3 +297,10 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Dezente Trennlinien zwischen abgeschlossenen Übungen; untere Trainingsaktionen als erkennbare, kompakte Buttons.
 - Nur Aktionsabstände und „Weiter trainieren“ im Abschlussdialog angepasst. „Letztes Training“ kompakt vertikal, Einstellungen als drei antippbare Menüzeilen mit zentriertem Titel.
 - Geschützte v20-Komponenten werden im Browser direkt gegen den veröffentlichten v20-Code verglichen. Trainingslogik, Daten, Weight und iOS-Hülle bleiben unverändert. Worker v21 und 13 Prüfsummen vorbereitet; keine Veröffentlichung im Rahmen dieses Auftrags.
+
+### Training v22 – Auftrag 67 (vorbereitet, unveröffentlicht)
+
+- Informationskarte „Letztes Training“ entfernt, Historie unverändert erhalten. Abschnitt „Trainingspläne“ und Titel „Aktives Training“ gezielt hervorgehoben; redundantes „Dein Training“ entfernt.
+- Offene Karten ohne rechten grünen Streifen, weiterhin vollständig antippbar mit bestehender Rückmeldung. Unteren Abstand vor den Trainingsaktionen von 32 auf 20 px reduziert; „← Übersicht“ und „Training beenden“ stehen nebeneinander.
+- Training-Tab führt immer zur obersten Trainingsübersicht. Die laufende Einheit bleibt erhalten und ist über „Training fortsetzen“ erreichbar; Wiederaufnahme-, Entwurfs- und Abschlussregeln bleiben bestehen.
+- Worker v22 mit 13 Shell-Prüfsummen vorbereitet. Geschützte Komponenten werden direkt gegen v21 verglichen. Kein Commit, Push oder Deployment in diesem Auftrag.

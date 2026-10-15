@@ -874,3 +874,9 @@ Offene Übungen werden über die gesamte bestehende Kartenfläche gewählt. Die 
 Die unteren Aktionen erhalten klare primäre beziehungsweise sekundäre Buttondarstellung. Im Abschlussdialog ändern sich nur die vertikale Trennung der Speicher-/Verwerfungsaktionen und die Erkennbarkeit von „Weiter trainieren“. Die v20-Abschluss-, Bestätigungs-, Speicher- und Wiederherstellungslogik bleibt unverändert.
 
 „Letztes Training“ steht kompakt vertikal, einschließlich Leerzustand. Die Plankarten darunter bleiben unverändert. Einstellungen enthält nur die drei Menüzeilen „Trainingspläne“, „Übungen“ und „Datenimport und -export“ mit denselben bestehenden Zielen.
+
+### Training v22: gezielter Feinschliff und Training-Tab
+
+Die Startseite zeigt ausschließlich den bestehenden Seitentitel und die Trainingspläne, ohne Karte zum letzten Training. Die gespeicherte Historie bleibt verfügbar. „Trainingspläne“ und „Aktives Training“ erhalten etwas stärkere Hierarchie; im aktiven Kopf entfällt nur „Dein Training“. Offene Übungskarten bleiben vollständig antippbar, nun ohne rechten grünen Streifen. Die unteren Aktionen „← Übersicht“ und „Training beenden“ stehen nebeneinander, mit moderat reduziertem Abstand zur abgeschlossenen Liste.
+
+Ein ausdrücklicher Tipp auf den Bottom-Tab „Training“ führt immer zur obersten Übersicht (`start`), auch aus aktivem Training oder Einstellungen. Er verändert weder Session noch Aktivitätszeitpunkt; über „Training fortsetzen“ öffnet sich dieselbe Einheit. Die bestehenden Regeln beim Öffnen/Wiederaufnehmen der App, Zeitüberschreitung, Tageswechsel, Entwurfsrückfragen und automatischem Abschlussdialog gelten weiterhin. Der Einstellungen-Tab führt unverändert zur Einstellungsübersicht. Bottom-Navigation-Gestaltung und iOS-/Viewport-Regeln bleiben unangetastet.

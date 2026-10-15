@@ -315,3 +315,9 @@ Die v20-Gestaltung bleibt die Referenz. Nur folgende Komponenten werden angepass
 - Einstellungen zeigt drei vollständig antippbare Zeilen mit Bezeichnung und kleinem Chevron; der bestehende Titel wird zentriert. Es gibt keine zusätzlichen Optionen.
 
 Hauptkarte, Trainingskopf, Fortschritt, Timer, Gewichtsfläche, Abschluss-/Überspringen-Aktionen, globale Palette und Navigationshülle werden nicht verändert.
+
+## Training v22 – eng begrenzte Anpassungen
+
+Auf der Startseite entfällt ausschließlich die Informationskarte „Letztes Training“. Die Abschnittsüberschrift „Trainingspläne“ erhält 1,15 rem und Gewicht 750; Plankarten, aktive Plankarte und Seitentitel bleiben unverändert. Der linksbündige weiße Titel „Aktives Training“ wird etwas größer; darunter steht direkt der bestehende Planname ohne „Dein Training“. Timer und Fortschritt behalten ihre Gestaltung.
+
+Offene Karten behalten Maße, Typografie, Farben, Status und native Auswahlfläche samt Druck-/Fokusrückmeldung; nur der rechte grüne Streifen entfällt. Vor der unteren Trennlinie liegen 20 statt 32 px Abstand. Darunter stehen „← Übersicht“ (sekundär) und „Training beenden“ (grün) in einer nicht umbrechenden Zeile mit 12 px Abstand und mindestens 44 px Höhe. Abgeschlossene Übungszeilen und ihre Trennlinien bleiben unverändert. Abschlussdialog, Einstellungen, aktuelle Übung, Navigationshülle und globale Palette bleiben v21-Referenz.

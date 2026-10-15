@@ -123,12 +123,12 @@
         ${current ? `<button class="btn-secondary active-weight" id="edit-training-weight" aria-label="Gewicht ändern: ${esc(numericWeightLabel(item))}" ${disabled}>${item.weightKg === null ? '<span class="unset-weight">Gewicht offen</span>' : esc(item.weightKg.toLocaleString('de-DE')) + ' <span class="weight-kg">kg</span>'}</button>` : `<p class="active-weight-label">${esc(numericWeightLabel(item))}</p>`}
         ${current ? `<div class="form-actions"><button class="btn-primary" id="complete-exercise" data-context="${context}" ${disabled}>Übung abgeschlossen</button><button class="btn-secondary" id="skip-exercise" data-context="${context}" ${disabled}>Überspringen</button></div>` : !completed ? `<button class="btn-secondary select-session-exercise" data-select-exercise="${index}" data-session-id="${esc(session.id)}" data-exercise-id="${esc(item.id)}" ${disabled} aria-label="Übung auswählen: ${esc(item.name)}"></button>` : ''}</article>`;
     }).join('');
-    $('active-content').innerHTML = `<header class="training-session-header"><p class="session-eyebrow">Dein Training</p><h2>${esc(session.planName)}</h2><div class="session-metrics"><p class="duration"><span>Dauer</span><time id="training-duration">${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session))}</time></p><p id="training-progress"><strong>${progress.completed}<span> / ${progress.total}</span></strong><span>Übungen abgeschlossen</span></p><span class="progress-percent" aria-hidden="true">${progress.percent}%</span></div><progress max="${progress.total}" value="${progress.completed}" aria-labelledby="training-progress"></progress></header>
+    $('active-content').innerHTML = `<header class="training-session-header"><h2>${esc(session.planName)}</h2><div class="session-metrics"><p class="duration"><span>Dauer</span><time id="training-duration">${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session))}</time></p><p id="training-progress"><strong>${progress.completed}<span> / ${progress.total}</span></strong><span>Übungen abgeschlossen</span></p><span class="progress-percent" aria-hidden="true">${progress.percent}%</span></div><progress max="${progress.total}" value="${progress.completed}" aria-labelledby="training-progress"></progress></header>
       <section id="current-exercise" aria-label="Aktuelle Übung">${cards(false,true)}</section>
       ${progress.completed === progress.total ? '<div class="card"><p>Alle Übungen abgeschlossen. Bitte Training speichern oder verwerfen.</p></div>' : ''}
       <section id="open-exercises" aria-labelledby="open-exercises-title"><h2 id="open-exercises-title">Offene Übungen</h2>${cards(false) || '<p class="empty">Keine offenen Übungen.</p>'}</section>
       <section id="completed-exercises" aria-labelledby="completed-exercises-title"><h2 id="completed-exercises-title">Abgeschlossene Übungen</h2>${cards(true) || '<p class="empty">Noch keine abgeschlossenen Übungen.</p>'}</section>
-      <div class="finish-training-actions"><button class="btn-primary" id="finish-training" ${disabled || (finishing ? 'disabled' : '')}>Training beenden</button></div>`;
+      <div class="finish-training-actions"><button class="btn-secondary" data-view="training">← Übersicht</button><button class="btn-primary" id="finish-training" ${disabled || (finishing ? 'disabled' : '')}>Training beenden</button></div>`;
     const context = editor.querySelector('form')?.dataset.context;
     const target = context ? JSON.parse(context).exerciseId : session.exercises[session.currentIndex].id;
     const card = Array.from($('active-content').querySelectorAll('[data-session-exercise]')).find(node => node.dataset.sessionExercise === target);
@@ -152,8 +152,6 @@
   }
   function renderSavedSessions() {
     const saved = store.getSavedState().completedSessions;
-    const last = saved.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
-    $('last-training').innerHTML = last ? `<strong>${esc(last.planName)}</strong><p class="muted">${esc(new Date(last.endedAt).toLocaleDateString('de-DE'))}</p>` : '<p class="empty">Noch kein Training vorhanden.</p>';
     const summary = saved.find(session => session.id === summaryId);
     if (summary) {
       const progress = KairosTrainingSession.progress(summary);
@@ -394,7 +392,7 @@
     else if(button.id==='cancel-training-weight') $('training-weight-editor').hidden=true;
     else if(button.id==='retry-save') result(()=>D.sessionExpired(store.getState().activeSession) ? sessionFlow.expire() : store.save());
     else if(button.dataset.view) showView(button.dataset.view);
-    else if(button.dataset.tab) showView(button.dataset.tab==='training'?(store.getState().activeSession?'active':trainingView):'settings');
+    else if(button.dataset.tab) showView(button.dataset.tab==='training'?'start':'settings');
     else if(button.id==='new-exercise') exerciseEditor();
     else if(button.dataset.editExercise) exerciseEditor(button.dataset.editExercise);
     else if(button.id==='cancel-exercise') { $('exercise-editor').hidden=true; showView('exercises'); }
