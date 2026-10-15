@@ -13,6 +13,14 @@
   let trainingView = 'start', editingPlan = null, addingToPlan = null, planDraft = null, leavingPlan = false;
   let currentView = 'start', away = false, entered = false;
   let summaryId = null, finishing = false, durationInterval = null, importing = false;
+  const visibleSession = () => { const session = store.getState().activeSession; return D.sessionExpired(session) ? null : session; };
+  function checkSessionTimeout() {
+    if (!D.sessionExpired(store.getState().activeSession)) return false;
+    const outcome = sessionFlow.expire();
+    if (!outcome.expired) return false;
+    $('training-weight-editor').hidden = true;
+    return true;
+  }
   // Touch navigation must not trigger iOS viewport adjustment through heading focus.
   // Keyboard and assistive activation keep the existing focus guidance.
   let focusHeadingForInteraction = true;
@@ -38,6 +46,7 @@
     planDraft = null; editingPlan = null; render(); displayView(name, options);
   }
   function displayView(name, { focusHeading = focusHeadingForInteraction } = {}) {
+    if (name === 'active' && D.sessionExpired(store.getState().activeSession)) name = 'start';
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
     views.forEach(view => { view.hidden = view !== target; });
@@ -61,6 +70,7 @@
   }
   function render() {
     const state = store.getState();
+    state.activeSession = visibleSession();
     const plans = state.planOrder.map(id => state.plans.find(plan => plan.id === id));
     document.querySelectorAll('[data-plan-list]').forEach(list => { list.innerHTML = plans.length ? plans.map(plan => `<div class="card plan-summary"><strong>${esc(plan.name)}</strong><p class="muted">${planDetails(plan)}</p><button class="btn-secondary" data-start-plan="${esc(plan.id)}" ${!plan.exerciseIds.length || state.activeSession || store.getStatus().blocked ? 'disabled' : ''}>Training starten${plan.exerciseIds.length ? '' : ' – keine Übungen'}</button></div>`).join('') : '<p class="empty">Noch keine Trainingspläne vorhanden.</p>'; });
     $('plan-list').innerHTML = plans.map((plan,index) => `<div class="card sort-row" data-id="${esc(plan.id)}" data-index="${index}"><strong>${esc(plan.name)}</strong><p class="muted">${planDetails(plan)}</p><div class="row-actions">${rowControls(index,plans.length)}<button data-edit-plan="${esc(plan.id)}">Bearbeiten</button><button data-delete-plan="${esc(plan.id)}">Löschen</button></div></div>`).join('') || '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
@@ -82,19 +92,35 @@
     if (store.getStatus().blocked) $('exercise-list').querySelectorAll('button').forEach(button => {button.disabled=true;});
   }
   function renderActive() {
-    const session = store.getState().activeSession;
+    const session = visibleSession();
     syncDuration(session);
-    if (!session) { $('active-content').innerHTML = '<div class="card"><p class="empty">Noch kein Training gestartet.</p></div>'; return; }
-    const exercise = session.exercises[session.currentIndex], progress = KairosTrainingSession.progress(session);
+    if (!session) { $('view-active').append($('training-weight-editor')); $('training-weight-editor').hidden=true; $('active-content').innerHTML = '<div class="card"><p class="empty">Noch kein Training gestartet.</p></div>'; return; }
+    const editor = $('training-weight-editor');
+    // Keep the form and its original conflict context alive across storage-event renders.
+    $('view-active').append(editor);
+    const progress = KairosTrainingSession.progress(session);
     const disabled = store.getStatus().blocked ? 'disabled' : '';
-    const done = exercise.status === 'completed';
+    const cards = completed => session.exercises.map((item,index) => {
+      if ((item.status === 'completed') !== completed) return '';
+      const current = !completed && index === session.currentIndex;
+      const context = esc(JSON.stringify({sessionId:session.id, exerciseId:item.id}));
+      return `<article class="card active-exercise ${current ? 'is-current' : completed ? 'is-completed' : ''}" data-session-exercise="${esc(item.id)}"><div class="active-exercise-heading"><h3 class="${current ? 'exercise-name' : ''}">${esc(item.name)}</h3><span class="exercise-status">${current ? 'Aktuell' : completed ? 'Abgeschlossen' : item.status === 'skipped' ? 'Übersprungen · offen' : 'Offen'}</span></div>
+        ${current ? `<button class="btn-secondary active-weight" id="edit-training-weight" ${disabled}>${esc(numericWeightLabel(item))} · Gewicht bearbeiten</button>` : `<p class="active-weight-label">${esc(numericWeightLabel(item))}</p>`}
+        ${current ? `<div class="form-actions"><button class="btn-primary" id="complete-exercise" data-context="${context}" ${disabled}>Übung abgeschlossen</button><button class="btn-secondary" id="skip-exercise" data-context="${context}" ${disabled}>Überspringen</button></div>` : !completed ? `<button class="btn-secondary select-session-exercise" data-select-exercise="${index}" data-session-id="${esc(session.id)}" data-exercise-id="${esc(item.id)}" ${disabled}>Übung auswählen</button>` : ''}</article>`;
+    }).join('');
     $('active-content').innerHTML = `<div class="card"><h2>${esc(session.planName)}</h2><p class="duration">Dauer: <time id="training-duration">${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session))}</time></p><p id="training-progress">${progress.completed} / ${progress.total} Übungen abgeschlossen · ${progress.percent} %</p><progress max="${progress.total}" value="${progress.completed}" aria-labelledby="training-progress"></progress></div>
       ${progress.completed === progress.total ? '<div class="card"><p>Alle Übungen abgeschlossen. Das Training läuft weiterhin.</p></div>' : ''}
-      <div class="card exercise"><p class="muted">Übung ${session.currentIndex + 1} von ${progress.total} · ${done ? 'Abgeschlossen' : exercise.status === 'skipped' ? 'Übersprungen – offen' : 'Offen'}</p><h2 class="exercise-name">${esc(exercise.name)}</h2><button class="weight weight-button" id="edit-training-weight" ${disabled}>${esc(weightLabel(exercise))}<span class="weight-hint">Gewicht bearbeiten</span></button>${exercise.isMax ? `<p>3 × ${exercise.repetitions}</p>` : ''}<button class="btn-primary" id="complete-exercise" ${done ? 'disabled' : disabled}>Übung abgeschlossen</button><button class="btn-secondary" id="skip-exercise" ${done ? 'disabled' : disabled}>Überspringen</button></div>
-      <div class="card"><h2>Übungen</h2>${session.exercises.map((item,index) => `<div class="session-row"><strong>${esc(item.name)}</strong><p class="muted">${item.status === 'completed' ? 'Abgeschlossen' : item.status === 'skipped' ? 'Übersprungen – offen' : 'Offen'}</p>${item.status !== 'completed' ? `<button class="btn-secondary" data-select-exercise="${index}" ${disabled}>${item.status === 'skipped' ? 'Jetzt nachholen' : 'Übung auswählen'}</button>` : ''}</div>`).join('')}</div>
-      <button class="btn-primary" id="finish-training" ${disabled || (finishing ? 'disabled' : '')}>Training beenden</button>`;
+      <section id="open-exercises" aria-labelledby="open-exercises-title"><h2 id="open-exercises-title">Offene Übungen</h2>${cards(false) || '<p class="empty">Keine offenen Übungen.</p>'}</section>
+      <section id="completed-exercises" aria-labelledby="completed-exercises-title"><h2 id="completed-exercises-title">Abgeschlossene Übungen</h2>${cards(true) || '<p class="empty">Noch keine abgeschlossenen Übungen.</p>'}</section>
+      <div class="finish-training-actions"><button class="btn-primary" id="finish-training" ${disabled || (finishing ? 'disabled' : '')}>Training beenden</button></div>`;
+    const context = editor.querySelector('form')?.dataset.context;
+    const target = context ? JSON.parse(context).exerciseId : session.exercises[session.currentIndex].id;
+    const card = Array.from($('active-content').querySelectorAll('[data-session-exercise]')).find(node => node.dataset.sessionExercise === target);
+    if (card) card.append(editor);
   }
+
   function tickDuration() {
+    if (checkSessionTimeout()) { render(); if (currentView === 'active') showView('start', {focusHeading:false}); return; }
     const session = store.getState().activeSession, label = $('training-duration');
     if (session && label) label.textContent = KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session));
   }
@@ -121,6 +147,7 @@
       if (!confirmed) return;
       const outcome = sessionFlow.finish(session.id);
       render();
+      if (outcome.expired && currentView === 'active') showView('start', {focusHeading:false});
       if (outcome.ok) { summaryId = session.id; $('training-weight-editor').hidden = true; renderSavedSessions(); showView('summary'); }
     } finally { finishing = false; renderActive(); }
   }
@@ -170,12 +197,13 @@
   function trainingWeightEditor() {
     const exercise = store.getState().activeSession.exercises[store.getState().activeSession.currentIndex];
     $('training-weight-editor').hidden = false;
-    $('training-weight-editor').innerHTML = `<form id="training-weight-form" class="card" data-context="${esc(JSON.stringify(sessionFlow.weightContext()))}"><h2>Gewicht bearbeiten</h2><label>Gewicht (kg)<input name="weight" type="text" inputmode="decimal" value="${exercise.weightKg === null ? '' : exercise.weightKg}" ${exercise.isMax ? 'disabled' : ''}></label><label class="check"><input type="checkbox" name="max" ${exercise.isMax ? 'checked' : ''}> MAX-Modus</label><label>Wiederholungen<input type="number" name="repetitions" min="1" step="1" required value="${exercise.repetitions}"></label><button type="submit" class="btn-primary">Gewicht speichern</button><button type="button" class="btn-secondary" id="cancel-training-weight">Abbrechen</button></form>`;
-    const form = $('training-weight-form');
-    (form.elements.weight.disabled ? form.elements.max : form.elements.weight).focus();
+    $('training-weight-editor').innerHTML = `<form id="training-weight-form" data-context="${esc(JSON.stringify(sessionFlow.weightContext()))}"><h4>Gewicht bearbeiten</h4>${weightField('name="weight"', exercise.weightKg)}<div class="form-actions"><button type="submit" class="btn-primary">Gewicht speichern</button><button type="button" class="btn-secondary" id="cancel-training-weight">Abbrechen</button></div></form>`;
+    const card = $('edit-training-weight').closest('.active-exercise');
+    card.append($('training-weight-editor'));
   }
-  function resumeActive() { if (store.getState().activeSession) { renderActive(); showView('active'); } }
-  function result(action) { const outcome = action(); render(); return outcome.ok; }
+
+  function resumeActive() { checkSessionTimeout(); if (visibleSession()) { renderActive(); showView('active'); } }
+  function result(action) { const outcome = action(); render(); if (outcome.expired && currentView === 'active') showView('start', {focusHeading:false}); return outcome.ok; }
   async function confirmAction(text, title, label) {
     const dialog = $('confirm-dialog'); $('confirm-text').textContent = text; $('confirm-title').textContent = title; dialog.querySelector('[value=delete]').textContent = label; dialog.returnValue = 'cancel'; dialog.showModal();
     return new Promise(resolve => dialog.addEventListener('close', () => resolve(dialog.returnValue === 'delete'), {once:true}));
@@ -201,7 +229,7 @@
       const key = name => name.trim().replace(/\s+/gu, ' ').toLocaleLowerCase('de');
       if (planDraft.exercises.some(item => key(item.name) === key(exercise.name))) throw new Error('Doppelte Übungsnamen.');
       planDraft.exercises.push(exercise); planDraft.plan.exerciseIds.push(exercise.id);
-      form.reset(); renderPlanExercises(); planMessage('');
+      form.reset(); $('plan-exercise-search').value=''; renderPlanExercises(); $('exercise-choices').scrollTop=0; planMessage('');
       return true;
     } catch (error) { planMessage(error.message); return false; }
   }
@@ -222,12 +250,13 @@
     $('plan-editor').innerHTML = `<form class="card compact-plan-form" id="plan-form"><label>Name<input name="name" required value="${esc(plan.name)}"></label><label>Beschreibung<textarea name="description" rows="2">${esc(plan.description)}</textarea></label><p class="muted">Änderungen beim Verlassen speichern. Gewichte gelten in allen Plänen.</p></form>
       <p class="card storage-error" id="plan-error" role="alert" hidden></p>
       <div class="plan-exercise-heading"><h2>Übungen im Plan</h2><p id="plan-order-status" class="muted" role="status" aria-live="polite"></p></div><div id="plan-exercises" class="sortable" data-sort="draft"></div>
-      <details class="card exercise-add-panel" open><summary>Übungen hinzufügen</summary><div class="exercise-picker"><label>Vorhandene Übung suchen<span class="search-field">${searchIcon}<input type="search" id="plan-exercise-search" autocomplete="off"></span></label><div id="exercise-choices" class="exercise-choices" role="group" aria-label="Vorhandene Übungen"></div></div><form id="plan-new-exercise-form"><h2>Eigene Übung</h2><label>Name<input name="name"></label>${weightField('name="weight"')}<button class="btn-secondary" type="submit">Übung hinzufügen</button></form></details>`;
+      <details class="card exercise-add-panel" open><summary>Übungen hinzufügen</summary><div class="exercise-picker"><label for="plan-exercise-search">Vorhandene Übung suchen</label><div class="search-field">${searchIcon}<input type="search" id="plan-exercise-search" autocomplete="off"><button type="button" id="clear-plan-search" aria-label="Suche löschen">×</button></div><div id="exercise-choices" class="exercise-choices" role="group" aria-label="Vorhandene Übungen"></div></div><form id="plan-new-exercise-form"><h2>Eigene Übung</h2><label>Name<input name="name"></label>${weightField('name="weight"')}<button class="btn-secondary" type="submit">Übung hinzufügen</button></form></details>`;
     renderPlanExercises(); displayView('plan-editor', {focusHeading: false});
   }
   function updatePlanChoices({resetScroll = false} = {}) {
     const list = $('exercise-choices'), scroll = resetScroll ? 0 : list.scrollTop;
     const query = $('plan-exercise-search').value.trim().toLocaleLowerCase('de');
+    $('clear-plan-search').disabled = !$('plan-exercise-search').value;
     const available = planDraft.exercises.filter(item => !planDraft.plan.exerciseIds.includes(item.id) && item.name.toLocaleLowerCase('de').includes(query)).sort((a,b)=>a.name.localeCompare(b.name,'de',{sensitivity:'base'}));
     list.innerHTML = available.map(item => `<button type="button" class="exercise-choice" data-add-exercise="${esc(item.id)}"><span>${esc(item.name)}</span><span class="muted">${esc(numericWeightLabel(item))}</span></button>`).join('') || '<p class="empty">' + (query ? 'Keine passenden Übungen.' : 'Alle Übungen sind bereits im Plan.') + '</p>';
     list.scrollTop = scroll;
@@ -276,7 +305,8 @@
     if(!['exercise-form','plan-form','training-weight-form','plan-new-exercise-form'].includes(event.target.id)) return;
     event.preventDefault(); const form=event.target;
     if(form.id==='training-weight-form') {
-      if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:form.elements.max.checked,repetitions:Number(form.elements.repetitions.value)},JSON.parse(form.dataset.context)))) $('training-weight-editor').hidden=true;
+      const context = JSON.parse(form.dataset.context);
+      if(result(()=>sessionFlow.changeWeight({weightKg:form.elements.weight.value,isMax:context.snapshot.isMax,repetitions:context.snapshot.repetitions},context))) $('training-weight-editor').hidden=true;
     } else if(form.id==='exercise-form') {
       const original = JSON.parse(form.dataset.original);
       store.refresh();
@@ -305,11 +335,11 @@
     if(button.id==='export-training') exportTraining();
     else if(button.id==='finish-training') finishTraining();
     else if(button.dataset.startPlan) { result(()=>sessionFlow.start(button.dataset.startPlan)); if(store.getState().activeSession) showView('active'); }
-    else if(button.id==='complete-exercise' || button.id==='skip-exercise') { $('training-weight-editor').hidden=true; result(()=>button.id==='complete-exercise'?sessionFlow.complete():sessionFlow.skip()); }
-    else if(button.dataset.selectExercise!==undefined) { $('training-weight-editor').hidden=true; result(()=>sessionFlow.select(Number(button.dataset.selectExercise))); }
+    else if(button.id==='complete-exercise' || button.id==='skip-exercise') { $('training-weight-editor').hidden=true; result(()=>button.id==='complete-exercise'?sessionFlow.complete(JSON.parse(button.dataset.context)):sessionFlow.skip(JSON.parse(button.dataset.context))); }
+    else if(button.dataset.selectExercise!==undefined) { $('training-weight-editor').hidden=true; result(()=>sessionFlow.select(Number(button.dataset.selectExercise), {sessionId:button.dataset.sessionId, exerciseId:button.dataset.exerciseId})); }
     else if(button.id==='edit-training-weight') trainingWeightEditor();
     else if(button.id==='cancel-training-weight') $('training-weight-editor').hidden=true;
-    else if(button.id==='retry-save') result(()=>store.save());
+    else if(button.id==='retry-save') result(()=>D.sessionExpired(store.getState().activeSession) ? sessionFlow.expire() : store.save());
     else if(button.dataset.view) showView(button.dataset.view);
     else if(button.dataset.tab) showView(button.dataset.tab==='training'?(store.getState().activeSession?'active':trainingView):'settings');
     else if(button.id==='new-exercise') exerciseEditor();
@@ -317,11 +347,12 @@
     else if(button.id==='cancel-exercise') { $('exercise-editor').hidden=true; showView('exercises'); }
     else if(button.id==='new-plan') planEditor();
     else if(button.dataset.editPlan) planEditor(button.dataset.editPlan);
+    else if(button.id==='clear-plan-search') { $('plan-exercise-search').value=''; updatePlanChoices({resetScroll:true}); }
     else if(button.id==='back-plan') showView('plans');
     else if(button.dataset.addExercise && planDraft) {
       const id = button.dataset.addExercise;
       if (planDraft.exercises.some(item=>item.id===id) && !planDraft.plan.exerciseIds.includes(id)) {
-        planDraft.plan.exerciseIds.push(id); renderPlanExercises();
+        planDraft.plan.exerciseIds.push(id); $('plan-exercise-search').value=''; renderPlanExercises(); $('exercise-choices').scrollTop=0;
         $('plan-order-status').textContent = planDraft.exercises.find(item=>item.id===id).name + ' hinzugefügt';
       }
     }
@@ -369,8 +400,9 @@
   function enterApp() {
     if (document.visibilityState === 'hidden' || (entered && !away)) return;
     store.refresh();
+    const expired = checkSessionTimeout();
     const state = store.getState(), now = Date.now();
-    const entry = KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
+    const entry = expired ? 'start' : KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
     const view = planDraft && currentView === 'plan-editor' && entry === 'plans' ? 'plan-editor' : currentView === 'exercise-editor' && entry === 'exercises' ? 'exercise-editor' : entry;
     if (view === 'summary') {
       const last = state.completedSessions.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
@@ -394,8 +426,9 @@
     if (event.key === D.STORAGE_KEY || event.key === null) {
       if (store.getStatus().dirty) store.save();
       else store.refresh();
+      checkSessionTimeout();
       render();
-      if (document.visibilityState === 'visible') resumeActive();
+      if (document.visibilityState === 'visible') { if (visibleSession()) resumeActive(); else if (currentView === 'active') showView('start', {focusHeading:false}); }
     }
   });
   if ('serviceWorker' in navigator && window.isSecureContext) {

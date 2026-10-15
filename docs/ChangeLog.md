@@ -260,3 +260,19 @@ Vorbereitet auf `feat/training-v16-ux`; kein Commit, Push, Merge oder Deployment
 - Bibliotheksuche mit Lupe und Reset beim Verlassen; vollständige Liste beim erneuten Öffnen.
 - Dropdown durch alphabetische, durchsuchbare Scrollliste mit Touch-Auswahl zum Planentwurf ersetzt.
 - Neue mobile UI-/Auswahlregressionen, aktualisierte Dokumentation und v17-Shell-Prüfsummen. Geschützte Daten-/Entwurfslogik und Weight unverändert; keine Migration.
+
+
+## 15.10.2026 – Auftrag 58: Training v18 Trainingslogik (unveröffentlicht)
+
+- Aktive Reihenfolge beim erfolgreichen Speichern des zugehörigen Plans atomar synchronisiert, mit unveränderten Snapshot-Werten/Status und stabiler manueller Auswahl.
+- Nach Abschluss erste nicht abgeschlossene Übung in aktueller Reihenfolge; übersprungene bleiben offen.
+- Persistierte Trainingsaktivität und automatisches Verwerfen nach 60 Minuten; Prüfung bei Aktionen, Wiederaufnahme und Neustart einschließlich Offline. Keine Speicherung als abgeschlossen; dauerhafte Gewichte und Historie bleiben erhalten.
+- Kontexte gegen veraltete Complete-/Skip-/Select-Aktionen, Schutz bei Speicherfehlern und zusätzliche Daten-/Browserregressionen. Shell v18/Prüfsummen vorbereitet.
+
+Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Mindesthöhe und Navigationshülle unverändert. Auftrag 59 für Oberfläche/iOS-Navigationsdokumentation bleibt ausstehend.
+
+### Training v18 – Auftrag 59 (vorbereitet, unveröffentlicht)
+
+- Aktives Training: kompakte offene/abgeschlossene Karten, aktuelle Übung grün markiert, Gewichtsbearbeitung direkt in der Karte ohne sichtbare MAX-/Wiederholungsfelder und ohne Autofokus.
+- Planeditor: Suche nach Hinzufügen leeren, expliziter Löschbutton und stabiler Eingabeknoten mit getrenntem Label. Übungsverwaltung mit oberem Zurück-Pfeil.
+- Verbindliche iOS-v13-Hülle mit technischen Belegen, Grenzen und Checkliste in `docs/IOSNavigation.md`; keine Änderungen an ihrer Implementierung.

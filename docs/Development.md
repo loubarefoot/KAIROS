@@ -545,3 +545,7 @@ Decision Log = Warum wurde etwas entschieden?
 Changelog = Was wurde geändert?
 
 Beide Dokumente sollen die Entwicklung von KAIROS nachvollziehbar machen, ohne unnötige Dokumentationsarbeit zu erzeugen.
+
+## Verbindliche iOS-PWA-Hülle
+
+Für neue KAIROS-Module gilt die bestätigte Training-v13-Navigationshülle als Referenz. Aufbau, Mindesthöhe, Safe Area, Grenzen der belegbaren Fehlerursache und die Prüfcheckliste stehen in [IOSNavigation.md](IOSNavigation.md). Komponentenänderungen dürfen diese Regeln nicht überschreiben; bestehende Weight-Dateien bleiben unberührt.

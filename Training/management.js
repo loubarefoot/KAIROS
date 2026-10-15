@@ -1,6 +1,6 @@
 (function (root) {
   'use strict';
-  function create(store, data) {
+  function create(store, data, now = () => Date.now()) {
     const find = (items, id) => { const item = items.find(item => item.id === id); if (!item) throw new Error('Eintrag nicht gefunden.'); return item; };
     const copy = value => JSON.parse(JSON.stringify(value));
     const signature = state => JSON.stringify([state.plans, state.planOrder, state.exercises]);
@@ -33,7 +33,7 @@
         }
         const plan = {...copy(draft.plan), name: draft.plan.name === originalPlan.name ? originalPlan.name : draft.plan.name.trim()};
         if (draft.isNew) { state.plans.push(plan); state.planOrder.push(plan.id); }
-        else Object.assign(find(state.plans, plan.id), plan);
+        else { const previousOrder = [...find(state.plans, plan.id).exerciseIds]; Object.assign(find(state.plans, plan.id), plan); data.syncSessionOrder(state, plan, previousOrder, now()); }
       }, 'Trainingsplan');
     }
     return Object.freeze({beginDraft, draftChanged, saveDraft,
@@ -70,11 +70,14 @@
         return store.update(state => { const plan = find(state.plans, planId); plan.exerciseIds = plan.exerciseIds.filter(id => id !== exerciseId); });
       },
       reorder(planId, from, to) {
-        return store.update(state => {
+        const change = state => {
           const order = planId ? find(state.plans, planId).exerciseIds : state.planOrder;
           if (![from, to].every(index => Number.isInteger(index) && index >= 0 && index < order.length)) throw new Error('Ungültige Reihenfolge.');
+          const previousOrder = [...order];
           order.splice(to, 0, order.splice(from, 1)[0]);
-        });
+          if (planId) data.syncSessionOrder(state, find(state.plans, planId), previousOrder, now());
+        };
+        return planId ? store.commit(change, 'Trainingsreihenfolge') : store.update(change);
       }
     });
   }

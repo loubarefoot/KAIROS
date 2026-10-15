@@ -116,3 +116,14 @@ Die beauftragte v16-Oberfläche speichert Planentwürfe ausschließlich nach aus
 ## 13.10.2026 – Auftrag 57: Suchbare Übungsauswahl und einheitliche Gewichtsfelder
 
 Der beauftragte v17-Schritt ersetzt nur die bisherige Dropdown-Bedienung durch eine alphabetische, scrollbare Suchliste. Auswählen fügt eine bestehende Übungs-ID zum lokalen Planentwurf hinzu; Übernahme erfolgt weiter ausschließlich durch den bestehenden Speichern/Verwerfen/Abbrechen-Dialog. Die Bibliotheksuche wird beim Verlassen zurückgesetzt. Schmale Gewichtsfelder mit rechtsstehendem „kg“ und eine separate Nummernspalte verbessern die Ausrichtung ohne Änderung von Datenformat, globalen Gewichten oder Navigationshülle.
+
+
+## 15.10.2026 – Auftrag 58: Aktive Reihenfolge und Trainingsinaktivität
+
+Der ausdrückliche v18-Auftrag präzisiert den bisherigen Snapshot-Schutz: Nur die Reihenfolge vorhandener aktiver Snapshots darf beim Speichern ihres Plans synchronisiert werden. Namen, Werte, Status und Mitgliedschaft bleiben erhalten; bereits abgeschlossene Einheiten ändern sich nicht. Nicht mehr im Plan enthaltene aktive Übungen bleiben hinten in ihrer relativen Reihenfolge; neue Planübungen gelten für das nächste Training. Nach Abschluss wird die erste nicht abgeschlossene Übung einschließlich übersprungener Einträge gewählt.
+
+Ein optionales `lastActivityAt` an der aktiven Einheit bildet relevante Trainingsaktionen ab. Die Frist wird anhand dauerhaft gespeicherter Zeit geprüft, nicht anhand der Dauer eines JS-Timers. Reines Öffnen ist keine Aktivität. Für Altbestände ohne diesen Zeitstempel gilt der Start als letzter bekannter Aktivitätszeitpunkt, statt einen Zeitpunkt beim Öffnen zu erfinden. Nach mindestens 60 Minuten wird konfliktgeschützt verworfen, ohne Historieneintrag oder Verlust dauerhafter globaler Gewichte. Keine Umschreibung bestehender Historie; noch keine Veröffentlichung.
+
+## Training v18 – Auftrag 59: Oberfläche und Navigationsreferenz
+
+Aktive Übungen verwenden zwei gefilterte Ansichten derselben geordneten Momentaufnahme. Es wird kein zweiter Trainingszustand eingeführt. Gewichtsbearbeitung erhält die bestehenden internen MAX-/Wiederholungswerte und den ursprünglichen Konfliktkontext. Die iOS-v13-Hülle wird als verbindliche Referenz für neue Module in `IOSNavigation.md` dokumentiert; ihre Implementierung bleibt unverändert. Aussagen über die frühere schwarze Fläche werden auf technisch belegbare Geometrie und bestätigte Praxiserfahrung begrenzt.

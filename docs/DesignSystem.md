@@ -276,3 +276,7 @@ Design soll die Bedienung unterstützen und nicht unnötig komplizieren.
 Neue visuelle Elemente werden nicht allein deshalb eingeführt, weil sie technisch möglich oder optisch interessant sind.
 
 Bestehende funktionierende UI-Elemente sollen ohne konkreten Grund nicht verändert werden.
+
+## iOS-PWA-Navigation
+
+Die verbindliche Referenz für Viewport, Scrollbereich und feste Bottom Navigation ist in [IOSNavigation.md](IOSNavigation.md) dokumentiert. Neue Komponenten verwenden lokal begrenzte Styles und verändern weder Mindesthöhe noch Safe-Area- und Navigationsgeometrie.

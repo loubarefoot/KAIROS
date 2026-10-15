@@ -35,7 +35,12 @@ test('new document starts at start unless a running session exists; returning do
  const s=state();s.settings.lastBackgroundAt=now-1000;
  assert.equal(N.entryView(s,now,{newDocument:true}),'start');
  assert.equal(N.entryView(s,now,{newDocument:false}),'settings');
- s.activeSession={id:'running',startedAt:1234};
+ s.activeSession={id:'running',startedAt:now-1234};
  assert.equal(N.entryView(s,now,{newDocument:true}),'active');
- assert.equal(s.activeSession.startedAt,1234);
+ assert.equal(s.activeSession.startedAt,now-1234);
+});
+
+
+test('active inactivity uses persisted activity, takes precedence over display settings, and falls back for legacy sessions',()=>{
+ const s=state();s.activeSession={id:'running',startedAt:now-7200000,lastActivityAt:now-3599999};s.settings.lastOpenedDay='2020-01-01';assert.equal(N.entryView(s,now,{newDocument:true}),'active');s.activeSession.lastActivityAt=now-3600000;assert.equal(N.entryView(s,now),'start');assert.equal(N.entryView(s,now,{newDocument:true}),'start');delete s.activeSession.lastActivityAt;assert.equal(N.entryView(s,now),'start');
 });

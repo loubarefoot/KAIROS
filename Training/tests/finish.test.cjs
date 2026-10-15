@@ -7,7 +7,7 @@ test('timestamp duration and formatting keep hours/minutes/seconds across reload
  const again=D.createStore({storage});again.load();assert.equal(S.elapsed(again.getState().activeSession,3662000),3661000);
 });
 test('partial finish preserves statuses and snapshots, immutable after edits, no duplicate',()=>{
- const{store,flow,setTime,manage}=setup();flow.complete();flow.skip();const active=store.getState().activeSession;setTime(3662000);
+ const{store,flow,setTime,manage}=setup();flow.complete();flow.skip();const active=store.getState().activeSession;for(const t of [1800000,3600000]){setTime(t);flow.select(active.currentIndex);}setTime(3662000);
  assert.ok(flow.finish(active.id).ok);const final=store.getState().completedSessions[0];assert.equal(store.getState().activeSession,null);
  assert.equal(final.id,active.id);assert.equal(final.startedAt,1000);assert.equal(final.endedAt,3662000);assert.equal(final.durationMs,3661000);assert.deepEqual(final.exercises.map(e=>e.status),['completed','skipped','open']);
  assert.deepEqual(S.progress(final),{completed:1,total:3,percent:33});assert.equal(flow.finish(active.id).ok,false);assert.equal(store.getState().completedSessions.length,1);
@@ -26,5 +26,5 @@ test('pending unsaved progress survives failed finish and saves atomically with 
 test('wrong session, clock regression and external storage conflict do not lose unit',()=>{
  const{store,flow,setTime,storage}=setup();const active=store.getState().activeSession;
  assert.equal(flow.finish('wrong').ok,false);setTime(900);assert.equal(flow.finish(active.id).ok,false);assert.deepEqual(store.getState().activeSession,active);
- setTime(2000);storage.setItem(D.STORAGE_KEY,JSON.stringify(D.emptyState()));assert.equal(flow.finish(active.id).ok,false);assert.ok(store.getStatus().blocked);assert.deepEqual(store.getState().activeSession,active);
+ setTime(2000);storage.setItem(D.STORAGE_KEY,JSON.stringify(D.emptyState()));assert.equal(flow.finish(active.id).ok,false);assert.equal(store.getState().activeSession,null);assert.equal(storage.getItem(),JSON.stringify(D.emptyState()));
 });

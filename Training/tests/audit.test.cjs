@@ -18,5 +18,5 @@ test('invalid calendar dates and out-of-range timestamps cannot replace valid ba
  for(const day of ['2026-99-99','2025-02-29','2026-04-31','2026-00-01','2026-01-00']){const state=D.emptyState();state.settings.lastOpenedDay=day;assert.equal(target.importJSON(JSON.stringify(state),{confirmed:true}).ok,false);assert.deepEqual(target.getState(),previous);assert.equal(raw,saved);}
  for(const date of ['2024-02-29','2026-02-28','2000-02-29','1900-02-28']){const state=D.emptyState();state.settings.lastOpenedDay=date;assert.ok(D.validateBackup(state));}
  const source=fixture().store.getState();for(const value of [8640000000000001,9000000000000000]){const state=structuredClone(source);state.activeSession.startedAt=value;assert.throws(()=>D.parseBackup(JSON.stringify(state)));state.activeSession.startedAt=1000;state.settings.lastBackgroundAt=value;assert.throws(()=>D.parseBackup(JSON.stringify(state)));}
- const edge=structuredClone(source);edge.activeSession.startedAt=8640000000000000;assert.ok(D.validateBackup(edge));
+ const edge=structuredClone(source);edge.activeSession.startedAt=8640000000000000;edge.activeSession.lastActivityAt=8640000000000000;assert.ok(D.validateBackup(edge));
 });

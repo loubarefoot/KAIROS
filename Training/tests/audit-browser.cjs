@@ -83,6 +83,8 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.locator('[data-tab=settings]').focus();await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(()=>document.activeElement.id),'title-settings');
   await page.locator('[data-tab=training]').focus();await page.keyboard.press('Space');
+  // Space activates the native button on keyup; wait for its resulting click/focus.
+  await page.waitForFunction(()=>document.activeElement.tagName==='H1');
   assert.equal(await page.evaluate(()=>document.activeElement.tagName),'H1');
   console.log('PASS: actual touch navigation skips heading focus; Enter/Space restore accessible keyboard heading focus.');
   const cdp=await context.newCDPSession(page);

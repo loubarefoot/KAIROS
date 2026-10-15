@@ -1,18 +1,18 @@
 'use strict';
 // Bump VERSION whenever any shell file changes. Keep the previous worker until
 // the new complete shell is installed and all old controlled pages are closed.
-const VERSION = 'v17';
+const VERSION = 'v18';
 const PREFIX = 'kairos-training-shell:' + self.registration.scope + ':';
 const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'diagnostics.js'];
 const HASHES = {
-  "index.html": "7b605b8bf39eb34506efd6854133a63cf02f6ad8606204a0ce8f126c49281551",
-  "styles.css": "fbbf16c7c2de66896dab96ab2504976a24705a82c6495bc50739f77cf1a07ae1",
-  "data.js": "0fc65cd65a9287dea9c4e0e3b8df48692c4fd80b0ade63889db725e1ec86f616",
+  "index.html": "c1227c7450730807a2f905839f3102b86aa6d7170235035525a42efe0bba7aed",
+  "styles.css": "7e1bb182d111667fd120c81c3022c815df680f73f7d673ae64596a005f7e8433",
+  "data.js": "feedc5e88f0e25f7312be9e30163ece950d9b0a42f51dfc6a78e391eafbb73c7",
   "library.js": "f27ed498f9c4a22bc1e6e2ea223aa8806441acf62776f0a583a45a48fd5dfbc8",
-  "management.js": "d1ad86c853f0ab79f4e6f66901934ee3a067eba6840b0ba87497529c7f6309f9",
-  "session.js": "beda560abb6ec0b112433cf3d8c564055099a6fcf7cc37437f9a0f635639bf75",
-  "navigation.js": "992d4e66d8521ca3abba93c4caa48f9bea8a915210f414a8e85b0876c720c95f",
-  "app.js": "cb4cf487845cb62990e8fa3fae9bd8c4051a32797e6257eb248dca7737ef2d4f",
+  "management.js": "1b51bff6a00150c1fb243d8e20c5355306dde7a6ad48817d0e2d67587240e1b7",
+  "session.js": "51e80f27994d514139f00fc56b509c144aac12ca6aae3bf8adab84d4a1915348",
+  "navigation.js": "d779d8f510e0a3bbd3224491eac7d00eced8efd4299677186d428a096d1ec78d",
+  "app.js": "8ebca5b084a42073de3909600f4564008875983b3d2121c967508970a2184719",
   "manifest.webmanifest": "2c43aaf1be2d8ad29a7f938f12654d52ed60d72c22aee254b683ab443a9fa7bc",
   "icons/icon-192.png": "7b853e1539b7b5b4741f3d84b363a14f698d8263c4c2fb85de5af31d817c8bf1",
   "icons/icon-512.png": "0fabf101438a17bd21f91ef09f5b6aabfcea15b86f2b350bbfe128f25e5856ac",

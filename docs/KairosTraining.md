@@ -148,7 +148,7 @@ Die kompakte Startansicht erscheint bei jedem neuen App-/Dokumentstart ohne lauf
 
 Die 60 Minuten Inaktivität beginnen, sobald KAIROS in den Hintergrund wechselt oder verlassen wird. Kehrt KAIROS ohne laufendes Training nach weniger als 60 Minuten Abwesenheit in ein bereits bestehendes Dokument zurück, wird die zuletzt verwendete Ansicht wiederhergestellt. Ein neu geladenes Dokument startet dagegen auf der Startansicht. Eine BFCache-Wiederherstellung eines bestehenden Dokuments gilt als Rückkehr, nicht als neuer Dokumentstart. Ab 60 Minuten erscheint die Startansicht. Beim ersten Öffnen des Tages erscheint ebenfalls die Startansicht; diese Regel hat Vorrang vor der Wiederherstellung der zuletzt verwendeten Ansicht.
 
-Ein laufendes Training hat immer Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt automatisch fortgesetzt (siehe Abschnitt 12).
+Ein nicht abgelaufenes laufendes Training hat Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt automatisch fortgesetzt (siehe Abschnitt 12).
 
 Die Startansicht zeigt:
 
@@ -262,13 +262,13 @@ Der Nutzer kann die Reihenfolge jederzeit ändern.
 
 Die Änderung betrifft den Trainingsplan und nicht die Übung selbst.
 
-Änderungen an Trainingsplänen während einer laufenden Einheit gelten erst für das nächste Training. Die laufende Einheit behält den beim Start geltenden Plan mit seiner Übungsliste und Reihenfolge. Globale Gewichtsänderungen gemäß Abschnitt 10 bleiben davon unberührt.
+Gespeicherte Änderungen an der Übungsreihenfolge des aktiven Plans gelten ab v18 auch für die laufende Einheit. Offene und abgeschlossene Übungen folgen jeweils der neuen Reihenfolge; Status, erfasste Werte und die ausgewählte Übungs-ID bleiben erhalten. Andere Pläne beeinflussen die Einheit nicht. Neu hinzugefügte Planübungen kommen erst beim nächsten Training hinzu; entfernte Übungen bleiben in der laufenden Einheit erhalten und folgen hinter den weiterhin im Plan vorhandenen Übungen in ihrer bisherigen relativen Reihenfolge. Die Momentaufnahme behält ihre Übungs-IDs, Namen, Herkunft, Gewichte und Status. Bereits abgeschlossene Einheiten ändern sich nicht. Globale Gewichtsänderungen gemäß Abschnitt 10 bleiben davon unberührt.
 
 ---
 
 # 8. Übungen
 
-Die Bibliothek zeigt Übungen alphabetisch sortiert mit Suchfunktion nach Namen und numerischem Gewicht. Das Suchfeld zeigt eine Lupe statt des bisherigen Text-Placeholders. Beim Verlassen der Bibliotheksansicht oder Wechsel in den Hintergrund wird die Suche geleert; beim Wiederöffnen erscheint die vollständige alphabetische Liste. Wiederholungen, MAX und wiederkehrende Herkunftskennzeichnungen entfallen in dieser Übersicht. Erstellen/Bearbeiten öffnet eine eigene Ansicht ohne Eingabe-Autofokus mit Name und Gewicht sowie „Übung speichern“ und „Abbrechen“. Bestehende interne MAX-/Wiederholungswerte werden dabei nicht zurückgesetzt. Die MAX-Bedienung im aktiven Training bleibt unverändert.
+Die Bibliothek zeigt Übungen alphabetisch sortiert mit Suchfunktion nach Namen und numerischem Gewicht. Das Suchfeld zeigt eine Lupe statt des bisherigen Text-Placeholders. Beim Verlassen der Bibliotheksansicht oder Wechsel in den Hintergrund wird die Suche geleert; beim Wiederöffnen erscheint die vollständige alphabetische Liste. Wiederholungen, MAX und wiederkehrende Herkunftskennzeichnungen entfallen in dieser Übersicht. Erstellen/Bearbeiten öffnet eine eigene Ansicht ohne Eingabe-Autofokus mit Name und Gewicht sowie „Übung speichern“ und „Abbrechen“. Bestehende interne MAX-/Wiederholungswerte werden dabei nicht zurückgesetzt. Seit v18 werden MAX und Wiederholungen auch im aktiven Training ausgeblendet; ihre gespeicherten Werte bleiben erhalten.
 
 Training V1 enthält eine verbindlich freigegebene Grundbibliothek mit 52 Fitnessübungen gemäß Abschnitt 8.1. Sie deckt Brust, Rücken, Schultern, Arme, Beine, Bauch und Unterarme ab und berücksichtigt Maschinen, Kabelzüge, Kurz- und Langhanteln sowie Körpergewichtsübungen.
 
@@ -276,7 +276,7 @@ Zusätzlich muss der Nutzer jederzeit eigene Übungen erstellen, bearbeiten und 
 
 Doppelte Übungsnamen sind innerhalb der gesamten Übungsbibliothek nicht erlaubt. Beim Vergleich werden Groß-/Kleinschreibung sowie führende, abschließende und überflüssige Leerzeichen zwischen Wörtern ignoriert. Diese Regel gilt auch beim Umbenennen eigener und vorgefertigter Übungen.
 
-Vorgefertigte Übungen dürfen hinsichtlich Name, Gewicht, Wiederholungen und MAX-Modus vollständig bearbeitet werden. Sie können jedoch nicht dauerhaft aus der Grundbibliothek gelöscht werden.
+Vorgefertigte Übungen dürfen hinsichtlich Name und Gewicht bearbeitet werden. Bestehende Wiederholungs- und MAX-Werte bleiben intern erhalten. Sie können jedoch nicht dauerhaft aus der Grundbibliothek gelöscht werden.
 
 Eine Übung besitzt mindestens:
 
@@ -419,7 +419,7 @@ Ein Gewicht darf leer bleiben. Ein leerer Wert ist von 0 kg und vom MAX-Modus zu
 
 ## 10.2 Gewicht während des Trainings ändern
 
-Im aktiven Training wird das aktuelle Gewicht groß und prominent dargestellt.
+Im aktiven Training zeigt jede kompakte Übungskarte das numerische Gewicht. Bei der aktuellen Übung öffnet Antippen die Gewichtsbearbeitung direkt in dieser Karte.
 
 Das Gewicht soll antippbar sein.
 
@@ -431,7 +431,7 @@ Der Nutzer gibt beispielsweise ein:
 
 und bestätigt.
 
-Danach wird das neue Gewicht unmittelbar in der betroffenen Übung der laufenden Einheit angezeigt und gleichzeitig global gespeichert. Das neue Gewicht gilt auch für alle anderen Trainingspläne. Die beim Trainingsstart festgelegten Übungsnamen und die Übungsliste bleiben unverändert. Bei Speicherfehlern gilt Abschnitt 21.3.
+Danach wird das neue Gewicht unmittelbar in der betroffenen Übung der laufenden Einheit angezeigt und gleichzeitig global gespeichert. Das neue Gewicht gilt auch für alle anderen Trainingspläne. Die beim Trainingsstart festgelegten Übungsnamen und die Mitgliedschaft bleiben unverändert; Reihenfolgeänderungen unterliegen der v18-Synchronisierung. Bei Speicherfehlern gilt Abschnitt 21.3.
 
 V1 benötigt keine Plus-/Minus-Stepper.
 
@@ -441,42 +441,9 @@ Verschiedene Übungen und Geräte besitzen unterschiedliche Gewichtsschritte. Ei
 
 ---
 
-# 11. Maximalgewicht
+# 11. Maximalgewicht und Wiederholungen (interne Bestandsdaten)
 
-Ein Sonderfall besteht bei Übungen, bei denen das maximale Gerätegewicht erreicht wurde.
-
-In diesem Fall wird statt eines konkreten Gewichts:
-
-> MAX
-
-angezeigt.
-
-Beispiel:
-
-> Rückenstrecker  
-> MAX  
-> 3 × 12
-
-Sobald eine Übung auf MAX steht, wird nicht mehr das Gewicht erhöht.
-
-Stattdessen wird die Wiederholungszahl gesteigert.
-
-Bei normalen Übungen gilt weiterhin:
-
-> aktuelles Gewicht  
-> Standard: 3 × 10
-
-Die Wiederholungszahl wird im normalen Fall nicht prominent dargestellt.
-
-Sobald MAX erreicht ist, wird die Wiederholungszahl zu einer relevanten Information und soll entsprechend sichtbar bzw. bearbeitbar sein.
-
-Die Implementierung muss daher eine Übung sowohl mit einem numerischen Gewicht als auch mit dem Zustand „MAX“ speichern können.
-
-Für die Eingabe von MAX soll eine eigene, klar erkennbare UI-Möglichkeit vorhanden sein.
-
-Es soll nicht erforderlich sein, über das normale numerische iPhone-Tastenfeld einen Textwert wie „MAX“ einzugeben.
-
-Beim Wechsel in den MAX-Modus bleibt das vorherige Gewicht gespeichert. Beim Zurückwechseln wird ein vorhandenes vorheriges numerisches Gewicht wiederhergestellt. War zuvor kein numerisches Gewicht eingetragen, bleibt das Gewicht nach Verlassen des MAX-Modus leer.
+Bestehende Übungen und Momentaufnahmen können weiterhin `isMax` und `repetitions` enthalten. Das Datenschema sowie Import und Export erhalten diese Werte. Die frühere Oberfläche bot MAX und Wiederholungsänderungen an. Seit v16 sind diese Bedienelemente in der Verwaltung ausgeblendet, seit v18 auch im aktiven Training. Es wird das numerische Gewicht beziehungsweise „Gewicht offen“ angezeigt. Gewichtsbearbeitung verändert die unsichtbaren Felder nicht; es findet keine Migration statt. Neue Übungen verwenden weiterhin zehn Wiederholungen und zunächst keinen MAX-Modus.
 
 ---
 
@@ -494,31 +461,19 @@ Für Änderungen am Trainingsplan während einer laufenden Einheit gilt Abschnit
 
 Der Nutzer soll die Übungen grundsätzlich in der gespeicherten Reihenfolge durchgehen.
 
-Der aktuelle Screen soll möglichst übersichtlich sein.
+Die aktive Ansicht zeigt kompakte, abgerundete Übungskarten in „Offene Übungen“ und darunter „Abgeschlossene Übungen“. Beide Gruppen folgen der aktuellen Reihenfolge der Einheit. Die aktuelle offene Übung erhält eine grüne Umrandung und „Aktuell“. Nach Abschluss wandert die Karte in die dezenter dargestellte abgeschlossene Gruppe. Jede Karte zeigt Name und numerisches Gewicht. MAX-Modus und Wiederholungen bleiben intern erhalten und sind unsichtbar.
 
-Beispiel:
-
-> Training A
->
-> Übung 2 von 8
->
-> **Hammer Curls**
->
-> **17,5 kg**
->
-> 3 × 10
->
-> [ Übung abgeschlossen ]
->
-> Überspringen
-
-Das Gewicht soll visuell die wichtigste Information sein und groß dargestellt werden.
-
-Der Übungsname muss ebenfalls eindeutig und gut lesbar sein.
-
-Die Wiederholungszahl 10 muss bei normalen Übungen nicht prominent dargestellt werden.
+Gewichtsbearbeitung erfolgt direkt an der aktuellen Karte mit schmalem Feld, „Gewicht“, „kg“, „Gewicht speichern“ und „Abbrechen“, ohne automatischen Eingabefokus. „Training beenden“ ist mit Abstand von den Übungsaktionen getrennt.
 
 ---
+
+## 12.1 Automatischer Abbruch nach Trainingsinaktivität (v18)
+
+Nach mindestens 60 Minuten ohne relevante Trainingsaktion wird die laufende Einheit verworfen und nicht als abgeschlossen gespeichert. Auswahl, Abschließen, Überspringen, Gewichtseingabe im aktiven Training und tatsächlich übernommene Reihenfolgeänderungen dieses Plans aktualisieren den Aktivitätszeitpunkt. Öffnen, Anzeigen, Ansichtswechsel oder Änderungen anderer Pläne gelten nicht als Trainingsaktivität.
+
+Der Zeitpunkt wird mit der laufenden Einheit gespeichert und vor Aktionen sowie beim Laden/Wiedereintritt geprüft. Ein Timer dient zusätzlich der Prüfung im sichtbaren Betrieb; Hintergrundsperre, Schließen und Neustart umgehen die Frist nicht. Beim Wiedereintritt hat nur eine noch nicht abgelaufene Einheit Vorrang vor Tages-/Startregeln. Ein Tageswechsel alleine verwirft keine innerhalb der Frist aktive Einheit.
+
+Bereits dauerhaft gespeicherte globale Übungsgewichte und abgeschlossene Trainings bleiben erhalten. Bei Schreibfehlern wird kein Speichererfolg behauptet; die abgelaufene Einheit wird nicht mehr als fortsetzbar angezeigt. Ein erneuter Versuch verwirft sie über den vorhandenen, konfliktgeschützten Speicherpfad. Ältere laufende Einheiten ohne Aktivitätszeitpunkt verwenden ihren Trainingsstart als letzten bekannten Aktivitätszeitpunkt. Die Geräteuhr ist die Zeitquelle; ein bloßes Öffnen erzeugt keinen Ersatzzeitpunkt.
 
 # 13. Übung abschließen
 
@@ -532,7 +487,7 @@ bzw.
 
 tippen.
 
-Danach wird automatisch die nächste Übung angezeigt, sofern eine nächste Übung vorhanden ist. Auch nach Abschluss aller Übungen bleibt das Training aktiv, bis der Nutzer es ausdrücklich beendet (siehe Abschnitt 17).
+Danach wird automatisch die erste noch nicht abgeschlossene Übung gemäß der aktuellen Planreihenfolge angezeigt, unabhängig von der Position der zuletzt abgeschlossenen Übung. Übersprungene Übungen zählen weiterhin als offen. Eine manuelle Auswahl bleibt bis zu ihrem Abschluss oder einer bewussten weiteren Trainingsaktion aktiv; eine reine Reihenfolgeänderung ersetzt sie nicht. Abgeschlossene Übungen können nicht erneut als offen ausgewählt werden. Auch nach Abschluss aller Übungen bleibt das Training bis zum ausdrücklichen Beenden aktiv, solange es nicht wegen Inaktivität abläuft (siehe Abschnitt 12.1).
 
 Die einzelnen Sätze werden nicht separat dokumentiert.
 
@@ -588,7 +543,7 @@ Der Grund für das Überspringen muss in V1 nicht direkt abgefragt werden.
 
 # 16. Training vorzeitig beenden
 
-Ein Training kann jederzeit beendet werden.
+Ein noch nicht abgelaufenes Training kann jederzeit beendet werden.
 
 Auch ein Training, bei dem nur wenige Übungen absolviert wurden, wird gespeichert.
 
@@ -901,3 +856,9 @@ Alles Weitere ist Erweiterung.
 Die Entscheidungen 23 bis 25 klären die unmittelbare Anzeige und globale Speicherung von Gewichtsänderungen während des Trainings, die Wiederherstellung der zuletzt verwendeten Ansicht bei weniger als 60 Minuten Abwesenheit sowie Umfang und Abdeckung der Grundbibliothek. Die Anforderungen sind in den Abschnitten 5, 8, 10.2 und 12 integriert. Die zuvor hier dokumentierten offenen Verhaltensfragen sind damit geklärt.
 
 Die konkrete Grundbibliothek mit 52 Übungen ist freigegeben und in Abschnitt 8.1 verbindlich dokumentiert. Die zuvor ausstehende Freigabe der Übungsauswahl ist damit abgeschlossen.
+
+### Training v18: aktive Oberfläche
+
+Die aktive Einheit zeigt kompakte Karten in zwei Gruppen: offene Übungen vor abgeschlossenen Übungen. Innerhalb beider Gruppen gilt die Reihenfolge der aktiven Einheit gemäß der v18-Synchronisierung. Die aktuelle offene Übung ist grün umrandet und als „Aktuell“ gekennzeichnet. Gewichtsbearbeitung erfolgt in ihrer Karte, ohne automatischen Eingabefokus. Die Oberfläche zeigt ausschließlich das numerische Gewicht mit kg; vorhandene MAX- und Wiederholungsdaten bleiben intern erhalten. Speichern und Abbrechen bleiben explizite Aktionen. Ein offenes Gewichtsformular behält bei externen Änderungen seinen ursprünglichen Konfliktkontext.
+
+Die Planeditor-Suche bleibt während der Eingabe ein unverändertes DOM-Eingabefeld. Ein eigener Löschbutton leert sie; nach erfolgreicher Übungsübernahme wird sie ebenfalls geleert. Die Übungsverwaltung erhält einen oberen Rückweg zu Einstellungen. Die verbindliche iOS-Hülle ist in [IOSNavigation.md](IOSNavigation.md) beschrieben.

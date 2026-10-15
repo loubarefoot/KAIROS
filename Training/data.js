@@ -64,6 +64,29 @@
     exercises.forEach(validateExercise);
     return exercises.map(exercise => ({ ...copy(exercise), status: 'open' }));
   }
+  const INACTIVITY_MS = 60 * 60 * 1000;
+  function sessionExpired(session, now = Date.now()) {
+    return !!session && now - (session.lastActivityAt ?? session.startedAt) >= INACTIVITY_MS;
+  }
+  function touchSession(session, now = Date.now()) {
+    session.lastActivityAt = Math.max(now, session.lastActivityAt ?? session.startedAt);
+  }
+  function orderedSnapshots(session, plan) {
+    const rank = new Map(plan.exerciseIds.map((id,index)=>[id,index]));
+    return [...session.exercises].sort((a,b)=>(rank.get(a.id) ?? plan.exerciseIds.length) - (rank.get(b.id) ?? plan.exerciseIds.length));
+  }
+  function syncSessionOrder(state, plan, previousOrder, now = Date.now()) {
+    const session = state.activeSession;
+    if (!session || session.planId !== plan.id) return;
+    const ids = new Set(session.exercises.map(item=>item.id));
+    const common = new Set(previousOrder.filter(id=>ids.has(id) && plan.exerciseIds.includes(id)));
+    if (JSON.stringify(previousOrder.filter(id=>common.has(id))) === JSON.stringify(plan.exerciseIds.filter(id=>common.has(id)))) return;
+    if (sessionExpired(session, now)) { state.activeSession = null; return; }
+    const selected = session.exercises[session.currentIndex].id;
+    session.exercises = orderedSnapshots(session, plan);
+    session.currentIndex = session.exercises.findIndex(item=>item.id===selected);
+    touchSession(session, now);
+  }
   function validateSession(session, completed) {
     requireRule(object(session) && id(session.id) && id(session.planId), 'Ungültige Trainings-ID.');
     requireRule(typeof session.planName === 'string' && session.planName.trim() && typeof session.planDescription === 'string', 'Ungültige Plan-Momentaufnahme.');
@@ -76,6 +99,7 @@
     if (completed) {
       requireRule(time(session.endedAt) && session.endedAt >= session.startedAt && session.durationMs === session.endedAt - session.startedAt, 'Ungültige Trainingsdauer.');
     } else {
+      requireRule(session.lastActivityAt === undefined || (time(session.lastActivityAt) && session.lastActivityAt >= session.startedAt), 'Ungültiger Aktivitätszeitpunkt.');
       requireRule(session.endedAt === null && session.durationMs === null && Number.isSafeInteger(session.currentIndex) && session.currentIndex >= 0 && session.currentIndex < session.exercises.length, 'Ungültiger laufender Trainingszustand.');
     }
     // Historical IDs intentionally need not refer to current plans/exercises.
@@ -108,7 +132,7 @@
     state.exercises.forEach(value => keys(value, exerciseKeys));
     state.plans.forEach(value => keys(value, ['id', 'name', 'description', 'exerciseIds']));
     for (const session of [...state.completedSessions, ...(state.activeSession ? [state.activeSession] : [])]) {
-      keys(session, ['id', 'planId', 'planName', 'planDescription', 'startedAt', 'endedAt', 'durationMs', ...(session === state.activeSession ? ['currentIndex'] : []), 'exercises']);
+      keys(session, ['id', 'planId', 'planName', 'planDescription', 'startedAt', 'endedAt', 'durationMs', ...(session === state.activeSession ? ['currentIndex', 'lastActivityAt'] : []), 'exercises']);
       session.exercises.forEach(value => keys(value, [...exerciseKeys, 'status']));
     }
     keys(state.settings, ['lastView', 'lastOpenedDay', 'lastBackgroundAt']);
@@ -134,10 +158,16 @@
       const original = previous.activeSession;
       const updated = next.activeSession;
       requireRule(original.planId === updated.planId && original.planName === updated.planName && original.planDescription === updated.planDescription && original.startedAt === updated.startedAt, 'Laufende Plan-Momentaufnahme darf nicht verändert werden.');
-      requireRule(original.exercises.length === updated.exercises.length && original.exercises.every((exercise, index) => {
-        const item = updated.exercises[index];
-        return exercise.id === item.id && exercise.name === item.name && exercise.source === item.source;
+      requireRule(original.lastActivityAt === undefined || (updated.lastActivityAt !== undefined && updated.lastActivityAt >= original.lastActivityAt), 'Aktivitätszeitpunkt darf nicht zurückgesetzt werden.');
+      requireRule(original.exercises.length === updated.exercises.length && original.exercises.every(exercise => {
+        const item = updated.exercises.find(item=>item.id===exercise.id);
+        return item && exercise.name === item.name && exercise.source === item.source;
       }), 'Übungsliste und Namen einer laufenden Einheit dürfen nicht verändert werden.');
+      if (JSON.stringify(original.exercises.map(item=>item.id)) !== JSON.stringify(updated.exercises.map(item=>item.id))) {
+        const oldPlan = previous.plans.find(plan=>plan.id===original.planId), plan = next.plans.find(plan=>plan.id===original.planId);
+        requireRule(oldPlan && plan && JSON.stringify(oldPlan.exerciseIds) !== JSON.stringify(plan.exerciseIds) && JSON.stringify(updated.exercises) === JSON.stringify(orderedSnapshots(original, plan)), 'Nur die gespeicherte Reihenfolge des aktiven Plans darf die laufende Reihenfolge synchronisieren.');
+        requireRule(updated.exercises[updated.currentIndex].id === original.exercises[original.currentIndex].id, 'Die ausgewählte Übung muss beim Umsortieren erhalten bleiben.');
+      }
     }
   }
   function createStore({ storage = () => globalThis.localStorage, onStatus = () => {} } = {}) {
@@ -256,5 +286,5 @@
     }
     return Object.freeze({ load, refresh, save, update, commit, initializeLibrary, exportJSON, importJSON, getSavedState: () => baseline === null ? emptyState() : JSON.parse(baseline), getState: () => copy(state), getStatus: status });
   }
-  return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, validateBackup, parseBackup, createStore });
+  return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, INACTIVITY_MS, sessionExpired, touchSession, syncSessionOrder, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, validateBackup, parseBackup, createStore });
 });
