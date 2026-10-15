@@ -127,3 +127,9 @@ Ein optionales `lastActivityAt` an der aktiven Einheit bildet relevante Training
 ## Training v18 – Auftrag 59: Oberfläche und Navigationsreferenz
 
 Aktive Übungen verwenden zwei gefilterte Ansichten derselben geordneten Momentaufnahme. Es wird kein zweiter Trainingszustand eingeführt. Gewichtsbearbeitung erhält die bestehenden internen MAX-/Wiederholungswerte und den ursprünglichen Konfliktkontext. Die iOS-v13-Hülle wird als verbindliche Referenz für neue Module in `IOSNavigation.md` dokumentiert; ihre Implementierung bleibt unverändert. Aussagen über die frühere schwarze Fläche werden auf technisch belegbare Geometrie und bestätigte Praxiserfahrung begrenzt.
+
+## Training v19 – Phase 1: visuelle Hierarchie ohne neuen Trainingszustand
+
+Die aktuelle Übung wird aus derselben v18-Momentaufnahme als separate Hauptkarte gerendert und aus der offenen Liste herausgefiltert. Die übrigen Gruppen behalten ihre Reihenfolge. Übersichtskarten ordnen ausschließlich ihre Darstellung um; `planOrder` bleibt unverändert. Bei inzwischen gelöschtem Ursprungsplan bleibt das laufende Training über eine Karte aus seiner Momentaufnahme erreichbar. Bestehende Timer-, Abbruch-, Konflikt- und Speicherlogik bleibt erhalten.
+
+Neue Gestaltungsregeln gelten lokal für Übersicht und aktives Training. Die bewährte iOS-Hülle und Weight werden nicht angepasst. Diagnose ist ein ausdrücklicher interner Aufruf mit `?diagnostics=1`, statt Platz in der regulären Oberfläche zu belegen.

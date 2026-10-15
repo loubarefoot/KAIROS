@@ -151,3 +151,76 @@ progress { width: 100%; height: 12px; accent-color: var(--accent); }
 .exercise-picker .search-field input { flex: 1; width: 0; }
 #plan-exercise-search::-webkit-search-cancel-button { -webkit-appearance: none; }
 #clear-plan-search { flex: 0 0 44px; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: var(--text); font-size: 1.4rem; }
+
+/* v19 phase 1: scoped visual system. Never override shell, viewport or tabs. */
+#view-training, #view-active, .plan-collection {
+  --training-space-1: 4px;
+  --training-space-2: 8px;
+  --training-space-3: 12px;
+  --training-space-4: 16px;
+  --training-space-5: 20px;
+  --training-space-6: 24px;
+  --training-space-8: 32px;
+  --training-panel: #1d2328;
+  --training-panel-raised: #242c31;
+  --training-line: #343e43;
+  --training-secondary: #a7b3ba;
+}
+#view-training > h1, #view-active > h1 { margin: var(--training-space-1) 0 var(--training-space-6); font-size: clamp(1.65rem, 7vw, 2rem); line-height: 1.15; letter-spacing: -.04em; font-weight: 750; text-align: left; }
+.plan-collection { margin-bottom: var(--training-space-6); }
+.plan-collection > h2, #active-content section > h2 { color: var(--training-secondary); font-size: .78rem; letter-spacing: .07em; font-weight: 650; margin: 0 0 var(--training-space-3); }
+.plan-collection .plan-summary { padding: var(--training-space-4); border-color: transparent; background: var(--training-panel); margin-bottom: var(--training-space-3); }
+.plan-card-heading { display: flex; align-items: start; gap: var(--training-space-3); }
+.plan-card-heading h3 { flex: 1; min-width: 0; margin: 0; font-size: 1.08rem; line-height: 1.3; letter-spacing: -.02em; font-weight: 650; }
+.plan-description { margin: var(--training-space-2) 0 0; font-size: .9rem; line-height: 1.45; color: var(--training-secondary); }
+.plan-exercise-count { margin: var(--training-space-2) 0 var(--training-space-3); font-size: .8rem; color: var(--training-secondary); }
+.plan-collection .plan-summary > .btn-secondary { width: auto; min-height: 44px; padding: var(--training-space-2) var(--training-space-3); font-size: .85rem; background: transparent; border-color: var(--training-line); }
+.plan-collection .running-plan { background: linear-gradient(135deg, #20332b, #1d2827); border-color: #416b54; }
+.active-badge { flex: 0 0 auto; padding: var(--training-space-1) var(--training-space-2); color: var(--accent); background: #78c99b14; border-radius: 6px; font-size: .72rem; font-weight: 700; }
+.running-plan-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--training-space-3); margin-top: var(--training-space-4); }
+.overview-time { margin: 0; display: grid; gap: var(--training-space-1); }
+.overview-time > span { font-size: .72rem; color: var(--training-secondary); }
+.overview-time time { font-size: 1.25rem; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.running-plan-footer button { width: auto; padding: 10px var(--training-space-3); min-height: 44px; font-size: .85rem; }
+.training-session-header { margin-bottom: var(--training-space-6); }
+.session-eyebrow { color: var(--training-secondary); font-size: .75rem; margin-bottom: var(--training-space-2); }
+.training-session-header h2 { font-size: 1.3rem; line-height: 1.25; letter-spacing: -.025em; margin-bottom: var(--training-space-4); }
+.session-metrics { display: flex; align-items: center; gap: var(--training-space-5); margin-bottom: var(--training-space-3); }
+.session-metrics p { margin: 0; display: flex; flex-direction: column; gap: var(--training-space-1); }
+.session-metrics .duration > span, #training-progress > span { font-size: .7rem; color: var(--training-secondary); }
+.session-metrics time { font-size: 1.2rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+#training-progress strong { font-size: 1.2rem; font-weight: 650; }
+#training-progress strong span { color: var(--training-secondary); font-size: .9rem; font-weight: 400; }
+.progress-percent { margin-left: auto; color: var(--accent); font-size: .8rem; font-variant-numeric: tabular-nums; }
+#active-content progress { display: block; height: 5px; border: 0; border-radius: 4px; overflow: hidden; background: var(--training-panel-raised); }
+#active-content progress::-webkit-progress-bar { background: var(--training-panel-raised); border-radius: 4px; }
+#active-content progress::-webkit-progress-value { background: var(--accent); border-radius: 4px; }
+#active-content progress::-moz-progress-bar { background: var(--accent); border-radius: 4px; }
+#active-content .active-exercise { padding: 14px var(--training-space-4); background: var(--training-panel); border-color: transparent; margin-bottom: var(--training-space-2); }
+#active-content .active-exercise h3 { font-size: .95rem; line-height: 1.35; letter-spacing: -.015em; font-weight: 600; }
+#active-content .active-weight-label { color: var(--training-secondary); margin-top: 6px; font-size: .85rem; }
+#active-content .active-exercise-heading { display: block; }
+#active-content .exercise-status { display: block; margin-top: 4px; font-size: .7rem; }
+#active-content .select-session-exercise { margin-top: var(--training-space-2); padding: 6px 0; min-height: 44px; font-size: .8rem; background: transparent; color: var(--accent); border: 0; }
+#active-content .is-current { background: var(--training-panel-raised); border: 1px solid #547d63; padding: var(--training-space-5); margin-bottom: var(--training-space-6); box-shadow: 0 8px 28px #00000018; }
+#active-content .is-current .active-exercise-heading { display: flex; flex-direction: column-reverse; align-items: start; gap: var(--training-space-3); }
+#active-content .is-current h3 { font-size: clamp(1.2rem, 5.4vw, 1.5rem); line-height: 1.2; font-weight: 700; letter-spacing: -.025em; }
+#active-content .is-current .exercise-status { color: var(--accent); font-size: .75rem; }
+#active-content .active-weight { margin: var(--training-space-5) 0; padding: 0; min-height: 52px; border: 0; background: transparent; font-size: clamp(2.5rem, 11vw, 3.3rem); font-weight: 700; letter-spacing: -.05em; line-height: 1.1; text-align: left; }
+.active-weight .weight-kg { font-size: 1.1rem; font-weight: 500; color: var(--training-secondary); letter-spacing: 0; }
+.active-weight .unset-weight { font-size: 1.2rem; letter-spacing: -.02em; }
+#active-content .is-current > .form-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--training-space-2); }
+#active-content .is-current > .form-actions button { width: 100%; padding: 10px var(--training-space-2); min-height: 46px; font-size: .82rem; line-height: 1.25; }
+#active-content .is-current > .form-actions .btn-secondary { white-space: nowrap; padding-left: 12px; padding-right: 12px; background: transparent; border-color: var(--training-line); color: var(--training-secondary); }
+#active-content .is-completed { background: transparent; padding-top: 10px; padding-bottom: 10px; box-shadow: none; }
+#active-content .is-completed h3 { color: var(--training-secondary); font-weight: 500; }
+#active-content #completed-exercises { margin-top: var(--training-space-6); }
+#active-content #training-weight-form { border-color: var(--training-line); }
+#active-content #training-weight-form .form-actions button { padding: 10px var(--training-space-3); font-size: .85rem; }
+#active-content .finish-training-actions { margin-top: var(--training-space-8); border-color: var(--training-line); }
+#active-content #finish-training { width: auto; background: transparent; color: var(--text); border-color: var(--training-line); font-size: .85rem; min-height: 44px; }
+#view-active > [data-view="training"], #view-training > button, .plan-collection > button { width: auto; min-height: 44px; padding: 10px 0; background: transparent; border: 0; color: var(--training-secondary); font-size: .85rem; }
+@media (prefers-reduced-motion: no-preference) {
+  #active-content .active-exercise, .plan-collection .plan-summary { transition: background-color 140ms ease, border-color 140ms ease; }
+  #active-content button, .plan-collection button { transition: opacity 100ms ease, background-color 140ms ease; }
+}

@@ -461,7 +461,7 @@ Für Änderungen am Trainingsplan während einer laufenden Einheit gilt Abschnit
 
 Der Nutzer soll die Übungen grundsätzlich in der gespeicherten Reihenfolge durchgehen.
 
-Die aktive Ansicht zeigt kompakte, abgerundete Übungskarten in „Offene Übungen“ und darunter „Abgeschlossene Übungen“. Beide Gruppen folgen der aktuellen Reihenfolge der Einheit. Die aktuelle offene Übung erhält eine grüne Umrandung und „Aktuell“. Nach Abschluss wandert die Karte in die dezenter dargestellte abgeschlossene Gruppe. Jede Karte zeigt Name und numerisches Gewicht. MAX-Modus und Wiederholungen bleiben intern erhalten und sind unsichtbar.
+Die aktive Ansicht zeigt kompakte, abgerundete Übungskarten in „Offene Übungen“ und darunter „Abgeschlossene Übungen“. Beide Gruppen folgen der aktuellen Reihenfolge der Einheit. Seit v19 steht die aktuelle offene Übung als eigene Hauptkarte direkt unter dem Fortschrittskopf, außerhalb der offenen Liste. Sie erhält eine grüne Kontur und „Aktuell“. Nach Abschluss wandert die Karte in die dezenter dargestellte abgeschlossene Gruppe. Jede Karte zeigt Name und numerisches Gewicht; auf der Hauptkarte ist das Gewicht prominent und ohne dauerhaften Bearbeitungshinweis antippbar. MAX-Modus und Wiederholungen bleiben intern erhalten und sind unsichtbar.
 
 Gewichtsbearbeitung erfolgt direkt an der aktuellen Karte mit schmalem Feld, „Gewicht“, „kg“, „Gewicht speichern“ und „Abbrechen“, ohne automatischen Eingabefokus. „Training beenden“ ist mit Abstand von den Übungsaktionen getrennt.
 
@@ -859,6 +859,13 @@ Die konkrete Grundbibliothek mit 52 Übungen ist freigegeben und in Abschnitt 8.
 
 ### Training v18: aktive Oberfläche
 
-Die aktive Einheit zeigt kompakte Karten in zwei Gruppen: offene Übungen vor abgeschlossenen Übungen. Innerhalb beider Gruppen gilt die Reihenfolge der aktiven Einheit gemäß der v18-Synchronisierung. Die aktuelle offene Übung ist grün umrandet und als „Aktuell“ gekennzeichnet. Gewichtsbearbeitung erfolgt in ihrer Karte, ohne automatischen Eingabefokus. Die Oberfläche zeigt ausschließlich das numerische Gewicht mit kg; vorhandene MAX- und Wiederholungsdaten bleiben intern erhalten. Speichern und Abbrechen bleiben explizite Aktionen. Ein offenes Gewichtsformular behält bei externen Änderungen seinen ursprünglichen Konfliktkontext.
+Die aktive Einheit zeigt kompakte Karten in zwei Gruppen: offene Übungen vor abgeschlossenen Übungen. Innerhalb beider Gruppen gilt die Reihenfolge der aktiven Einheit gemäß der v18-Synchronisierung. Seit v19 ist die aktuelle offene Übung als separate Hauptkarte über der offenen Liste grün markiert und mit „Aktuell“ gekennzeichnet; sie erscheint dort nur einmal. Gewichtsbearbeitung erfolgt in ihrer Karte, ohne automatischen Eingabefokus. Die Oberfläche zeigt ausschließlich das numerische Gewicht mit kg; vorhandene MAX- und Wiederholungsdaten bleiben intern erhalten. Speichern und Abbrechen bleiben explizite Aktionen. Ein offenes Gewichtsformular behält bei externen Änderungen seinen ursprünglichen Konfliktkontext.
 
 Die Planeditor-Suche bleibt während der Eingabe ein unverändertes DOM-Eingabefeld. Ein eigener Löschbutton leert sie; nach erfolgreicher Übungsübernahme wird sie ebenfalls geleert. Die Übungsverwaltung erhält einen oberen Rückweg zu Einstellungen. Die verbindliche iOS-Hülle ist in [IOSNavigation.md](IOSNavigation.md) beschrieben.
+
+
+### Training v19: Design-Upgrade, Phase 1
+
+Trainingsübersicht und aktives Training verwenden die lokal in `DesignSystem.md` definierten Gestaltungsregeln. In der Übersicht steht der laufende Plan zuerst mit „Aktiv“, Dauer und Fortsetzen-Aktion. Dies verändert weder die gespeicherte Planreihenfolge noch das aktive Training. Ein laufendes Training bleibt auch nach Löschung seines Ursprungsplans über eine aus der Momentaufnahme abgeleitete Karte erreichbar. Es gibt keinen separaten Aktiv-Block mehr.
+
+Im aktiven Training steht die aktuelle Übung einmalig direkt unter dem kompakten Fortschrittskopf. Offene und abgeschlossene Listen enthalten die übrigen Übungen in unveränderter Reihenfolge. Abschluss und Überspringen verwenden weiterhin ausschließlich die v18-Logik. Der Rückweg heißt „Trainingsübersicht“. Die Diagnose bleibt intern über `?diagnostics=1` erreichbar, ist beim normalen Einstieg jedoch ausgeblendet.

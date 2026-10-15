@@ -276,3 +276,10 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Aktives Training: kompakte offene/abgeschlossene Karten, aktuelle Übung grün markiert, Gewichtsbearbeitung direkt in der Karte ohne sichtbare MAX-/Wiederholungsfelder und ohne Autofokus.
 - Planeditor: Suche nach Hinzufügen leeren, expliziter Löschbutton und stabiler Eingabeknoten mit getrenntem Label. Übungsverwaltung mit oberem Zurück-Pfeil.
 - Verbindliche iOS-v13-Hülle mit technischen Belegen, Grenzen und Checkliste in `docs/IOSNavigation.md`; keine Änderungen an ihrer Implementierung.
+
+### Training v19 – Auftrag 61, Design-Upgrade Phase 1 (vorbereitet, unveröffentlicht)
+
+- Trainingsübersicht mit laufendem Plan zuerst, grüner Aktiv-Kennzeichnung, laufender Dauer und direkter Fortsetzung; separaten Aktiv-Block entfernt. Die gespeicherte Planreihenfolge bleibt unverändert.
+- Aktives Training mit markantem Titel, kompaktem Fortschrittskopf und eigener Hauptkarte für die aktuelle Übung. Übrige offene und abgeschlossene Übungen sind ruhiger gestaltet und bleiben in Planreihenfolge. Antippbares Hauptgewicht ersetzt den dauerhaften Bearbeitungstext.
+- Lokales Typografie-, Flächen-, Abstands- und Aktionssystem; zurückhaltende Übergänge berücksichtigen reduzierte Bewegung. Rückweg heißt „Trainingsübersicht“.
+- Diagnose im normalen Einstieg ausgeblendet; intern über `?diagnostics=1` einschließlich Offline-Einstieg weiterhin erreichbar. Worker v19 und alle 13 Shell-Prüfsummen vorbereitet. Keine Veröffentlichung im Rahmen dieses Auftrags.

@@ -280,3 +280,17 @@ Bestehende funktionierende UI-Elemente sollen ohne konkreten Grund nicht veränd
 ## iOS-PWA-Navigation
 
 Die verbindliche Referenz für Viewport, Scrollbereich und feste Bottom Navigation ist in [IOSNavigation.md](IOSNavigation.md) dokumentiert. Neue Komponenten verwenden lokal begrenzte Styles und verändern weder Mindesthöhe noch Safe-Area- und Navigationsgeometrie.
+
+## Training v19 – Design-Upgrade, Phase 1
+
+Die folgenden Regeln gelten zunächst für Trainingsübersicht und aktives Training. Weight, Navigationshülle sowie die übrigen Verwaltungsansichten werden nicht umgestaltet.
+
+- **Flächen und Farben:** Hintergrund bleibt `#14171b`. Normale Karten verwenden `#1d2328`, die aktuelle Hauptkarte `#242c31`, sekundäre Schrift `#a7b3ba` und dezente Konturen `#343e43`. Grün `#78c99b` kennzeichnet aktive Zustände und primäre Aktionen. Der laufende Plan bekommt eine zurückhaltend grüne Fläche und „Aktiv“; abgeschlossene Karten erhalten keine zusätzliche Kontur.
+- **Typografie:** Systemschrift beibehalten. Seitentitel 1,65–2 rem mit kräftigem Gewicht und enger Laufweite; Trainingsname 1,3 rem; aktuelle Übung 1,2–1,5 rem; normale Übungsnamen etwa 0,95 rem. Numerisches Hauptgewicht 2,5–3,3 rem mit kleinerer kg-Einheit. Zusatzinformationen 0,7–0,9 rem. Dauer und Fortschrittszahlen verwenden tabellarische Ziffern. Umbruch statt Abschneiden langer Namen.
+- **Abstände:** Basisraster 4 px; wiederkehrende Stufen 4, 8, 12, 16, 20, 24 und 32 px. Normale Karten 14–16 px Innenabstand, Hauptkarte 20 px; kleine Listenzwischenräume 8 px, Abschnittswechsel 24 px. Der bestehende äußere Seitenabstand bleibt unverändert.
+- **Hierarchie:** kompakter Fortschrittskopf ohne zusätzliche hohe Infokarte; aktuelle Übung als eigene Hauptkarte unmittelbar darunter. Übrige offene Übungen und abgeschlossene Übungen folgen jeweils ihrer Planreihenfolge. Die aktuelle Übung wird nicht dupliziert.
+- **Aktionen und Eingaben:** primäre Abschlussaktion grün, Überspringen neutral, Auswahl als zurückhaltende Textaktion mit mindestens 44 px Touchhöhe. Abschluss/Überspringen teilen die Hauptkarte proportional auf. Gewicht selbst ist antippbar, mit zugänglichem Aktionsnamen statt dauerhaftem Hilfstext. Inline-Gewichtseingabe bleibt 104 px breit; bestehende Fokus- und Speicherschutzregeln gelten weiter.
+- **Zustände:** aktuelle Übung durch Fläche, dezente grüne Kontur und „Aktuell“; übersprungene Übungen bleiben als offen gekennzeichnet; abgeschlossene Übungen ruhiger und ohne Auswahlaktion. Deaktivierte Aktionen behalten ihre bestehende Sperre und reduzierte Deckkraft. Wichtige Informationen werden nicht allein durch Farbe vermittelt.
+- **Interaktion:** kurze Farb-/Konturübergänge von 100–140 ms, ausschließlich bei `prefers-reduced-motion: no-preference`. Keine Bewegungsanimation, keine verzögerte Bedienung und keine neuen externen Ressourcen.
+
+Die Implementierung bleibt auf Komponenten begrenzt. Insbesondere bleiben Root-Farben, `#scrollArea`, `.wrap`, `.tabbar`, Tab-Regeln und Viewport-Metadaten unverändert.

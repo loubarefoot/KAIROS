@@ -9,6 +9,8 @@
   const liveReport = document.getElementById('diagnostics-live-report');
   const liveStatus = document.getElementById('diagnostics-live-status');
   if (!liveButton || !liveDialog || !liveReport || !liveStatus) return;
+  // Explicit diagnostic opt-in; ordinary app entry keeps the toolbar out of the UI.
+  if (new URLSearchParams(location.search).get('diagnostics') === '1') liveButton.closest('.diagnostics-toolbar').hidden = false;
   let scrollTimer;
   const describe = element => !element ? 'unbekannt' : element.id ? '#' + element.id : element.tagName.toLowerCase();
   document.addEventListener('scroll', event => {

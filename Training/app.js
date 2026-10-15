@@ -72,10 +72,22 @@
     const state = store.getState();
     state.activeSession = visibleSession();
     const plans = state.planOrder.map(id => state.plans.find(plan => plan.id === id));
-    document.querySelectorAll('[data-plan-list]').forEach(list => { list.innerHTML = plans.length ? plans.map(plan => `<div class="card plan-summary"><strong>${esc(plan.name)}</strong><p class="muted">${planDetails(plan)}</p><button class="btn-secondary" data-start-plan="${esc(plan.id)}" ${!plan.exerciseIds.length || state.activeSession || store.getStatus().blocked ? 'disabled' : ''}>Training starten${plan.exerciseIds.length ? '' : ' – keine Übungen'}</button></div>`).join('') : '<p class="empty">Noch keine Trainingspläne vorhanden.</p>'; });
+    const active = state.activeSession;
+    const overviewPlans = [...plans];
+    if (active) {
+      const index = overviewPlans.findIndex(plan => plan.id === active.planId);
+      const runningPlan = index >= 0 ? overviewPlans.splice(index, 1)[0] : {id:active.planId, description:'', exerciseIds:active.exercises.map(item=>item.id)};
+      overviewPlans.unshift(runningPlan);
+    }
+    document.querySelectorAll('[data-plan-list]').forEach(list => {
+      list.innerHTML = overviewPlans.length ? overviewPlans.map(plan => {
+        const running = active && plan.id === active.planId;
+        return `<article class="card plan-summary ${running ? 'running-plan' : ''}"><div class="plan-card-heading"><h3>${esc(running ? active.planName : plan.name)}</h3>${running ? '<span class="active-badge">Aktiv</span>' : ''}</div>${plan.description.trim() ? `<p class="plan-description">${esc(plan.description)}</p>` : ''}<p class="plan-exercise-count">${plan.exerciseIds.length} ${plan.exerciseIds.length === 1 ? 'Übung' : 'Übungen'}</p>
+          ${running ? `<div class="running-plan-footer"><p class="overview-time"><span>Dauer</span><time data-overview-duration>${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(active))}</time></p><button class="btn-primary" data-view="active">Training fortsetzen <span aria-hidden="true">→</span></button></div>` : `<button class="btn-secondary" data-start-plan="${esc(plan.id)}" ${!plan.exerciseIds.length || active || store.getStatus().blocked ? 'disabled' : ''}>Training starten${plan.exerciseIds.length ? '' : ' – keine Übungen'}</button>`}</article>`;
+      }).join('') : '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
+    });
     $('plan-list').innerHTML = plans.map((plan,index) => `<div class="card sort-row" data-id="${esc(plan.id)}" data-index="${index}"><strong>${esc(plan.name)}</strong><p class="muted">${planDetails(plan)}</p><div class="row-actions">${rowControls(index,plans.length)}<button data-edit-plan="${esc(plan.id)}">Bearbeiten</button><button data-delete-plan="${esc(plan.id)}">Löschen</button></div></div>`).join('') || '<p class="empty">Noch keine Trainingspläne vorhanden.</p>';
     renderExerciseList();
-    $('active-overview').textContent = state.activeSession ? 'Training „' + state.activeSession.planName + '“ läuft. Du kannst es in der Trainingsansicht fortsetzen.' : 'Noch kein Training gestartet.';
     // The draft editor owns its DOM; background renders never rebuild its fields.
     renderActive();
     renderSavedSessions();
@@ -100,15 +112,16 @@
     $('view-active').append(editor);
     const progress = KairosTrainingSession.progress(session);
     const disabled = store.getStatus().blocked ? 'disabled' : '';
-    const cards = completed => session.exercises.map((item,index) => {
-      if ((item.status === 'completed') !== completed) return '';
-      const current = !completed && index === session.currentIndex;
+    const cards = (completed, featured = false) => session.exercises.map((item,index) => {
+      const current = item.status !== 'completed' && index === session.currentIndex;
+      if (featured ? !current : (item.status === 'completed') !== completed || current) return '';
       const context = esc(JSON.stringify({sessionId:session.id, exerciseId:item.id}));
-      return `<article class="card active-exercise ${current ? 'is-current' : completed ? 'is-completed' : ''}" data-session-exercise="${esc(item.id)}"><div class="active-exercise-heading"><h3 class="${current ? 'exercise-name' : ''}">${esc(item.name)}</h3><span class="exercise-status">${current ? 'Aktuell' : completed ? 'Abgeschlossen' : item.status === 'skipped' ? 'Übersprungen · offen' : 'Offen'}</span></div>
-        ${current ? `<button class="btn-secondary active-weight" id="edit-training-weight" ${disabled}>${esc(numericWeightLabel(item))} · Gewicht bearbeiten</button>` : `<p class="active-weight-label">${esc(numericWeightLabel(item))}</p>`}
+      return `<article class="card active-exercise ${current ? 'is-current' : completed ? 'is-completed' : ''}" data-session-exercise="${esc(item.id)}"><div class="active-exercise-heading"><h3 class="${current ? 'exercise-name' : ''}">${esc(item.name)}</h3>${current || item.status === 'skipped' ? `<span class="exercise-status">${current ? 'Aktuell' : 'Übersprungen · offen'}</span>` : ''}</div>
+        ${current ? `<button class="btn-secondary active-weight" id="edit-training-weight" aria-label="Gewicht ändern: ${esc(numericWeightLabel(item))}" ${disabled}>${item.weightKg === null ? '<span class="unset-weight">Gewicht offen</span>' : esc(item.weightKg.toLocaleString('de-DE')) + ' <span class="weight-kg">kg</span>'}</button>` : `<p class="active-weight-label">${esc(numericWeightLabel(item))}</p>`}
         ${current ? `<div class="form-actions"><button class="btn-primary" id="complete-exercise" data-context="${context}" ${disabled}>Übung abgeschlossen</button><button class="btn-secondary" id="skip-exercise" data-context="${context}" ${disabled}>Überspringen</button></div>` : !completed ? `<button class="btn-secondary select-session-exercise" data-select-exercise="${index}" data-session-id="${esc(session.id)}" data-exercise-id="${esc(item.id)}" ${disabled}>Übung auswählen</button>` : ''}</article>`;
     }).join('');
-    $('active-content').innerHTML = `<div class="card"><h2>${esc(session.planName)}</h2><p class="duration">Dauer: <time id="training-duration">${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session))}</time></p><p id="training-progress">${progress.completed} / ${progress.total} Übungen abgeschlossen · ${progress.percent} %</p><progress max="${progress.total}" value="${progress.completed}" aria-labelledby="training-progress"></progress></div>
+    $('active-content').innerHTML = `<header class="training-session-header"><p class="session-eyebrow">Dein Training</p><h2>${esc(session.planName)}</h2><div class="session-metrics"><p class="duration"><span>Dauer</span><time id="training-duration">${KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session))}</time></p><p id="training-progress"><strong>${progress.completed}<span> / ${progress.total}</span></strong><span>Übungen abgeschlossen</span></p><span class="progress-percent" aria-hidden="true">${progress.percent}%</span></div><progress max="${progress.total}" value="${progress.completed}" aria-labelledby="training-progress"></progress></header>
+      <section id="current-exercise" aria-label="Aktuelle Übung">${cards(false,true)}</section>
       ${progress.completed === progress.total ? '<div class="card"><p>Alle Übungen abgeschlossen. Das Training läuft weiterhin.</p></div>' : ''}
       <section id="open-exercises" aria-labelledby="open-exercises-title"><h2 id="open-exercises-title">Offene Übungen</h2>${cards(false) || '<p class="empty">Keine offenen Übungen.</p>'}</section>
       <section id="completed-exercises" aria-labelledby="completed-exercises-title"><h2 id="completed-exercises-title">Abgeschlossene Übungen</h2>${cards(true) || '<p class="empty">Noch keine abgeschlossenen Übungen.</p>'}</section>
@@ -122,7 +135,11 @@
   function tickDuration() {
     if (checkSessionTimeout()) { render(); if (currentView === 'active') showView('start', {focusHeading:false}); return; }
     const session = store.getState().activeSession, label = $('training-duration');
-    if (session && label) label.textContent = KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session));
+    if (session) {
+      const duration = KairosTrainingSession.formatDuration(KairosTrainingSession.elapsed(session));
+      if (label) label.textContent = duration;
+      document.querySelectorAll('[data-overview-duration]').forEach(time => { time.textContent = duration; });
+    }
   }
   function syncDuration(session) {
     if (session && durationInterval === null) durationInterval = window.setInterval(tickDuration, 1000);
