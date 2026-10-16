@@ -321,3 +321,14 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Vorhandene Statusfelder/Schema 1 beibehalten. Validierung, Inaktivitätsausnahme und Offline-Wiederaufnahme angepasst; alte Historie und globale Gewichte erhalten. HTML/CSS, Weight, iOS-Hülle und v23-Scrollregeln unverändert. Kurze Seiten unangetastet.
 - Qualitätssicherung: 87 automatisierte Tests und 14 Browser-Testläufe bestanden, einschließlich Nachholen, Konflikten, Fehlerpfaden und vollständigem Offline-Prozessneustart.
 - Worker v24 und 13 Shell-Prüfsummen vorbereitet. Kein Commit, Push oder Deployment.
+
+## 2026-10-16 – Training v25 vorbereitet: Statistik & Trainingshistorie V1
+
+- Dritter Haupttab Statistik mit Übersicht, Verlauf und vollständiger Historie samt Details.
+- Fünf Kennzahlen und 7-/30-/90-Tage-/Gesamtfilter auf gespeicherten Session-Snapshots.
+- Lokale SVG-Diagramme für Kalenderwochen, Dauer und historische Übungsgewichte;
+  keine zusätzliche Laufzeitabhängigkeit. MAX und unbekannte Gewichte werden nicht erfunden.
+- Geschützte Trainingslogik, Datenmodell, Weight und bestehende iOS-/Scroll-CSS unverändert.
+- Offline-Shell v25 mit 16 Dateien und aktualisierten Prüfsummen vorbereitet.
+- Berechnungs- und mobile Browsertests ergänzt; bestehende Versions-/Shell-Erwartungen angepasst.
+- Details und historische Grenzen: `docs/TrainingStatistics.md`. Noch nicht veröffentlicht.

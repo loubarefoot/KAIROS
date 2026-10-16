@@ -6,7 +6,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
  const old=new Map(names.map(n=>[n,execFileSync('git',['show',base+':Training/'+n],{cwd:root})]));
  const server=http.createServer((req,res)=>{
   const u=new URL(req.url,'http://localhost'),baseline=u.pathname.startsWith('/v21/'),name=u.pathname.replace(/^\/v2[12]\//,'')||'index.html';
-  if(!names.includes(name)){res.writeHead(404);res.end();return;}
+  if(!names.includes(name)&&!['statistics.js','statistics-ui.js','statistics.css'].includes(name)){res.writeHead(404);res.end();return;}
   res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html');
   res.end(baseline?old.get(name):fs.readFileSync(path.join(root,name)));
  });
@@ -33,8 +33,10 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const unchanged=async()=>{const current=await state();for(const key of ['activeSession','exercises','plans','planOrder','completedSessions'])assert.deepEqual(current[key],original[key],key+' preserved');};
   for(const [width,height] of [[320,568],[375,667],[390,844],[430,932],[844,390]]){
    for(const p of [before,page])await p.setViewportSize({width,height});
-   for(const selector of ['.session-metrics','#active-content progress','#current-exercise .is-current','#open-exercises article','#completed-exercises','.tabbar'])
+   for(const selector of ['.session-metrics','#active-content progress','#current-exercise .is-current','#open-exercises article','#completed-exercises'])
     assert.deepEqual(await projection(page,selector),await projection(before,selector),selector+' unchanged at '+width);
+   assert.equal((await page.locator('.tabbar').boundingBox()).height,80);
+   assert.deepEqual(await page.locator('.tabbar button').allTextContents(),['Training','Statistik','Einstellungen']);
    assert.equal(await page.locator('.session-eyebrow').count(),0);
    const heading=await page.locator('#title-active').evaluate(e=>{const s=getComputedStyle(e);return {size:parseFloat(s.fontSize),color:s.color,align:s.textAlign,decoration:s.textDecorationLine,font:s.fontFamily};});
    const oldHeading=await before.locator('#title-active').evaluate(e=>({size:parseFloat(getComputedStyle(e).fontSize),font:getComputedStyle(e).fontFamily,color:getComputedStyle(e).color}));
@@ -87,6 +89,6 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   // Empty history remains empty; rendering does not recreate the removed information card.
   await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('kairos.training.state'));s.activeSession=null;s.completedSessions=[];localStorage.setItem('kairos.training.state',JSON.stringify(s));});await page.reload();assert.equal(await page.locator('.last-training-card, #last-training').count(),0);
   assert.deepEqual(errors,[]);
-  console.log('PASS: v22 against v21 at five mobile/landscape sizes: protected main card, metrics, completed rows, tabbar, plan cards, settings and entire finish dialog unchanged; removed last-training/stripe/eyebrow; headings, compact horizontal footer, native touch/keyboard feedback; Training tab always overview, settings roundtrip/resume/reload preserve session, history and weights.');
+  console.log('PASS: v22 against v21 at five mobile/landscape sizes: protected main card, metrics, completed rows, tabbar geometry (three tabs), plan cards, settings and entire finish dialog unchanged; removed last-training/stripe/eyebrow; headings, compact horizontal footer, native touch/keyboard feedback; Training tab always overview, settings roundtrip/resume/reload preserve session, history and weights.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

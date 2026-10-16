@@ -5,8 +5,9 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
  const names=['index.html','styles.css','app.js','data.js','library.js','management.js','navigation.js','session.js','diagnostics.js','manifest.webmanifest'];
  const old=new Map(names.map(n=>[n,execFileSync('git',['show',base+':Training/'+n],{cwd:root})]));
  assert.deepEqual(fs.readFileSync(path.join(root,'styles.css')),old.get('styles.css'),'all CSS byte-identical');
- assert.deepEqual(fs.readFileSync(path.join(root,'index.html')),old.get('index.html'),'all HTML byte-identical');
- const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost'),baseline=u.pathname.startsWith('/v22/'),n=u.pathname.replace(/^\/v2[23]\//,'')||'index.html';if(!names.includes(n)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',n.endsWith('.js')?'text/javascript':n.endsWith('.css')?'text/css':'text/html');res.end(baseline?old.get(n):fs.readFileSync(path.join(root,n)));});
+ const trainingHTML=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/^.*(?:href="statistics.css"|src="statistics(?:-ui)?\.js"|data-tab="statistics").*\n/gm,'').replace(/    <section class="view" id="view-statistics"[\s\S]*?    <\/section>\n/,'');
+ assert.equal(trainingHTML,old.get('index.html').toString(),'existing training HTML byte-identical after removing statistics additions');
+ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost'),baseline=u.pathname.startsWith('/v22/'),n=u.pathname.replace(/^\/v2[23]\//,'')||'index.html';if(!names.includes(n)&&!['statistics.js','statistics-ui.js','statistics.css'].includes(n)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',n.endsWith('.js')?'text/javascript':n.endsWith('.css')?'text/css':'text/html');res.end(baseline?old.get(n):fs.readFileSync(path.join(root,n)));});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
  try{
   browser=await chromium.launch({executablePath:process.env.KAIROS_CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
@@ -65,6 +66,6 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   // Simulated upper safe area: geometry remains intact and root reset includes that offset.
   const probe=await page.addStyleTag({content:'#scrollArea {padding-top:44px !important}'});await bottom(page);await go('[data-tab=training]','start');assert.equal(await page.locator('#scrollArea').evaluate(e=>getComputedStyle(e).paddingTop),'44px');assert.equal((await page.locator('.tabbar').boundingBox()).height,80);await probe.evaluate(e=>e.remove());
   const final=await state();assert.deepEqual(final.completedSessions,original.completedSessions);assert.ok(final.activeSession);assert.equal(final.activeSession.exercises.length,8);assert.equal(final.activeSession.exercises.filter(e=>e.status==='completed').length,1);assert.equal(final.exercises[0].weightKg,22.25);assert.deepEqual(errors,[]);
-  console.log('PASS: reproduced v22 root-scroll leak; v23 synchronous before-paint resets across active/overview/library/settings and tabs at five mobile sizes; long pages scroll; no resets for weights/skip/complete/timer/same-view resume or cancelled drafts; accepted draft leave resets; state/history preserved, CSS/HTML byte-identical, 80px short-page reserve deliberately deferred, simulated safe area unchanged.');
+  console.log('PASS: reproduced v22 root-scroll leak; v23 synchronous before-paint resets across active/overview/library/settings and tabs at five mobile sizes; long pages scroll; no resets for weights/skip/complete/timer/same-view resume or cancelled drafts; accepted draft leave resets; state/history preserved, CSS/existing training HTML byte-identical, 80px short-page reserve deliberately deferred, simulated safe area unchanged.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

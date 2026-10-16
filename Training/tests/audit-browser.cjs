@@ -6,7 +6,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
  const root=path.resolve(__dirname,'..');
  const server=http.createServer((req,res)=>{
   const name=req.url.split('?')[0].split('/KAIROS/Training/')[1]||'index.html';
-  if(!['index.html','styles.css','data.js','library.js','management.js','session.js','navigation.js','app.js','sw.js','diagnostics.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'].includes(name)){res.writeHead(404);res.end();return;}
+  if(!['statistics.js','statistics-ui.js','statistics.css','index.html','styles.css','data.js','library.js','management.js','session.js','navigation.js','app.js','sw.js','diagnostics.js','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'].includes(name)){res.writeHead(404);res.end();return;}
   let body=fs.readFileSync(path.join(root,name));
   if(failedUpdate && name==='app.js')body=Buffer.concat([body,Buffer.from('\n// Changed audit build\n')]);
   if(failedUpdate && name==='sw.js'){

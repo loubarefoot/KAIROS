@@ -8,6 +8,10 @@
   if (store.getStatus().isNew && !store.getStatus().blocked) store.initializeLibrary(KairosTrainingLibrary.create(D));
   const management = KairosTrainingManagement.create(store, D);
   const sessionFlow = KairosTrainingSession.create(store, D);
+  const statistics = KairosTrainingStatisticsUI.create($('statistics-content'), () => store.getState().completedSessions, () => {
+    $('scrollArea').scrollTop = 0;
+    if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+  });
   const views = Array.from(document.querySelectorAll('.view'));
   const tabs = Array.from(document.querySelectorAll('[data-tab]'));
   let trainingView = 'start', editingPlan = null, addingToPlan = null, planDraft = null, leavingPlan = false;
@@ -51,6 +55,7 @@
     if (name === 'active' && D.sessionExpired(store.getState().activeSession)) name = 'start';
     const target = $('view-' + name);
     if (!target || !views.includes(target)) return;
+    if (name === 'statistics') statistics.render();
     const viewChanged = currentView !== name;
     views.forEach(view => { view.hidden = view !== target; });
     if (currentView === 'exercises' && name !== 'exercises') { $('exercise-search').value = ''; renderExerciseList(); }
@@ -69,7 +74,7 @@
   }
   const weightField = (attributes, value = null) => `<label class="compact-weight">Gewicht<span class="weight-input-unit"><input ${attributes} inputmode="decimal" type="text" value="${value === null ? '' : esc(value)}"><span class="weight-unit">kg</span></span></label>`;
   const searchIcon = '<svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg>';
-  const savedView = name => name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name === 'training' ? 'start' : name;
+  const savedView = name => name === 'statistics' ? 'start' : name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name === 'training' ? 'start' : name;
   const numericWeightLabel = exercise => exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   const planDetails = plan => (plan.description.trim() ? esc(plan.description) + ' · ' : '') + plan.exerciseIds.length + (plan.exerciseIds.length === 1 ? ' Übung' : ' Übungen');
   const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
@@ -99,6 +104,7 @@
     // The draft editor owns its DOM; background renders never rebuild its fields.
     renderActive();
     renderSavedSessions();
+    if (currentView === 'statistics') statistics.render();
     renderFinishDialog();
     $('export-training').disabled = !store.getStatus().loaded;
     $('import-training').disabled = importing || !!state.activeSession || store.getStatus().blocked || !store.getStatus().loaded;
@@ -405,7 +411,7 @@
     else if(button.id==='cancel-training-weight') $('training-weight-editor').hidden=true;
     else if(button.id==='retry-save') result(()=>D.sessionExpired(store.getState().activeSession) ? sessionFlow.expire() : store.save());
     else if(button.dataset.view) showView(button.dataset.view);
-    else if(button.dataset.tab) showView(button.dataset.tab==='training'?'start':'settings');
+    else if(button.dataset.tab) showView(button.dataset.tab==='training'?'start':button.dataset.tab);
     else if(button.id==='new-exercise') exerciseEditor();
     else if(button.dataset.editExercise) exerciseEditor(button.dataset.editExercise);
     else if(button.id==='cancel-exercise') { $('exercise-editor').hidden=true; showView('exercises'); }
