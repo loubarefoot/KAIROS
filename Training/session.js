@@ -5,8 +5,9 @@
     const completed = session.exercises.filter(exercise => exercise.status === 'completed').length;
     return { completed, total, percent: Math.round(completed / total * 100) };
   }
+  const ready = session => session.exercises.every(item => item.status === 'completed' || item.status === 'skipped');
   function elapsed(session, now = Date.now()) {
-    const recordedCompletion = session.exercises.every(item=>item.status === 'completed') ? session.lastActivityAt : null;
+    const recordedCompletion = ready(session) ? session.lastActivityAt : null;
     return Math.max(0, (session.endedAt ?? recordedCompletion ?? now) - session.startedAt);
   }
   function formatDuration(milliseconds) {
@@ -42,21 +43,16 @@
     function mark(status, expected) {
       const expired = prepare(); if (expired) return expired;
       const current = store.getState().activeSession;
-      const finalStep = status === 'completed' && current && current.exercises.filter(item=>item.status !== 'completed').length === 1;
+      const finalStep = current && current.exercises.every((item,index) => index === current.currentIndex || item.status === 'completed' || item.status === 'skipped');
       return (finalStep ? store.commit : store.update)(state => {
         const session = active(state), index = session.currentIndex;
         checkContext(session, expected);
         if (session.exercises[index].status === 'completed') throw new Error('Diese Übung ist bereits abgeschlossen.');
         session.exercises[index].status = status;
-        const indices = session.exercises.map((exercise, i) => i);
-        const next = status === 'completed' ? indices.find(i=>session.exercises[i].status !== 'completed') :
-          indices.find(i=>i>index && session.exercises[i].status==='open')
-          ?? indices.find(i=>session.exercises[i].status==='open')
-          ?? indices.find(i=>i>index && session.exercises[i].status==='skipped')
-          ?? indices.find(i=>session.exercises[i].status==='skipped');
-        if (next !== undefined) session.currentIndex = next;
+        const next = session.exercises.findIndex(exercise => exercise.status === 'open');
+        if (next >= 0) session.currentIndex = next;
         data.touchSession(session, now());
-        if (session.exercises.every(item=>item.status === 'completed')) freeze(session, now());
+        if (ready(session)) freeze(session, now());
       });
     }
     function freeze(session, endedAt) {
@@ -68,13 +64,25 @@
       store.refresh();
       const session = store.getState().activeSession;
       if (expectedId && session?.id !== expectedId) return {ok:false, message:'Diese Einheit ist nicht mehr aktiv.'};
-      if (!session || session.endedAt !== null || !session.exercises.every(item=>item.status === 'completed')) return {ok:true};
+      if (!session || session.endedAt !== null || !ready(session)) return {ok:true};
       // Old complete v19 sessions have no frozen end; their final activity is the best recorded end.
       return store.commit(state => freeze(active(state), session.lastActivityAt ?? now()), 'Trainingsdauer einfrieren');
     }
     return Object.freeze({
       expire,
       restoreCompletion,
+      resumeSkipped(expectedId) {
+        return store.commit(state => {
+          const session = active(state);
+          if (session.id !== expectedId || !ready(session)) throw new Error('Diese Abschlussentscheidung ist nicht mehr aktuell.');
+          const index = session.exercises.findIndex(item => item.status === 'skipped');
+          if (index < 0) throw new Error('Es gibt keine übersprungene Übung zum Nachholen.');
+          session.endedAt = null; session.durationMs = null;
+          session.currentIndex = index;
+          session.exercises[index].status = 'open';
+          data.touchSession(session, now());
+        }, 'Übersprungene Übung nachholen');
+      },
       discard(expectedId) {
         const expired = prepare({allowFinished:true}); if (expired) return expired;
         return store.commit(state => {

@@ -312,3 +312,12 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Der künstliche Scrollweg kurzer Seiten bleibt bewusst offen: viewportfüllende Content-Mindesthöhe plus zusätzliche 80-px-Navigationsreserve erzeugen im Browser einen Scrollüberschuss. Eine Beseitigung würde die ausdrücklich geschützte v13-Geometrie betreffen; kein Layout-Umbau oder Scroll-Clamping eingeführt.
 - Qualitätssicherung: 78 automatisierte Tests und 13 Browser-Testläufe bestanden, einschließlich direkter v22-Fehlerreproduktion, synchroner Scrollprüfung und Schutzvergleich. Installierte iPhone-PWA weiterhin separat prüfen.
 - Worker v23 und 13 Shell-Prüfsummen vorbereitet; kein Commit, Push oder Deployment in diesem Auftrag.
+
+### Training v24 – Auftrag 71 (vorbereitet, unveröffentlicht)
+
+- Automatische Auswahl berücksichtigt nach Abschluss und Überspringen nur regulär offene Übungen. Übersprungene Karten stehen dahinter in Planreihenfolge, bleiben gekennzeichnet und manuell auswählbar.
+- Automatischer Abschluss und eingefrorene Dauer auch bei gemischten/vollständig übersprungenen Einheiten; Dialog zeigt tatsächliche Abschluss-/Überspringzahlen. Keine fingierten Abschlüsse.
+- Gemäß ergänzender Nutzerentscheidung ermöglicht „Weiter trainieren“ aus dem automatischen Dialog ein explizites Nachholen. Atomarer, eng validierter Übergang, keine Öffnung bereits gespeicherter Historie.
+- Vorhandene Statusfelder/Schema 1 beibehalten. Validierung, Inaktivitätsausnahme und Offline-Wiederaufnahme angepasst; alte Historie und globale Gewichte erhalten. HTML/CSS, Weight, iOS-Hülle und v23-Scrollregeln unverändert. Kurze Seiten unangetastet.
+- Qualitätssicherung: 87 automatisierte Tests und 14 Browser-Testläufe bestanden, einschließlich Nachholen, Konflikten, Fehlerpfaden und vollständigem Offline-Prozessneustart.
+- Worker v24 und 13 Shell-Prüfsummen vorbereitet. Kein Commit, Push oder Deployment.

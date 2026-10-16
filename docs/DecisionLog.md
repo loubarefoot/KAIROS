@@ -153,3 +153,9 @@ Die v13-Hülle wächst mit dem Inhalt; der Dokument-Scroller und `#scrollArea` s
 Die kurze Seite erzeugt wegen `content-box`, viewportfüllender `min-height` und zusätzlicher 80-px-Reserve weiterhin einen dauerhaften Scrollbereich, gegebenenfalls erweitert durch obere Safe Area oder den größeren `lvh`. Das ist aus der Geometrie belegbar; daraus folgt keine vollständige Diagnose interner iOS-Compositing-Effekte. Eine Beseitigung benötigt einen eigenen freigegebenen Eingriff in die Referenzhülle samt installiertem iPhone-PWA-Test. Die Hülle und `IOSNavigation.md` bleiben in diesem Auftrag unverändert.
 
 Für später vorgemerkt, ausdrücklich nicht implementiert: sichtbarer Seitentitel beziehungsweise Logo auf Trainings-/Einstellungsübersicht mit darunter scrollendem Inhalt. Keine Sticky-Header oder zusätzlichen Scrollcontainer in v23.
+
+## Training v24 – übersprungen ist bewusst ausgelassen
+
+`skipped` ist kein Kandidat für die automatische Auswahl. Darstellung: erst regulär offen, dann übersprungen, jeweils in aktueller Planreihenfolge und mit stabilen Positionsnummern. Die Session-Momentaufnahmen werden dafür nicht umgeordnet. Keine neue Statusart oder Migration. Ein Training ist für den automatischen Abschluss bereit, wenn alle Status `completed` oder `skipped` sind; der letzte Schritt friert atomar ein.
+
+Ergänzende Nutzerentscheidung zu Auftrag 71: Übersprungene Übungen sollen auch nach Erscheinen des automatischen Abschlussdialogs nachholbar sein. Dafür wird der bestehende Button „Weiter trainieren“ bei solchen Einheiten angeboten. Ein atomarer, konfliktgeschützter Übergang öffnet die erste übersprungene Übung wieder und nimmt die ursprüngliche startbezogene Zeitmessung auf. Nur dieser genau validierte Übergang lockert die Sperre eingefrorener aktiver Einheiten; gespeicherte Historien und vollständig absolvierte Einheiten bleiben unveränderlich.

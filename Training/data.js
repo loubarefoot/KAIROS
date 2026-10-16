@@ -65,8 +65,11 @@
     return exercises.map(exercise => ({ ...copy(exercise), status: 'open' }));
   }
   const INACTIVITY_MS = 60 * 60 * 1000;
+  function sessionReady(session) {
+    return session.exercises.every(item => item.status === 'completed' || item.status === 'skipped');
+  }
   function sessionExpired(session, now = Date.now()) {
-    return !!session && !session.exercises.every(item=>item.status === 'completed') && now - (session.lastActivityAt ?? session.startedAt) >= INACTIVITY_MS;
+    return !!session && !sessionReady(session) && now - (session.lastActivityAt ?? session.startedAt) >= INACTIVITY_MS;
   }
   function touchSession(session, now = Date.now()) {
     session.lastActivityAt = Math.max(now, session.lastActivityAt ?? session.startedAt);
@@ -77,7 +80,7 @@
   }
   function syncSessionOrder(state, plan, previousOrder, now = Date.now()) {
     const session = state.activeSession;
-    if (!session || session.planId !== plan.id || session.exercises.every(item=>item.status === 'completed')) return;
+    if (!session || session.planId !== plan.id || sessionReady(session)) return;
     const ids = new Set(session.exercises.map(item=>item.id));
     const common = new Set(previousOrder.filter(id=>ids.has(id) && plan.exerciseIds.includes(id)));
     if (JSON.stringify(previousOrder.filter(id=>common.has(id))) === JSON.stringify(plan.exerciseIds.filter(id=>common.has(id)))) return;
@@ -101,7 +104,7 @@
     } else {
       requireRule(session.lastActivityAt === undefined || (time(session.lastActivityAt) && session.lastActivityAt >= session.startedAt), 'Ungültiger Aktivitätszeitpunkt.');
       const running = session.endedAt === null && session.durationMs === null;
-      const pending = session.exercises.every(item=>item.status === 'completed') && time(session.endedAt) && session.endedAt >= session.startedAt && session.durationMs === session.endedAt - session.startedAt;
+      const pending = sessionReady(session) && time(session.endedAt) && session.endedAt >= session.startedAt && session.durationMs === session.endedAt - session.startedAt;
       requireRule((running || pending) && Number.isSafeInteger(session.currentIndex) && session.currentIndex >= 0 && session.currentIndex < session.exercises.length, 'Ungültiger laufender Trainingszustand.');
     }
     // Historical IDs intentionally need not refer to current plans/exercises.
@@ -159,7 +162,16 @@
       requireRule(next.activeSession.id === previous.activeSession.id, 'Eine laufende Einheit darf nicht durch eine zweite ersetzt werden.');
       const original = previous.activeSession;
       const updated = next.activeSession;
-      if (original.endedAt !== null) requireRule(JSON.stringify(updated) === JSON.stringify(original), 'Ein eingefrorenes Training darf nicht mehr verändert werden.');
+      if (original.endedAt !== null) {
+        // Only an explicit retry may reopen one skipped item; all other frozen values stay intact.
+        const retry = copy(original), index = updated.currentIndex;
+        if (retry.exercises[index]?.status === 'skipped') {
+          retry.endedAt = null; retry.durationMs = null; retry.currentIndex = index;
+          retry.lastActivityAt = updated.lastActivityAt;
+          retry.exercises[index].status = 'open';
+        }
+        requireRule(JSON.stringify(updated) === JSON.stringify(original) || JSON.stringify(updated) === JSON.stringify(retry), 'Ein eingefrorenes Training darf nur zum Nachholen einer übersprungenen Übung wieder geöffnet werden.');
+      }
       requireRule(original.planId === updated.planId && original.planName === updated.planName && original.planDescription === updated.planDescription && original.startedAt === updated.startedAt, 'Laufende Plan-Momentaufnahme darf nicht verändert werden.');
       requireRule(original.lastActivityAt === undefined || (updated.lastActivityAt !== undefined && updated.lastActivityAt >= original.lastActivityAt), 'Aktivitätszeitpunkt darf nicht zurückgesetzt werden.');
       requireRule(original.exercises.length === updated.exercises.length && original.exercises.every(exercise => {
@@ -289,5 +301,5 @@
     }
     return Object.freeze({ load, refresh, save, update, commit, initializeLibrary, exportJSON, importJSON, getSavedState: () => baseline === null ? emptyState() : JSON.parse(baseline), getState: () => copy(state), getStatus: status });
   }
-  return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, INACTIVITY_MS, sessionExpired, touchSession, syncSessionOrder, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, validateBackup, parseBackup, createStore });
+  return Object.freeze({ STORAGE_KEY, SCHEMA_VERSION, INACTIVITY_MS, sessionReady, sessionExpired, touchSession, syncSessionOrder, emptyState, createId, createExercise, createPlan, snapshotExercises, withMax, parseWeight, validateState, validateBackup, parseBackup, createStore });
 });

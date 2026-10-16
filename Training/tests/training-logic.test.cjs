@@ -12,9 +12,9 @@ test('atomic saved reorder preserves every snapshot value/status, manual selecti
  assert.deepEqual(after.activeSession.exercises.filter(e=>e.status==='completed').map(e=>e.name),['C','A']);assert.deepEqual(after.activeSession.exercises.filter(e=>e.status!=='completed').map(e=>e.name),['D','B']);assert.deepEqual(after.completedSessions,before.completedSessions);assert.deepEqual(after.exercises,before.exercises);assert.deepEqual(after.plans[1],before.plans[1]);
  f.flow.complete();assert.equal(f.store.getState().activeSession.exercises[f.store.getState().activeSession.currentIndex].name,'B');
 });
-test('completion always selects the first unfinished exercise including skipped; completed cannot be selected again',()=>{
- const f=fixture();f.flow.select(2);f.flow.complete();assert.equal(f.store.getState().activeSession.currentIndex,0);f.flow.skip();assert.equal(f.store.getState().activeSession.currentIndex,1);f.flow.select(3);f.flow.complete();assert.equal(f.store.getState().activeSession.currentIndex,0);
- assert.equal(f.flow.select(2).ok,false);f.flow.complete();f.flow.complete();assert.equal(S.progress(f.store.getState().activeSession).percent,100);assert.ok(f.store.getState().activeSession);assert.equal(f.store.getState().completedSessions.length,1);
+test('completion always selects the first regular open exercise ignoring skipped; completed cannot be selected again',()=>{
+ const f=fixture();f.flow.select(2);f.flow.complete();assert.equal(f.store.getState().activeSession.currentIndex,0);f.flow.skip();assert.equal(f.store.getState().activeSession.currentIndex,1);f.flow.select(3);f.flow.complete();assert.equal(f.store.getState().activeSession.currentIndex,1);
+ assert.equal(f.flow.select(2).ok,false);f.flow.select(0);f.flow.complete();f.flow.complete();assert.equal(S.progress(f.store.getState().activeSession).percent,100);assert.ok(f.store.getState().activeSession);assert.equal(f.store.getState().completedSessions.length,1);
 });
 test('repeated reorder, unrelated plans, names, additions and removals preserve active membership and selected identity',()=>{
  const f=fixture();f.flow.select(2);let before=f.store.getState().activeSession;f.time(2000);f.manage.reorder(f.other.id,0,1);assert.deepEqual(f.store.getState().activeSession,before);

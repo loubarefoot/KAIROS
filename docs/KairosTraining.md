@@ -489,7 +489,7 @@ bzw.
 
 tippen.
 
-Danach wird automatisch die erste noch nicht abgeschlossene Übung gemäß der aktuellen Planreihenfolge angezeigt, unabhängig von der Position der zuletzt abgeschlossenen Übung. Übersprungene Übungen zählen weiterhin als offen. Eine manuelle Auswahl bleibt bis zu ihrem Abschluss oder einer bewussten weiteren Trainingsaktion aktiv; eine reine Reihenfolgeänderung ersetzt sie nicht. Abgeschlossene Übungen können nicht erneut als offen ausgewählt werden. Nach dem letzten noch offenen Übungsabschluss werden Endzeit und Dauer atomar eingefroren und der Abschlussdialog geöffnet. Übersprungene Übungen zählen weiterhin als offen und verhindern diesen automatischen Abschluss. Die eingefrorene Einheit bleibt bis zur ausdrücklichen Speicher- oder Verwerfungsentscheidung erhalten; siehe Abschnitt 17.
+Danach wird automatisch die erste regulär offene (`open`) Übung gemäß der aktuellen Planreihenfolge angezeigt. Das gilt nach Abschließen und Überspringen gleichermaßen. Übersprungene Übungen (`skipped`) werden automatisch nicht erneut gewählt; sie stehen hinter regulär offenen Übungen in Planreihenfolge und bleiben manuell auswählbar. Eine manuelle Auswahl bleibt bis zum Abschluss oder einer bewussten weiteren Aktion aktiv; reine Reihenfolgeänderungen ersetzen sie nicht. Abgeschlossene Übungen sind nicht auswählbar. Sobald keine regulär offene Übung mehr existiert, werden Status, Endzeit und Dauer gemeinsam atomar eingefroren und der Abschlussdialog geöffnet; siehe Abschnitt 17.
 
 Die einzelnen Sätze werden nicht separat dokumentiert.
 
@@ -525,11 +525,11 @@ Beispiel:
 
 Danach wird mit der nächsten Übung fortgefahren.
 
-Die übersprungene Übung bleibt jedoch als offen markiert.
+Die übersprungene Übung behält den eigenen Status `skipped` und wird hinter regulär offenen Übungen angezeigt. Mehrere übersprungene Übungen folgen untereinander der aktuellen Planreihenfolge.
 
 Sie darf nicht einfach aus dem Training verschwinden.
 
-Am Ende bzw. innerhalb des weiteren Trainings muss erkennbar sein, dass diese Übung noch offen ist.
+Der Hinweis „Übersprungen“ bleibt sichtbar. Die automatische Auswahl ignoriert solche Übungen, auch wenn sie früher im Plan stehen.
 
 Der Nutzer soll sie später nachholen können.
 
@@ -564,13 +564,13 @@ Eine optionale Notiz kann später ergänzt werden.
 
 ---
 
-# 17. Trainingsabschluss (v20)
+# 17. Trainingsabschluss (seit v24 einschließlich übersprungener Übungen)
 
-Nach dem letzten offenen Übungsabschluss werden Status, `endedAt` und `durationMs` gemeinsam dauerhaft gespeichert. Schlägt dieser Schreibvorgang fehl, bleibt die letzte Übung offen und kann erneut abgeschlossen werden. Bei 100 % stoppt die Dauer sofort; es entsteht noch kein Historieneintrag.
+Nach Abschluss oder Überspringen der letzten regulär offenen Übung werden Status, `endedAt` und `durationMs` gemeinsam dauerhaft gespeichert. Bei einem Schreibfehler bleibt der vorherige Zustand erhalten und die Aktion kann wiederholt werden. Die Dauer stoppt auch bei gemischtem oder vollständig übersprungenem Training; der Fortschritt zählt weiterhin ausschließlich tatsächlich abgeschlossene Übungen. Es entsteht noch kein Historieneintrag.
 
-Der Abschlussdialog zeigt Trainingsname, eingefrorene Dauer und abgeschlossene/gesamte Übungsanzahl. „Training speichern“ schreibt einmalig in die bestehende Historie und führt zur gemeinsamen Startseite. „Training verwerfen“ benötigt eine zusätzliche Bestätigung, entfernt nur die aktive Einheit ohne Historieneintrag und führt ebenfalls zur Startseite. Bereits gespeicherte globale Gewichte bleiben erhalten. Abbrechen der Verwerfungsbestätigung belässt die Einheit im Dialog.
+Der Abschlussdialog zeigt Trainingsname, eingefrorene Dauer und abgeschlossene/gesamte Übungsanzahl, ergänzt um die tatsächliche Zahl übersprungener Übungen, beispielsweise „11 / 12 · 1 übersprungen“. Übersprungene Übungen werden niemals als abgeschlossen gespeichert. „Training speichern“ schreibt einmalig in die bestehende Historie und führt zur gemeinsamen Startseite. „Training verwerfen“ benötigt eine zusätzliche Bestätigung, entfernt nur die aktive Einheit ohne Historieneintrag und führt ebenfalls zur Startseite. Bereits gespeicherte globale Gewichte bleiben erhalten. Abbrechen der Verwerfungsbestätigung belässt die Einheit im Dialog.
 
-Ein vollständiger Abschlussdialog kann weder mit Escape noch durch bloßes Schließen der PWA verworfen werden. Nach Neustart, Offline-Start oder Tageswechsel erscheint er erneut, solange die Einheit nicht gespeichert oder verworfen wurde. Vollständige Einheiten unterliegen keinem 60-Minuten-Abbruch. Die eingefrorene Momentaufnahme wird auch durch spätere Planumsortierung nicht verändert.
+Ein vollständiger Abschlussdialog kann weder mit Escape noch durch bloßes Schließen der PWA verworfen werden. Nach Neustart, Offline-Start oder Tageswechsel erscheint er erneut, solange die Einheit nicht gespeichert oder verworfen wurde. Vollständige Einheiten unterliegen keinem 60-Minuten-Abbruch. Die eingefrorene Momentaufnahme wird auch durch spätere Planumsortierung nicht verändert. Bei übersprungenen Übungen bietet der automatische Dialog auf ausdrückliche Nutzerentscheidung auch „Weiter trainieren“: Ein atomarer Commit öffnet genau die erste übersprungene Übung der Session-Reihenfolge wieder (`open`), wählt sie aus und hebt die eingefrorene Endzeit auf. Andere übersprungene Übungen bleiben manuell auswählbar. Vollständig absolvierte Einheiten ohne übersprungene Übungen bleiben unveränderlich. Bereits gespeicherte Historieneinträge werden nie wieder geöffnet. Die Zeitmessung verwendet beim Nachholen weiterhin den ursprünglichen Trainingsstart; es wird keine zusätzliche Pausenfunktion eingeführt.
 
 „Training beenden“ funktioniert weiterhin vorzeitig bei offenen oder übersprungenen Übungen. Der manuelle Dialog bietet Speichern, bestätigtes Verwerfen und „Weiter trainieren“; bis zur Entscheidung läuft die Dauer einer unvollständigen Einheit weiter. Der reguläre Inaktivitätsabbruch gilt für sie weiterhin. Speichern erhält alle ursprünglichen Übungsstatus und Momentaufnahmen; erst der erfolgreiche Commit beendet die Einheit.
 
@@ -886,3 +886,9 @@ Ein ausdrücklicher Tipp auf den Bottom-Tab „Training“ führt immer zur ober
 Jeder akzeptierte Wechsel zu einer anderen Ansicht beginnt oben: Training/Übersicht, Fortsetzen, Tabs, Verwaltungsansichten und Zurück-Buttons. Der zentrale Ansichtswechsel setzt Wrapper- und Dokument-Scroll synchron zurück. Beim Verlassen eines Planentwurfs geschieht dies erst nach akzeptiertem Speichern/Verwerfen; Abbrechen bleibt im Editor. Datenänderungen, Timer und Wiederanzeigen derselben Ansicht erzeugen keinen zusätzlichen Scroll-Reset. Natürliche Browseranpassungen bei verändertem Inhalt bleiben möglich. Trainingsdaten und Fokusregeln ändern sich nicht.
 
 Offen bleibt gemäß Auftrag 69 das künstliche Scrollen kurzer Seiten aus Mindesthöhe plus Navigationsreserve. Die v13-Hülle, Safe Areas und Bottom Navigation werden dafür nicht verändert. Lange Seiten bleiben scrollbar. Ein dauerhaft sichtbarer Titel/Logo mit separat scrollendem Inhalt ist nur für später vorgemerkt.
+
+### Training v24 – Überspringen und Nachholen
+
+Die bestehenden Statusfelder und Schema 1 bleiben erhalten; es gibt keine Migration. Die Statusaufteilung steuert Auswahl, Kartenreihenfolge, Abschlussdialog, Inaktivitätsausnahme, Wiederaufnahme und Validierung konsistent. Alte aktive Einheiten ohne regulär offene Übungen erhalten beim Wiederaufnehmen eine eingefrorene Endzeit aus dem letzten gespeicherten Aktivitätszeitpunkt, sofern vorhanden. Historische Einheiten bleiben wertgleich.
+
+Auftrag 71 und die ergänzende Nutzerentscheidung erlauben das ausdrückliche Nachholen auch aus dem automatischen Abschlussdialog. Nur dieser eng begrenzte Übergang darf einen eingefrorenen aktiven Zustand wieder öffnen. Layout, HTML/CSS, Bottom Navigation, iOS-Hülle und die v23-Scrollkorrektur bleiben unverändert. Das bekannte Scrollen kurzer Seiten wird nicht bearbeitet.

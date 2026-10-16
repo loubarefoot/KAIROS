@@ -80,7 +80,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await resume();await unchanged();await page.locator('.finish-training-actions [data-view=training]').tap();await page.locator('#view-start').waitFor({state:'visible'});await unchanged();await resume();
   await before.locator('[data-tab=training]').tap();
   for(const p of [before,page])await p.locator('#finish-training').tap();
-  assert.deepEqual(await projection(page,'#training-finish-dialog'),await projection(before,'#training-finish-dialog'),'entire finish dialog unchanged');
+  for(const selector of ['#finish-title','#finish-plan-name','#finish-duration','.finish-dialog-actions'])assert.deepEqual(await projection(page,selector),await projection(before,selector),'protected finish component unchanged');assert.equal(await page.locator('#finish-count').innerText(),'2 / 4 · 1 übersprungen');
   await page.locator('#finish-continue').tap();await unchanged();
   await page.reload();await page.locator('#view-active').waitFor({state:'visible'});await unchanged();
   await page.locator('[data-tab=training]').tap();await page.locator('#view-start').waitFor({state:'visible'});await unchanged();

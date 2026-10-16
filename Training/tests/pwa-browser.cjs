@@ -52,7 +52,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await current.waitForFunction(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    if(registration.waiting || registration.active?.state!=='activated' || !navigator.serviceWorker.controller)return false;
-   return new Promise(resolve=>{const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(false);},1000);channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data.version==='v23');};navigator.serviceWorker.controller.postMessage({type:'KAIROS_TRAINING_DIAGNOSTICS'},[channel.port2]);});
+   return new Promise(resolve=>{const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(false);},1000);channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data.version==='v24');};navigator.serviceWorker.controller.postMessage({type:'KAIROS_TRAINING_DIAGNOSTICS'},[channel.port2]);});
   });
   await current.reload();await current.locator('#view-active').waitFor({state:'visible'});
   assert.equal(await current.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).activeSession.startedAt),state.activeSession.startedAt);
@@ -67,7 +67,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   assert.ok(manifest.data,'Browser manifest must finish loading: ' + JSON.stringify(manifest));
   assert.deepEqual(manifest.errors,[]);const parsed=JSON.parse(manifest.data);assert.equal(parsed.id,'/KAIROS/Training/');assert.equal(new URL(parsed.start_url,manifest.url).href,url);assert.equal(parsed.display,'standalone');
   assert.equal(await current.locator('meta[name=apple-mobile-web-app-capable]').getAttribute('content'),'yes');
-  const cached=await current.evaluate(async()=>{const names=await caches.keys(),name=names.find(k=>k.includes(':v23:'));const cache=await caches.open(name);return{names,urls:(await cache.keys()).map(r=>r.url)};});
+  const cached=await current.evaluate(async()=>{const names=await caches.keys(),name=names.find(k=>k.includes(':v24:'));const cache=await caches.open(name);return{names,urls:(await cache.keys()).map(r=>r.url)};});
   assert.equal(cached.urls.length,13);assert.ok(cached.urls.every(u=>u.startsWith(url)));assert.ok(!cached.names.some(k=>k.includes(':v2:')));assert.ok(cached.names.includes('weight-regression-cache'));
   for(const width of [320,390,844,1280]){await current.setViewportSize({width,height:844});assert.ok(await current.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
   // Network-offline requests must be served by the worker, including new binary resources.
@@ -75,7 +75,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   for(const name of ['manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png']){
    const result=await current.evaluate(async name=>{const r=await fetch(name);return{ok:r.ok,size:(await r.arrayBuffer()).byteLength,type:r.headers.get('content-type')};},name);assert.ok(result.ok&&result.size>0);assert.ok(result.type.includes(name.endsWith('.png')?'image/png':'manifest+json'));
   }
-  await current.locator('#complete-exercise').click();await current.locator('#finish-training').click();await current.locator('#finish-save').click();await current.locator('#view-start').waitFor({state:'visible'});
+  await current.locator('#complete-exercise').click();await current.locator('#training-finish-dialog').waitFor({state:'visible'});assert.equal(await current.locator('#finish-count').innerText(),'2 / 3 · 1 übersprungen');await current.locator('#finish-save').click();await current.locator('#view-start').waitFor({state:'visible'});
   await current.locator('[data-tab=settings]').click();await current.locator('[data-view=backup]').click();
   const downloadPromise=current.waitForEvent('download');await current.locator('#export-training').click();const download=await downloadPromise;const backup=fs.readFileSync(await download.path());
   assert.equal(JSON.parse(backup).completedSessions.length,1);
@@ -84,7 +84,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const saved=await current.evaluate(()=>localStorage.getItem('kairos.training.state'));
   assert.deepEqual(errors,[]);await context.close();context=await launch();await context.setOffline(true);
   const restarted=context.pages()[0]||await context.newPage();await restarted.goto(url);await restarted.locator('#view-start').waitFor({state:'visible'});assert.equal(await restarted.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).completedSessions.length),1);
-  console.log('PASS: /KAIROS/Training/, v2 -> v23 waiting/activation, incomplete icon update preserved, manifest identity, 13 cached resources, 4 mobile widths, offline finish/export/import, full browser-process offline restart, Weight data/cache preserved.');
+  console.log('PASS: /KAIROS/Training/, v2 -> v24 waiting/activation, incomplete icon update preserved, manifest identity, 13 cached resources, 4 mobile widths, offline finish/export/import, full browser-process offline restart, Weight data/cache preserved.');
   await context.setOffline(false);
   const chartPath=process.env.KAIROS_CHART_PATH;
   if(!chartPath)throw new Error('Set KAIROS_CHART_PATH to the unmodified Chart.js 4.4.1 file for Weight regression.');
