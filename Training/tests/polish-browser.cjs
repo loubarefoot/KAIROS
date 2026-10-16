@@ -23,7 +23,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
    const f=KairosTrainingSession.create(s,D);f.start(s.getState().plans[0].id);f.finish(s.getState().activeSession.id);f.start(s.getState().plans[1].id);f.select(2);f.complete();f.select(3);f.complete();f.select(1);f.skip();
    return localStorage.getItem(D.STORAGE_KEY);
   });
-  await before.reload();await page.goto(origin+'/v22/');await page.evaluate(raw=>localStorage.setItem('kairos.training.state',raw),raw);await page.reload();
+  await before.reload();await page.goto(origin+'/v22/');await page.evaluate(raw=>localStorage.setItem('kairos.training.state',raw),raw);await page.reload();if(await page.locator('#view-start').isVisible())await page.locator('#view-start [data-view=active]').click();
   const state=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state'))),original=await state();
   const projection=async(p,selector)=>p.locator(selector).evaluate(el=>{
    const box=el.getBoundingClientRect(),props=['display','position','boxSizing','backgroundColor','backgroundImage','color','borderTopColor','borderTopWidth','borderRadius','paddingTop','paddingRight','paddingBottom','paddingLeft','fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','gap','textAlign'];

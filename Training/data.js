@@ -43,7 +43,7 @@
     requireRule(object(exercise) && id(exercise.id), 'Ungültige Übungs-ID.');
     requireRule(typeof exercise.name === 'string' && nameKey(exercise.name).length > 0, 'Ungültiger Übungsname.');
     requireRule(['custom', 'builtin'].includes(exercise.source), 'Ungültige Übungsherkunft.');
-    requireRule(weight(exercise.weightKg) && typeof exercise.isMax === 'boolean', 'Ungültiges Gewicht oder MAX-Modus.');
+    requireRule(weight(exercise.weightKg) && typeof exercise.isMax === 'boolean', 'Ungültige Gewichtsangabe.');
     requireRule(Number.isSafeInteger(exercise.repetitions) && exercise.repetitions > 0, 'Ungültige Wiederholungszahl.');
   }
   function createExercise({ name, source = 'custom', weightKg = null, repetitions = 10, isMax = false }) {

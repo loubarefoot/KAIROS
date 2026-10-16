@@ -10,18 +10,16 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
  try {
   browser=await chromium.launch({executablePath:process.env.KAIROS_CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,serviceWorkers:'block'}),page=await context.newPage(),errors=[];
+  await page.addInitScript(()=>{const real=Date.now;Date.now=()=>Number(localStorage.getItem('kairos.test.clock'))||real();});
   page.on('pageerror',e=>errors.push(e.message));const url='http://127.0.0.1:'+server.address().port+'/';await page.goto(url);
   await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(v=>{const p=D.createPlan({name:'Lifecycle',exerciseIds:v.exercises.slice(0,3).map(e=>e.id)});v.plans=[p];v.planOrder=[p.id];v.exercises[0].weightKg=17.5;v.exercises[0].isMax=true;v.exercises[0].repetitions=12;v.exercises[1].weightKg=null;v.exercises[1].isMax=true;v.exercises[1].repetitions=15;});});
   const state=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')));
   const open=async()=>{await page.reload();await page.locator('[data-tab=settings]').click();await page.locator('[data-view=plans]:visible').click();await page.locator('[data-edit-plan]').click();};
   const returnFrom=async(reason)=>page.evaluate(reason=>{
    window.dispatchEvent(new Event('pagehide'));
-   const D=KairosTrainingData,s=D.createStore();s.load();s.update(v=>{
-    v.settings.lastOpenedDay=reason==='day'?'2020-01-01':KairosTrainingNavigation.day(Date.now());
-    v.settings.lastBackgroundAt=Date.now()-(reason==='short'?1000:reason==='day'?1000:3600000);
-   });window.dispatchEvent(new Event('pageshow'));
+   localStorage.setItem('kairos.test.clock',String(Date.now()+(reason==='short'?1000:reason==='15'?900000:3600000)));window.dispatchEvent(new Event('pageshow'));
   },reason);
-  for(const reason of ['60','day']) {
+  for(const reason of ['15','60']) {
    await open();const before=await state();await returnFrom(reason);
    await page.locator('#view-start').waitFor({state:'visible'});assert.ok(await page.locator('#plan-leave-dialog').isHidden());
    assert.deepEqual((await state()).plans,before.plans);assert.deepEqual((await state()).exercises,before.exercises);
@@ -74,6 +72,6 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   // Commit another pointer reorder and verify persistence only on Save.
   a=await page.locator('#plan-exercises .sort-row').nth(0).locator('.drag-handle').boundingBox();await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:8});await page.mouse.up();
   const reordered=await order();await page.locator('#back-plan').click();await page.locator('#plan-leave-dialog [value=save]').click();await page.locator('#view-plans').waitFor({state:'visible'});assert.deepEqual((await state()).plans[0].exerciseIds,reordered);
-  assert.deepEqual(errors,[]);console.log('PASS: 60-minute/day lifecycle unchanged and changed drafts; save/discard/cancel preserve global/new exercises; short return, hidden MAX/repetition preservation, actual pointer/touch reorder and cancellation.');
+  assert.deepEqual(errors,[]);console.log('PASS: 15-/60-minute lifecycle unchanged and changed drafts; save/discard/cancel preserve global/new exercises; short return, hidden MAX/repetition preservation, actual pointer/touch reorder and cancellation.');
  }finally{await browser?.close();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

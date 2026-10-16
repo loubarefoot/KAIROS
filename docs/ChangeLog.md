@@ -332,3 +332,20 @@ Auf `feat/training-v18`; kein Commit, Push, Merge oder Deployment. Weight, Minde
 - Offline-Shell v25 mit 16 Dateien und aktualisierten Prüfsummen vorbereitet.
 - Berechnungs- und mobile Browsertests ergänzt; bestehende Versions-/Shell-Erwartungen angepasst.
 - Details und historische Grenzen: `docs/TrainingStatistics.md`. Noch nicht veröffentlicht.
+
+## 2026-10-16 – Training v26 vorbereitet: Statistik-UX und Wiederaufnahme
+
+- Alle Diagramme zeigen den vollständigen Zeitraum innerhalb der Kartenbreite;
+  7-Tage-Achse vollständig, längere Achsen ausgedünnt, sämtliche Messpunkte erhalten.
+- Ganzzahlige Wochen-Skala, Balkenzahlen/Antippwerte und ISO-KW-Tabelle mit Wochenjahr.
+- Dynamische Gewichtsskala mit kg und exakten Antippwerten; konstante und zeitgleiche
+  Messungen bleiben nachvollziehbar. Dauerdiagramm mit Minutenachse und Einzelwerten.
+- Native Übungsauswahl bleibt im DOM und wird nach Auswahl nicht erneut fokussiert.
+- Primäre Statistiknavigation und Zeitraumfilter unterscheidbar; Abstände gezielt korrigiert.
+- Keine sichtbaren MAX-Bezeichnungen; alte Felder und historische Daten unverändert erhalten.
+- Kurze Sperr-/App-Unterbrechungen behalten die Ansicht; ab 15 Minuten Trainingsübersicht,
+  ohne die bestehende aktive Session oder 60-Minuten-Trainingsregel zu verändern.
+- Lokale Shell v26 mit Prüfsummen vorbereitet. Kein Commit, Push oder Deployment.
+- Prüfung abgeschlossen: 100 Einzeltests und alle 16 Browser-Skripte erfolgreich,
+  einschließlich mobiler Achsen-/Select-/Lifecycle-Prüfung und Offline-/Weight-Regression.
+  Syntax, Diff-Prüfung und sämtliche 16 Shell-Prüfsummen bestätigt. Echte iOS-Prüfung offen.

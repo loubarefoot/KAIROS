@@ -1,26 +1,26 @@
 'use strict';
 // Bump VERSION whenever any shell file changes. Keep the previous worker until
 // the new complete shell is installed and all old controlled pages are closed.
-const VERSION = 'v25';
+const VERSION = 'v26';
 const PREFIX = 'kairos-training-shell:' + self.registration.scope + ':';
 const FILES = ['index.html', 'styles.css', 'data.js', 'library.js', 'management.js', 'session.js', 'navigation.js', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'diagnostics.js', 'statistics.js', 'statistics-ui.js', 'statistics.css'];
 const HASHES = {
   "index.html": "284b0a96ca862f02fc9b575b8725a94abcc88ed066162ac206fb6d6f3ba74cdc",
   "styles.css": "870df4f71ed91b990019741e6a8fd94c0e44aee6688d7e0f94ad0370a7ecae3f",
-  "data.js": "c81f9b60d7f032ad33190329129a711a662e4dee03b226ee497d91a0560f6c3f",
+  "data.js": "ce9991453021f45fbd707f79e23cedb4afcb684d8518722da63301d755534b4c",
   "library.js": "f27ed498f9c4a22bc1e6e2ea223aa8806441acf62776f0a583a45a48fd5dfbc8",
   "management.js": "1b51bff6a00150c1fb243d8e20c5355306dde7a6ad48817d0e2d67587240e1b7",
   "session.js": "56dac56bda8789b43683a78d98ae64bb7b33689902ae6aa5df7e7e51cd3f0ee1",
-  "navigation.js": "02e99b2ab432e5601b4bb78656cb2a285f5219eea2057f6b5b670cfa94530b1f",
-  "app.js": "09abe89f905bd9023d34ba3dfddd7ee185e6c757938158847971c61bd9533e69",
+  "navigation.js": "d014d5ae2fbbc5de43b737ed0715a582c210b715d7a38d7202907f9223dd5a51",
+  "app.js": "7d2708c2b82b396ff72258e3279d922877c6b124ce050f38c9833661bc35e3d4",
   "manifest.webmanifest": "2c43aaf1be2d8ad29a7f938f12654d52ed60d72c22aee254b683ab443a9fa7bc",
   "icons/icon-192.png": "7b853e1539b7b5b4741f3d84b363a14f698d8263c4c2fb85de5af31d817c8bf1",
   "icons/icon-512.png": "0fabf101438a17bd21f91ef09f5b6aabfcea15b86f2b350bbfe128f25e5856ac",
   "icons/apple-touch-icon.png": "d1077412ad73e2af11a0f35693be48f4363d20a7aae8748768515be76506ecd9",
   "diagnostics.js": "4be24e0730a502ac390ee4d1ca879481bcefb408fd0a1c5c093f9a328cd9b1fe",
-  "statistics.js": "01f731dc636c3b3688dd78674baaca8283b8fd096182a47ff98e28ca3c0f4518",
-  "statistics-ui.js": "a6a09cddfbf3ceef45f0cc0a9f9665f6b1b6ab04afbb6a37fb06bab2faf20a43",
-  "statistics.css": "6017b18d4641c2e3bda48b4d4bc01ac680f2a4e2e325c901f7d17a0a20e6e885"
+  "statistics.js": "3cbc409e7d3f9684b50f7c591d6a73ab8a1a58eb75b28cb13861cd5be5c231eb",
+  "statistics-ui.js": "d74b128bea5bc1ba19c7eae5a12242c99ee32e3d8b89d1c23b29ade12a7ad099",
+  "statistics.css": "733873513df76a746425191ef5d6cd1bd3c9ea4cb4cc28c795040ecc9d72de7a"
 };
 // Deterministic across worker restarts, distinct for every shell content set.
 const cacheName = crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(HASHES))).then(buffer => PREFIX + VERSION + ':' + Array.from(new Uint8Array(buffer), byte => byte.toString(16).padStart(2, '0')).join(''));

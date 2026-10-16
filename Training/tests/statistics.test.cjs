@@ -41,3 +41,32 @@ test('calendar-day filtering crosses daylight saving changes without assuming 24
  const end=new Date(2026,9,28,12).getTime(),start=new Date(2026,9,22).getTime();
  assert.deepEqual(S.filter([{startedAt:start},{startedAt:start-1}],'7',end),[{startedAt:start}]);
 });
+test('full 7/30/90 calendar-day domains include empty days and all spans all recorded dates',()=>{
+ for(const n of [7,30,90]){
+  const r=S.domain(rows,String(n),now),first=new Date(r.start),last=new Date(r.end);
+  assert.equal(first.getHours(),0);assert.equal(last.getHours(),23);
+  assert.equal(Math.round((Date.UTC(last.getFullYear(),last.getMonth(),last.getDate())-Date.UTC(first.getFullYear(),first.getMonth(),first.getDate()))/86400000)+1,n);
+  if(n===7)assert.equal(S.timeTicks(r,'7',194).length,7);
+ }
+ const all=S.domain(rows,'all',now);assert.ok(all.start<=rows.at(-1).startedAt);assert.ok(all.end>=rows[0].startedAt);
+ const small=S.domain(rows,'90',now);assert.ok(S.timeTicks(small,'90',194).length<=3);
+ assert.equal(new Set(S.timeTicks(small,'90',194)).size,S.timeTicks(small,'90',194).length);
+});
+test('weight scales resolve small increases and equal values without adding measurements',()=>{
+ const s=S.axis([60,62.5],'weight');assert.ok(s.min<60&&s.max>62.5);assert.ok(s.max-s.min<10);
+ const equal=S.axis([60,60],'weight');assert.ok(equal.min<60&&equal.max>60);assert.ok(equal.max>equal.min);
+ assert.ok(S.axis([0],'weight').min>=0);assert.deepEqual(S.axis([],'weight').ticks,[]);
+ for(const values of [[1],[1,7],[3,31],[0]]){
+  const scale=S.axis(values,'count');assert.ok(scale.ticks.every(Number.isInteger));assert.ok(scale.min===0&&scale.max>=Math.max(...values));
+ }
+ const short=S.axis([0.25,0.75],'duration');assert.equal(short.min,0);assert.ok(short.max>=0.75);
+});
+test('ISO weeks include week-year boundaries and gap weeks are counted as zero',()=>{
+ for(const [y,m,d,year,week] of [[2021,0,1,2020,53],[2021,0,4,2021,1],[2024,11,30,2025,1],[2026,11,31,2026,53]])assert.deepEqual(S.isoWeek(new Date(y,m,d).getTime()),{year,week});
+ const data=[{startedAt:new Date(2026,9,5,12).getTime()},{startedAt:new Date(2026,9,19,12).getTime()}];
+ assert.deepEqual(S.weeks(data,S.domain(data,'all',now)).map(p=>p.value),[1,0,1]);
+});
+test('multiple actual measurements on one day, including coincident times, remain separate',()=>{
+ const same=rows[0].startedAt,items=[{startedAt:same,exercises:[ex('a','completed',60)]},{startedAt:same,exercises:[ex('a','completed',62.5)]},{startedAt:same+3600000,exercises:[ex('a','completed',61)]}];
+ assert.equal(S.weights(items,'a').length,3);assert.deepEqual(S.weights(items,'a').map(p=>p.time),[same,same,same+3600000]);assert.deepEqual(new Set(S.weights(items,'a').map(p=>p.value)),new Set([60,62.5,61]));
+});

@@ -25,12 +25,12 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   let data=await read();assert.match(data.diagnosticBuildFromLoadedJS,/training-compact-diagnostics-2/);
   assert.equal(data.visibleSection.id,'view-settings');
   assert.equal(data.stylesheet.versionFromLoadedRules,'training-minimum-height-1');assert.match(data.stylesheet.loadedCSSOM_SHA256,/^[a-f0-9]{64}$/);
-  assert.equal(data.serviceWorker.controller.version,'v25');assert.equal(data.serviceWorker.registrationActive.version,'v25');assert.equal(data.serviceWorker.waiting.present,false);
+  assert.equal(data.serviceWorker.controller.version,'v26');assert.equal(data.serviceWorker.registrationActive.version,'v26');assert.equal(data.serviceWorker.waiting.present,false);
   assert.equal(data.serviceWorker.controller.expectedStylesheetFileSHA256,require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,'styles.css'))).digest('hex'));
   assert.equal(data.viewport.innerHeight,844);assert.equal(data.navigation.height,80);assert.equal(data.standalone.media,false);
   await close();workerUpdate=true;
   await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();if(r.installing)await new Promise(resolve=>{const w=r.installing;const check=()=>{if(['installed','redundant'].includes(w.state))resolve();};w.addEventListener('statechange',check);check();});});
-  await open();data=await read();assert.equal(data.serviceWorker.waiting.present,true);assert.equal(data.serviceWorker.waiting.version,'v25');assert.equal(data.serviceWorker.waiting.state,'installed');await close();
+  await open();data=await read();assert.equal(data.serviceWorker.waiting.present,true);assert.equal(data.serviceWorker.waiting.version,'v26');assert.equal(data.serviceWorker.waiting.state,'installed');await close();
   // Input focus/value exclusion remains tested without retaining a production keyboard probe.
   await page.evaluate(()=>{const input=document.createElement('input');input.id='test-keyboard';input.value='not exported';document.getElementById('view-settings').append(input);input.focus();Object.defineProperty(visualViewport,'height',{configurable:true,get:()=>300});visualViewport.dispatchEvent(new Event('resize'));});
   await open();data=await read();assert.equal(data.viewport.visualHeight,300);assert.match(data.measurement,/vor Fokus/);assert.equal(data.focus,'#test-keyboard');assert.ok(!(await page.locator('#diagnostics-live-report').inputValue()).includes('not exported'));await close();
@@ -43,15 +43,15 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   assert.equal(await page.locator('#diagnostics-live-report').evaluate(e=>e.selectionEnd-e.selectionStart),(await page.locator('#diagnostics-live-report').inputValue()).length);await close();
   // A silent old controller must never be reported as the new worker's version.
   await page.evaluate(()=>Object.defineProperty(navigator.serviceWorker,'controller',{configurable:true,value:{scriptURL:location.href+'sw.js',state:'activated',postMessage(){}}}));
-  await open();data=await read();assert.equal(data.serviceWorker.controller.version,'unbekannt');assert.equal(data.serviceWorker.registrationActive.version,'v25');await close();
+  await open();data=await read();assert.equal(data.serviceWorker.controller.version,'unbekannt');assert.equal(data.serviceWorker.registrationActive.version,'v26');await close();
   assert.equal(await page.evaluate(()=>localStorage.getItem('kairos.training.state')),state);
   assert.deepEqual(await page.locator('.tabbar').boundingBox(),navBefore);assert.equal(externalRequests,0);assert.deepEqual(errors,[]);
   await page.evaluate(()=>delete navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();
-  await page.locator('[data-tab=settings]').click();await open();assert.equal((await read()).serviceWorker.controller.version,'v25');await close();
+  await page.locator('[data-tab=settings]').click();await open();assert.equal((await read()).serviceWorker.controller.version,'v26');await close();
 
   await context.setOffline(false);
   // Direct measurements must identify the visible view, not the settings panel.
-  await page.reload();await page.locator('#view-start').waitFor({state:'visible'});
+  await page.reload();await page.locator('[data-tab=training]').click();await page.locator('#view-start').waitFor({state:'visible'});
   await page.locator('#diagnostics-live').click();await page.waitForFunction(()=>document.getElementById('diagnostics-live-status').textContent.startsWith('Aktualisiert'));
   let live=JSON.parse(await page.locator('#diagnostics-live-report').inputValue());assert.equal(live.visibleSection.id,'view-start');
   assert.ok(live.documentHeight>=live.viewport.innerHeight+80);
@@ -96,19 +96,19 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.copiedDiagnosis=value;}}}));
   await page.locator('#diagnostics-live-copy').click();assert.equal(await page.evaluate(()=>window.copiedDiagnosis),await page.locator('#diagnostics-live-report').inputValue());
   await page.locator('#diagnostics-live-close').click();await page.evaluate(()=>document.getElementById('test-long-training').remove());
-  // New documents start at start; warm/BFCache returns keep settings, long/day returns do not.
-  await page.locator('[data-tab=settings]').click();await page.reload();await page.locator('#view-start').waitFor({state:'visible'});
+  // Short same-tab reload/BFCache returns keep settings; 15 minutes returns to overview.
+  await page.locator('[data-tab=settings]').click();await page.reload();await page.locator('#view-settings').waitFor({state:'visible'});
   await page.locator('[data-tab=settings]').click();
   await page.evaluate(()=>{window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));});
   assert.ok(await page.locator('#view-settings').isVisible());
-  await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));const raw=JSON.parse(localStorage.getItem('kairos.training.state'));raw.settings.lastBackgroundAt=Date.now()-3600000;localStorage.setItem('kairos.training.state',JSON.stringify(raw));window.dispatchEvent(new Event('pageshow'));});
+  await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));window.savedNow=Date.now;const returnedAt=Date.now()+900000;Date.now=()=>returnedAt;window.dispatchEvent(new Event('pageshow'));Date.now=window.savedNow;});
   assert.ok(await page.locator('#view-start').isVisible());
   await page.locator('[data-tab=settings]').click();
   await page.evaluate(()=>{window.dispatchEvent(new Event('pagehide'));const raw=JSON.parse(localStorage.getItem('kairos.training.state'));raw.settings.lastOpenedDay='2020-01-01';localStorage.setItem('kairos.training.state',JSON.stringify(raw));window.dispatchEvent(new Event('pageshow'));});
-  assert.ok(await page.locator('#view-start').isVisible());
+  assert.ok(await page.locator('#view-settings').isVisible());
   await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(raw=>{const p=D.createPlan({name:'Running',exerciseIds:raw.exercises.slice(0,2).map(e=>e.id)});raw.plans=[p];raw.planOrder=[p.id];});const flow=KairosTrainingSession.create(s,D);flow.start(s.getState().plans[0].id);flow.complete();});
   const running=await page.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).activeSession);
-  await page.reload();await page.locator('#view-active').waitFor({state:'visible'});
+  await page.reload();await page.locator('[data-tab=training]').click();await page.locator('#view-start [data-view=active]').click();await page.locator('#view-active').waitFor({state:'visible'});
   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state')).activeSession),running);
   await page.locator('#diagnostics-live').click();await page.waitForFunction(()=>document.getElementById('diagnostics-live-status').textContent.startsWith('Aktualisiert'));
   assert.equal(JSON.parse(await page.locator('#diagnostics-live-report').inputValue()).visibleSection.id,'view-active');
@@ -119,6 +119,6 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const blocked=await browser.newContext({serviceWorkers:'block'}),noSW=await blocked.newPage();await noSW.goto(url);await noSW.locator('[data-tab=settings]').click();await noSW.locator('#diagnostics-live').click();
   await noSW.waitForFunction(()=>document.getElementById('diagnostics-live-status').textContent.startsWith('Aktualisiert'));
   assert.equal(JSON.parse(await noSW.locator('#diagnostics-live-report').inputValue()).serviceWorker.controller.version,'unbekannt');await blocked.close();
-  console.log('PASS: actual controller and waiting worker v25, silent controller unknown, CSSOM marker/hash, viewport/nav/scroll/focus, copy and fallback, offline diagnosis, unsupported worker, no external requests or data changes.');
+  console.log('PASS: actual controller and waiting worker v26, silent controller unknown, CSSOM marker/hash, viewport/nav/scroll/focus, copy and fallback, offline diagnosis, unsupported worker, no external requests or data changes.');
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

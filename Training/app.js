@@ -17,6 +17,10 @@
   let trainingView = 'start', editingPlan = null, addingToPlan = null, planDraft = null, leavingPlan = false;
   let currentView = 'start', away = false, entered = false;
   let summaryId = null, finishing = false, durationInterval = null, importing = false;
+  // View-only state stays outside the training schema and exported snapshots.
+  const resumeKey = 'kairos.training.ui.v26';
+  let uiResume = null;
+  try { uiResume = JSON.parse(sessionStorage.getItem(resumeKey)); } catch { /* Optional UI restoration. */ }
   const visibleSession = () => { const session = store.getState().activeSession; return D.sessionExpired(session) ? null : session; };
   function checkSessionTimeout() {
     if (!D.sessionExpired(store.getState().activeSession)) return false;
@@ -77,7 +81,7 @@
   const savedView = name => name === 'statistics' ? 'start' : name === 'plan-editor' ? 'plans' : name === 'exercise-editor' ? 'exercises' : name === 'training' ? 'start' : name;
   const numericWeightLabel = exercise => exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   const planDetails = plan => (plan.description.trim() ? esc(plan.description) + ' · ' : '') + plan.exerciseIds.length + (plan.exerciseIds.length === 1 ? ' Übung' : ' Übungen');
-  const weightLabel = exercise => exercise.isMax ? 'MAX' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
+  const weightLabel = exercise => exercise.isMax ? 'Gewicht nicht verfügbar' : exercise.weightKg === null ? 'Gewicht offen' : exercise.weightKg.toLocaleString('de-DE') + ' kg';
   function rowControls(index, length) {
     return `<button type="button" class="drag-handle" aria-label="Durch Ziehen verschieben">☰</button><button type="button" data-move="-1" aria-label="Nach oben" ${index===0?'disabled':''}>↑</button><button type="button" data-move="1" aria-label="Nach unten" ${index===length-1?'disabled':''}>↓</button>`;
   }
@@ -460,6 +464,8 @@
   function leaveApp() {
     if (away || !entered) return;
     away = true;
+    uiResume = {view: currentView === 'statistics' ? 'statistics' : savedView(currentView), backgroundAt: Date.now(), statistics: statistics.snapshot()};
+    try { sessionStorage.setItem(resumeKey, JSON.stringify(uiResume)); } catch { /* In-memory return still works. */ }
     if (currentView === 'exercises') { $('exercise-search').value = ''; renderExerciseList(); }
     store.refresh();
     if (store.getStatus().loaded && !store.getStatus().blocked) store.update(state => {
@@ -473,13 +479,15 @@
     sessionFlow.restoreCompletion();
     const expired = checkSessionTimeout();
     const state = store.getState(), now = Date.now();
-    const entry = expired ? 'start' : KairosTrainingNavigation.entryView(state, now, {newDocument: !entered});
+    const entry = expired ? 'start' : KairosTrainingNavigation.entryView(state, now, {newDocument: !entered, resume: uiResume});
+    if (entry === 'statistics') statistics.restore(uiResume?.statistics);
     const view = planDraft && currentView === 'plan-editor' && entry === 'plans' ? 'plan-editor' : currentView === 'exercise-editor' && entry === 'exercises' ? 'exercise-editor' : entry;
     if (view === 'summary') {
       const last = state.completedSessions.reduce((latest, session) => !latest || session.endedAt >= latest.endedAt ? session : latest, null);
       summaryId = last?.id || null;
     }
-    entered = true; away = false;
+    entered = true; away = false; uiResume = null;
+    try { sessionStorage.removeItem(resumeKey); } catch { /* Optional UI restoration. */ }
     if (store.getStatus().loaded && !store.getStatus().blocked) store.update(candidate => {
       candidate.settings.lastOpenedDay = KairosTrainingNavigation.day(now);
       candidate.settings.lastBackgroundAt = null;

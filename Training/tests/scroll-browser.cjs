@@ -15,7 +15,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   const make=async()=>{const c=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,serviceWorkers:'block',timezoneId:'Europe/Berlin'});await c.addInitScript(t=>{Date.now=()=>t;},clock);const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));return p;};
   const before=await make(),page=await make();await before.goto(origin+'/v22/');
   const raw=await before.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(v=>{v.plans=Array.from({length:16},(_,i)=>D.createPlan({name:'Training '+(i+1),exerciseIds:v.exercises.slice(0,8).map(e=>e.id)}));v.planOrder=v.plans.map(p=>p.id);v.exercises[0].weightKg=17.5;});const f=KairosTrainingSession.create(s,D);f.start(s.getState().plans[0].id);f.finish(s.getState().activeSession.id);f.start(s.getState().plans[0].id);return localStorage.getItem(D.STORAGE_KEY);});
-  await before.reload();await page.goto(origin+'/v23/');await page.evaluate(v=>localStorage.setItem('kairos.training.state',v),raw);await page.reload();
+  await before.reload();await page.goto(origin+'/v23/');await page.evaluate(v=>localStorage.setItem('kairos.training.state',v),raw);await page.reload();if(await page.locator('#view-start').isVisible())await page.locator('#view-start [data-view=active]').click();
   const state=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('kairos.training.state'))),original=await state();
   const frames=async p=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   const bottom=async p=>{await p.evaluate(()=>{document.scrollingElement.scrollTop=document.scrollingElement.scrollHeight;});await frames(p);assert.ok(await p.evaluate(()=>scrollY>0),'source really scrolled');};
@@ -57,7 +57,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
   // Same-view tab activation must not reset; actual view changes still do.
   await bottom(page);const same=await page.evaluate(()=>scrollY);await clear();await page.locator('[data-tab=training]').tap();await noReset();assert.equal(await page.evaluate(()=>scrollY),same);
   // Preserve the documented v13 reserve, including its known short-page excess.
-  await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(v=>{v.plans=v.plans.slice(0,1);v.planOrder=v.plans.map(p=>p.id);});});await page.reload();await go('[data-tab=training]','start');
+  await page.evaluate(()=>{const D=KairosTrainingData,s=D.createStore();s.load();s.update(v=>{v.plans=v.plans.slice(0,1);v.planOrder=v.plans.map(p=>p.id);});});await page.reload();await page.locator('[data-tab=settings]').tap();await frames(page);await go('[data-tab=training]','start');
   for(const [width,height] of [[320,568],[390,844],[430,932]]){
    await page.setViewportSize({width,height});await go('[data-tab=settings]','settings');
    const measure=await page.evaluate(()=>({excess:document.scrollingElement.scrollHeight-innerHeight,padding:getComputedStyle(document.querySelector('#scrollArea')).paddingBottom,box:getComputedStyle(document.querySelector('#scrollArea')).boxSizing}));assert.equal(measure.excess,80);assert.equal(measure.padding,'80px');assert.equal(measure.box,'content-box');

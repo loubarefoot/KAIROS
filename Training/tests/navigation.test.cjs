@@ -7,7 +7,7 @@ test('first opening of local calendar day and day change always show start',()=>
  s.settings.lastOpenedDay=N.day(now-86400000);s.settings.lastBackgroundAt=now-1000;assert.equal(N.entryView(s,now),'start');
  assert.equal(N.day(new Date(2026,0,2,0,0).getTime()),'2026-01-02');
 });
-test('less than 60 minutes restores view; exact 60 minutes and longer show start',()=>{
+test('less than 15 minutes restores view; exact 15 minutes and longer show start',()=>{
  const s=state();s.settings.lastBackgroundAt=now-N.ABSENCE_MS+1;assert.equal(N.entryView(s,now),'settings');
  s.settings.lastBackgroundAt=now-N.ABSENCE_MS;assert.equal(N.entryView(s,now),'start');
  s.settings.lastBackgroundAt=now-N.ABSENCE_MS-1;assert.equal(N.entryView(s,now),'start');
@@ -43,4 +43,19 @@ test('new document starts at start unless a running session exists; returning do
 
 test('active inactivity uses persisted activity, takes precedence over display settings, and falls back for legacy sessions',()=>{
  const s=state();s.activeSession={id:'running',startedAt:now-7200000,lastActivityAt:now-3599999};s.settings.lastOpenedDay='2020-01-01';assert.equal(N.entryView(s,now,{newDocument:true}),'active');s.activeSession.lastActivityAt=now-3600000;assert.equal(N.entryView(s,now),'start');assert.equal(N.entryView(s,now,{newDocument:true}),'start');delete s.activeSession.lastActivityAt;assert.equal(N.entryView(s,now),'start');
+});
+test('short returns preserve actual tab despite active session or midnight; exactly 15 minutes shows overview',()=>{
+ const s=state();s.activeSession={id:'running',startedAt:now-10000,lastActivityAt:now-1000};s.settings.lastOpenedDay='2020-01-01';
+ for(const view of ['statistics','settings','plans','backup','active'])assert.equal(N.entryView(s,now,{resume:{view,backgroundAt:now-899999}}),view);
+ const before=JSON.stringify(s);
+ assert.equal(N.entryView(s,now,{resume:{view:'statistics',backgroundAt:now-900000}}),'start');assert.equal(JSON.stringify(s),before);
+ assert.equal(N.entryView(s,now,{newDocument:true,resume:{view:'statistics',backgroundAt:now-1000}}),'statistics');
+});
+test('15-minute view timeout does not replace 60-minute session expiry or finished-session priority',()=>{
+ const s=state();s.activeSession={id:'running',startedAt:now-3599999};
+ assert.equal(N.entryView(s,now,{newDocument:true}),'active');
+ s.activeSession.startedAt=now-3600000;assert.equal(N.entryView(s,now,{resume:{view:'statistics',backgroundAt:now-1000}}),'start');
+ s.activeSession.exercises=[{status:'skipped'}];s.activeSession.endedAt=now-3600000;assert.equal(N.entryView(s,now,{resume:{view:'statistics',backgroundAt:now-900000}}),'active');
+ const empty=state();assert.equal(N.entryView(empty,now,{resume:{view:'active',backgroundAt:now-1000}}),'start');
+ assert.equal(N.entryView(empty,now,{resume:{view:'unknown',backgroundAt:now-1000}}),'settings');
 });

@@ -144,11 +144,9 @@ Statistiken und Historie werden in einer späteren Version ergänzt.
 
 # 5. Startseite / Training
 
-Die kompakte Startansicht erscheint bei jedem neuen App-/Dokumentstart ohne laufende Einheit, beim ersten Öffnen eines neuen Kalendertages und nach mindestens 60 Minuten Inaktivität.
+Seit v26 gilt für die Anzeige eine 15-Minuten-Abwesenheitsregel: Bei kurzer Unterbrechung bleibt die zuletzt geöffnete Ansicht erhalten, einschließlich Statistik-Unterbereich, Zeitraum und Übung. Auch ein Tageswechsel erzwingt bei kurzer Rückkehr keinen Tabwechsel. Ab mindestens 15 Minuten darf die App auf der Trainingsübersicht starten. Ein laufendes Training bleibt dort fortsetzbar; die 60-Minuten-Inaktivitätsregel der Trainingslogik bleibt unverändert.
 
-Die 60 Minuten Inaktivität beginnen, sobald KAIROS in den Hintergrund wechselt oder verlassen wird. Kehrt KAIROS ohne laufendes Training nach weniger als 60 Minuten Abwesenheit in ein bereits bestehendes Dokument zurück, wird die zuletzt verwendete Ansicht wiederhergestellt. Ein neu geladenes Dokument startet dagegen auf der Startansicht. Eine BFCache-Wiederherstellung eines bestehenden Dokuments gilt als Rückkehr, nicht als neuer Dokumentstart. Ab 60 Minuten erscheint die Startansicht. Beim ersten Öffnen des Tages erscheint ebenfalls die Startansicht; diese Regel hat Vorrang vor der Wiederherstellung der zuletzt verwendeten Ansicht.
-
-Ein nicht abgelaufenes laufendes Training hat Vorrang vor der Startansicht und wird beim erneuten Öffnen direkt fortgesetzt. Eine vollständig erledigte, noch nicht gespeicherte oder verworfene Einheit stellt stattdessen ihren Abschlussdialog mit eingefrorener Dauer wieder her (siehe Abschnitt 17).
+Die Anzeigeauswahl wird außerhalb des Trainingsschemas im Dokument und optional im Tab-Speicher gehalten. Damit kann auch ein Reload im selben Tab innerhalb von 15 Minuten die Ansicht wiederherstellen. Ohne solchen Anzeigestand startet ein neues Dokument wie bisher auf der Übersicht beziehungsweise direkt in einer noch aktiven Einheit. Ein fertiges, noch nicht gespeichertes Training stellt weiterhin seinen Abschlussdialog mit eingefrorener Dauer wieder her. Änderungen an Planentwürfen werden beim Verlassen weiterhin über Speichern/Verwerfen/Abbrechen geschützt.
 
 Seit v20 gibt es ausschließlich die gemeinsame Trainingsstartseite (`start`). Frühere Navigationswerte `training` werden dorthin geleitet; es gibt keine zweite Übersichtsansicht oder die Aktionen „Zur Trainingsansicht“/„Zur Startansicht“ mehr. Die Verwaltung bleibt über Einstellungen erreichbar.
 
@@ -892,3 +890,8 @@ Offen bleibt gemäß Auftrag 69 das künstliche Scrollen kurzer Seiten aus Minde
 Die bestehenden Statusfelder und Schema 1 bleiben erhalten; es gibt keine Migration. Die Statusaufteilung steuert Auswahl, Kartenreihenfolge, Abschlussdialog, Inaktivitätsausnahme, Wiederaufnahme und Validierung konsistent. Alte aktive Einheiten ohne regulär offene Übungen erhalten beim Wiederaufnehmen eine eingefrorene Endzeit aus dem letzten gespeicherten Aktivitätszeitpunkt, sofern vorhanden. Historische Einheiten bleiben wertgleich.
 
 Auftrag 71 und die ergänzende Nutzerentscheidung erlauben das ausdrückliche Nachholen auch aus dem automatischen Abschlussdialog. Nur dieser eng begrenzte Übergang darf einen eingefrorenen aktiven Zustand wieder öffnen. Layout, HTML/CSS, Bottom Navigation, iOS-Hülle und die v23-Scrollkorrektur bleiben unverändert. Das bekannte Scrollen kurzer Seiten wird nicht bearbeitet.
+
+
+### Training v26 – Statistik und kurze Unterbrechungen
+
+Die Anforderungen aus Auftrag 77 erweitern die Statistik aus v25 um vollständige, nicht horizontal scrollende Zeitachsen, dynamische Gewichtsbereiche, ISO-Kalenderwochen und exakte Antippwerte. Native Übungsauswahl ohne DOM-Ersetzung oder erneuten Fokus, getrennte visuelle Hierarchie von Unterbereichen und Zeiträumen sowie konsistente Statistik-Abstände. MAX wird nirgends mehr als Bedienkonzept angezeigt; alte Felder bleiben intern kompatibel erhalten. Technische Berechnung und Grenzen: `docs/TrainingStatistics.md`.
